@@ -7,14 +7,14 @@ body {
 .profile-card {
     width: 100%;
     min-height: 100vh;
-    background-color: purple;
+    background: linear-gradient(orange, rgb(183, 75, 113));
     position: relative;
 }
 
 .top-bar {
     width: 100%;
     height: 70px;
-    background-color: black;
+    background-color:  rgb(183, 75, 113);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -61,7 +61,7 @@ body {
 .cover {
     width: 100%;
     height: 200px;
-    background: linear-gradient(purple, orange, yellow);
+    background: linear-gradient( rgb(183, 75, 113), orange);
 }
 
 .profile-info {
@@ -89,7 +89,7 @@ body {
 }
 
 .username {
-    color: gray;
+    color: black;
 }
 
 .buttons {
@@ -127,12 +127,12 @@ body {
 }
 
 .stats p {
-    color: gray;
+    color: black;
 }
 
 .posts-section {
     margin-top: 40px;
-    background-color: lightgray;
+    background: linear-gradient(orange, rgb(183, 75, 113));
     padding: 30px;
 }
 
@@ -163,10 +163,10 @@ body {
 
 .footer {
     text-align: center;
-    padding: 20px;
-    color: gray;
-    background-color: black;
-    font-size: 14px;
+    padding: 15px;
+    color: black;
+    background-color: white;
+    font-size: 15px;
     margin-top: 30px;
 }
 
