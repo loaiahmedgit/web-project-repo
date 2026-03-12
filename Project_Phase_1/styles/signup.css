@@ -1,76 +1,91 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: lightgray;
+
+    background: linear-gradient(orange, rgb(111, 29, 29));
+
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+
+    min-height: 100vh;
 }
 
+/* Form container */
+
 .form-box {
-    width: 350px;
-    background-color: black;
-    color: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px gray;
+    width: 380px;
+    background: black;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+
 }
+
 
 h1 {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
+}
+
+
+.form-box h1 {
     color: orange;
 }
 
+
+.form-box h1.create-title {
+    color: yellow;
+}
+
+
 label {
     display: block;
-    margin-bottom: 8px;
     margin-top: 15px;
+    margin-bottom: 6px;
+    color: white;
 }
+
 
 input {
     width: 100%;
     padding: 10px;
     border: none;
     border-radius: 6px;
-    margin-bottom: 10px;
+    background: lightgray;
     box-sizing: border-box;
 }
+
 
 button {
     width: 100%;
     padding: 12px;
-    background-color: orange;
-    color: white;
+    margin-top: 25px;
     border: none;
     border-radius: 6px;
+    background: orange;
+    color: white;
     font-size: 16px;
-    margin-top: 10px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: darkorange;
+    background: darkorange;
 }
 
-#loginMessage,
-#createMessage {
-    text-align: center;
-    margin-top: 15px;
-    color: yellow;
-}
 
 .link-text {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 15px;
+    color: white;
 }
 
-a {
+.link-text a {
     color: orange;
     text-decoration: none;
+
 }
 
-a:hover {
+.link-text a:hover {
     text-decoration: underline;
 }
