@@ -10,6 +10,21 @@
 
     <div class="profile-card">
 
+        <div class="top-bar">
+            <div class="menu-icon" onclick="toggleMenu()">☰</div>
+
+            <div class="site-logo">
+                <img src="media/images/logo.png" alt="Logo">
+            </div>
+        </div>
+
+        <div class="side-menu" id="sideMenu">
+            <a href="profile.html">Profile</a>
+            <a href="create.html">Create Post</a>
+            <a href="for_you_page.html">For You</a>
+            <a href="#" onclick="logoutUser()">Logout</a>
+        </div>
+
         <div class="cover"></div>
 
         <div class="profile-info">
@@ -45,12 +60,6 @@
                 </div>
             </div>
 
-            <div class="badges">
-                <span>Top Creator</span>
-                <span>Verified</span>
-                <span>Popular</span>
-            </div>
-
             <div class="posts-section">
                 <h2>User Posts</h2>
 
@@ -81,7 +90,9 @@
                 </div>
             </div>
 
-            <button class="logout" onclick="logoutUser()">Logout</button>
+            <footer class="footer">
+                © 2026 Your Website. All rights reserved.
+            </footer>
         </div>
     </div>
 
@@ -99,6 +110,16 @@
         function logoutUser() {
             localStorage.removeItem("currentUser");
             window.location.href = "login.html";
+        }
+
+        function toggleMenu() {
+            let menu = document.getElementById("sideMenu");
+
+            if (menu.style.left === "0px") {
+                menu.style.left = "-220px";
+            } else {
+                menu.style.left = "0px";
+            }
         }
     </script>
 
