@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="styles/profile.css">
+</head>
+<body>
+
+    <div class="profile-card">
+        <div class="cover"></div>
+
+        <div class="profile-info">
+            <div class="avatar" id="avatarLetter">A</div>
+
+            <h2 id="profileName"></h2>
+            <p class="username" id="profileUsername"></p>
+
+            <div class="buttons">
+                <button class="follow">Follow</button>
+                <button class="message">Message</button>
+            </div>
+
+            <div class="stats">
+                <div>
+                    <h3>2.1M</h3>
+                    <p>Followers</p>
+                </div>
+
+                <div>
+                    <h3>840K</h3>
+                    <p>Following</p>
+                </div>
+
+                <div>
+                    <h3>48.6M</h3>
+                    <p>Likes</p>
+                </div>
+
+                <div>
+                    <h3>284</h3>
+                    <p>Videos</p>
+                </div>
+            </div>
+
+            <div class="badges">
+                <span>Top Creator</span>
+                <span>Verified</span>
+                <span>Popular</span>
+            </div>
+
+            <button class="logout" onclick="logoutUser()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = localStorage.getItem("currentUser");
+
+        if (!currentUser) {
+            window.location.href = "login.html";
+        } else {
+            document.getElementById("profileName").textContent = currentUser;
+            document.getElementById("profileUsername").textContent = "@" + currentUser;
+            document.getElementById("avatarLetter").textContent = currentUser.charAt(0).toUpperCase();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "login.html";
+        }
+    </script>
+
+</body>
+</html>

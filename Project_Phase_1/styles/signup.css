@@ -1,0 +1,76 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: lightgray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.form-box {
+    width: 350px;
+    background-color: black;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px gray;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: orange;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: orange;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: darkorange;
+}
+
+#loginMessage,
+#createMessage {
+    text-align: center;
+    margin-top: 15px;
+    color: yellow;
+}
+
+.link-text {
+    text-align: center;
+    margin-top: 20px;
+}
+
+a {
+    color: orange;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

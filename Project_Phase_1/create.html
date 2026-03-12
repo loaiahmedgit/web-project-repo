@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <link rel="stylesheet" href="styles/signup.css">
+</head>
+<body>
+
+    <div class="form-box">
+        <h1>Create Account</h1>
+
+        <form id="createForm">
+            <label for="newUsername">Username</label>
+            <input type="text" id="newUsername" required>
+
+            <label for="newPassword">Password</label>
+            <input type="password" id="newPassword" required>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <p id="createMessage"></p>
+
+        <p class="link-text">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </p>
+    </div>
+
+    <script>
+        document.getElementById("createForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let username = document.getElementById("newUsername").value.trim();
+            let password = document.getElementById("newPassword").value.trim();
+            let message = document.getElementById("createMessage");
+
+            if (username === "" || password === "") {
+                message.textContent = "Please fill in all fields.";
+                return;
+            }
+
+            localStorage.setItem("savedUsername", username);
+            localStorage.setItem("savedPassword", password);
+
+            message.textContent = "Account created successfully. Go to login page.";
+            document.getElementById("createForm").reset();
+        });
+    </script>
+
+</body>
+</html>
