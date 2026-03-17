@@ -25,15 +25,24 @@
 
         <p id="loginMessage"></p>
 
-        <div class="social-login">
-            <button class="google-btn" onclick="loginWithGoogle()">Login with Google</button>
-            <button class="apple-btn" onclick="loginWithApple()">Login with Apple</button>
-        </div>
-
         <p class="link-text">
             Don't have an account?
             <a href="register.html">Create one</a>
         </p>
+    </div>
+
+    <div class="social-login-outside">
+
+        <div class="social-btn google" onclick="loginWithGoogle()">
+            <img src="media/icons/google.png" alt="Google">
+            <span>Continue with Google</span>
+        </div>
+
+        <div class="social-btn apple" onclick="loginWithApple()">
+            <img src="media/icons/apple.png" alt="Apple">
+            <span>Continue with Apple</span>
+        </div>
+
     </div>
 
     <script>
@@ -63,7 +72,7 @@
             let user = {
                 firstName: "Google",
                 lastName: "User",
-                username: "google_user"
+                username: "google_" + Math.floor(Math.random() * 1000)
             };
 
             localStorage.setItem("user", JSON.stringify(user));
@@ -76,7 +85,7 @@
             let user = {
                 firstName: "Apple",
                 lastName: "User",
-                username: "apple_user"
+                username: "apple_" + Math.floor(Math.random() * 1000)
             };
 
             localStorage.setItem("user", JSON.stringify(user));
