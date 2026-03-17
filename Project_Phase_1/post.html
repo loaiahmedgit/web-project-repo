@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - Post</title>
+  <link rel="stylesheet" href="./styles/post.css">
+</head>
+
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">&#8592; Back</button>
+    <div class="nav-brand">
+      <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="nav-logo">
+      <span class="nav-title">MASEERA</span>
+    </div>
+    <div class="nav-links">
+      <a href="for_you_page.html" class="nav-link">For You</a>
+      <a href="messages.html" class="nav-link">Messages</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+    </div>
+  </nav>
+
+  <!-- Two-column layout: Post + Comments -->
+  <div class="post-layout">
+
+    <!-- LEFT: Post content -->
+    <div class="post-main">
+
+      <!-- Post Header -->
+      <div class="post-header">
+        <div class="post-author-info">
+          <div class="author-avatar" id="postAuthorAvatar">A</div>
+          <div class="author-details">
+            <a href="profile.html" class="author-name" id="postAuthorName">@alexdancer</a>
+            <span class="post-time">3 hours ago</span>
+          </div>
+        </div>
+        <button class="follow-btn-post" id="followBtn" onclick="toggleFollow(this)">+ Follow</button>
+      </div>
+
+      <!-- Post Image -->
+      <div class="post-image-container">
+        <img src="./media/images/Post_1.png" alt="Post" class="post-image" id="postImage">
+      </div>
+
+      <!-- Caption & Hashtags -->
+      <div class="post-caption">
+        <p id="postCaption">Check out this amazing moment! ✨</p>
+        <div class="post-hashtags" id="postHashtags">
+          <span class="hashtag">#viral</span>
+          <span class="hashtag">#trending</span>
+          <span class="hashtag">#amazing</span>
+        </div>
+      </div>
+
+      <!-- Like / Comment / Share Actions -->
+      <div class="post-actions-bar">
+        <button class="post-action-btn like-post-btn" id="likeBtn" onclick="toggleLike(this)">
+          <span class="action-icon">&#x1F90D;</span>
+          <span class="action-label" id="likeCount">18.3K</span>
+          <span class="action-text">Likes</span>
+        </button>
+        <button class="post-action-btn comment-post-btn" onclick="focusCommentInput()">
+          <span class="action-icon">&#x1F4AC;</span>
+          <span class="action-label" id="commentCount">5.2K</span>
+          <span class="action-text">Comments</span>
+        </button>
+        <button class="post-action-btn share-post-btn" onclick="openShareModal()">
+          <span class="action-icon">&#x2197;</span>
+          <span class="action-label">Share</span>
+          <span class="action-text">Share</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Comments panel -->
+    <div class="post-comments-panel">
+
+      <div class="comments-panel-header">
+        <h2>Comments</h2>
+        <span class="comment-total" id="commentTotal">5,234</span>
+      </div>
+
+      <div class="comments-scroll" id="commentsScroll">
+        <ul class="comments-list" id="commentsList">
+
+          <li class="comment-item">
+            <div class="comment-avatar">S</div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-user">Sarah Travels</span>
+                <span class="comment-handle">@sarah_travels</span>
+                <span class="comment-time">3h ago</span>
+              </div>
+              <p class="comment-text">I've been watching this on repeat. How is this even possible?!</p>
+              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+                <span class="heart-icon">&#x1F90D;</span>
+                <span class="clc">2.8K</span>
+              </button>
+            </div>
+          </li>
+
+          <li class="comment-item pinned-comment">
+            <div class="comment-avatar">T</div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-user">Tech Guru Dan</span>
+                <span class="comment-handle">@techguru_dan</span>
+                <span class="pinned-label">&#x1F4CC; Pinned</span>
+              </div>
+              <p class="comment-text">Thanks for all the love! Tutorial coming next week 🔥</p>
+              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+                <span class="heart-icon">&#x1F90D;</span>
+                <span class="clc">1.1K</span>
+              </button>
+            </div>
+          </li>
+
+          <li class="comment-item">
+            <div class="comment-avatar">K</div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-user">Kara Designs</span>
+                <span class="comment-handle">@kara_designs</span>
+                <span class="comment-time">4h ago</span>
+              </div>
+              <p class="comment-text">The song choice is everything! What song is this?</p>
+              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+                <span class="heart-icon">&#x1F90D;</span>
+                <span class="clc">987</span>
+              </button>
+            </div>
+          </li>
+
+          <li class="comment-item">
+            <div class="comment-avatar">A</div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-user">Alex Dancer</span>
+                <span class="comment-handle">@alexdancer</span>
+                <span class="comment-time">2h ago</span>
+              </div>
+              <p class="comment-text">Thanks everyone! Tutorial dropping next week 🙏</p>
+              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+                <span class="heart-icon">&#x1F90D;</span>
+                <span class="clc">3.2K</span>
+              </button>
+            </div>
+          </li>
+
+        </ul>
+      </div>
+
+      <!-- Comment Input -->
+      <div class="comment-input-section">
+        <form class="comment-submit-form" onsubmit="submitComment(event)">
+          <input type="text" id="commentInput" class="comment-text-input" placeholder="Add a comment..."
+            aria-label="Write a comment">
+          <button type="submit" class="submit-comment-btn">Post</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="share-modal-overlay" id="shareModal" onclick="handleModalOverlayClick(event)">
+    <div class="share-modal-box">
+      <div class="share-modal-header">
+        <h3>Share Post</h3>
+        <button class="close-modal-btn" onclick="closeShareModal()">&#x2715;</button>
+      </div>
+      <div class="share-options">
+        <button class="share-option-btn copy-link-btn" onclick="copyPostLink()">
+          <span class="share-option-icon">&#x1F517;</span>
+          <span>Copy Link</span>
+        </button>
+        <button class="share-option-btn send-message-btn" onclick="shareToMessages()">
+          <span class="share-option-icon">&#x2709;&#xFE0F;</span>
+          <span>Send to Messages</span>
+        </button>
+      </div>
+      <p class="copy-feedback" id="copyFeedback"></p>
+    </div>
+  </div>
+
+  <script>
+    // ── Read URL params ──────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('post') || '1';
+    const author = params.get('author') || 'alexdancer';
+    const rawCap = params.get('caption');
+    const caption = rawCap ? decodeURIComponent(rawCap) : 'Check out this amazing moment! ✨';
+
+    const postData = {
+      '1': { image: './media/images/Post_1.png', likes: '18.3K', comments: '5,234' },
+      '2': { image: './media/images/Post_2.png', likes: '4.2K', comments: '987' },
+      '3': { image: './media/images/Post_3.png', likes: '94.2K', comments: '12,400' }
+    };
+    const post = postData[postId] || postData['1'];
+
+    document.getElementById('postImage').src = post.image;
+    document.getElementById('likeCount').textContent = post.likes;
+    document.getElementById('commentTotal').textContent = post.comments;
+    document.getElementById('postAuthorName').textContent = '@' + author;
+    document.getElementById('postAuthorAvatar').textContent = author.charAt(0).toUpperCase();
+    document.getElementById('postCaption').textContent = caption;
+
+    // ── Like toggle ──────────────────────────────────────────────────
+    let liked = false;
+    function toggleLike(btn) {
+      liked = !liked;
+      btn.querySelector('.action-icon').textContent = liked ? '\u2764\uFE0F' : '\u1F90D';
+      // Use innerHTML for heart emoji
+      btn.querySelector('.action-icon').innerHTML = liked ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+      btn.classList.toggle('liked', liked);
+    }
+
+    // ── Follow toggle ────────────────────────────────────────────────
+    function toggleFollow(btn) {
+      const isFollowing = btn.classList.contains('following');
+      btn.textContent = isFollowing ? '+ Follow' : 'Following';
+      btn.classList.toggle('following', !isFollowing);
+    }
+
+    // ── Comment like toggle ──────────────────────────────────────────
+    function toggleCommentLike(btn) {
+      btn.classList.toggle('liked');
+      btn.querySelector('.heart-icon').innerHTML =
+        btn.classList.contains('liked') ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+    }
+
+    // ── Focus comment input ──────────────────────────────────────────
+    function focusCommentInput() {
+      const input = document.getElementById('commentInput');
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ── Submit new comment ───────────────────────────────────────────
+    function submitComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const list = document.getElementById('commentsList');
+      const li = document.createElement('li');
+      li.className = 'comment-item new-comment';
+      li.innerHTML = `
+        <div class="comment-avatar">Y</div>
+        <div class="comment-body">
+          <div class="comment-meta">
+            <span class="comment-user">You</span>
+            <span class="comment-handle">@jordanlee</span>
+            <span class="comment-time">just now</span>
+          </div>
+          <p class="comment-text">${escapeHtml(text)}</p>
+          <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+            <span class="heart-icon">&#x1F90D;</span>
+            <span class="clc">0</span>
+          </button>
+        </div>
+      `;
+      list.appendChild(li);
+      input.value = '';
+
+      const scroll = document.getElementById('commentsScroll');
+      scroll.scrollTop = scroll.scrollHeight;
+
+      // Update count display
+      const totalEl = document.getElementById('commentTotal');
+      const countEl = document.getElementById('commentCount');
+      [totalEl, countEl].forEach(el => {
+        const n = parseFloat(el.textContent.replace(/,/g, '')) || 0;
+        el.textContent = (n + 1).toLocaleString();
+      });
+    }
+
+    // ── Share modal ──────────────────────────────────────────────────
+    function openShareModal() {
+      document.getElementById('shareModal').classList.add('active');
+      document.getElementById('copyFeedback').textContent = '';
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('active');
+    }
+
+    function handleModalOverlayClick(e) {
+      if (e.target.id === 'shareModal') closeShareModal();
+    }
+
+    function copyPostLink() {
+      const url = window.location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(showCopied).catch(fallbackCopy.bind(null, url));
+      } else {
+        fallbackCopy(url);
+      }
+    }
+
+    function fallbackCopy(url) {
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showCopied();
+    }
+
+    function showCopied() {
+      document.getElementById('copyFeedback').textContent = '&#x2713; Link copied to clipboard!';
+      document.getElementById('copyFeedback').innerHTML = '&#x2713; Link copied to clipboard!';
+    }
+
+    function shareToMessages() {
+      const shareData = {
+        postId,
+        author,
+        image: post.image,
+        caption
+      };
+      const encoded = encodeURIComponent(JSON.stringify(shareData));
+      window.location.href = 'messages.html?sharedPost=' + encoded;
+    }
+
+    // ── Utility ──────────────────────────────────────────────────────
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
+    }
+  </script>
+
+</body>
+
+</html>
