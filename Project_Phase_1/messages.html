@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - Messages</title>
+  <link rel="stylesheet" href="./styles/messages.css">
+</head>
+
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="nav-logo">
+      <span class="nav-title">MASEERA</span>
+    </div>
+    <div class="nav-links">
+      <a href="for_you_page.html" class="nav-link">For You</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+    </div>
+  </nav>
+
+  <div class="messages-layout">
+
+    <!-- LEFT: Conversation list -->
+    <aside class="conversations-panel">
+      <div class="conversations-header">
+        <h2>Messages</h2>
+        <span class="messages-badge">3</span>
+      </div>
+
+      <div class="conversations-list" id="conversationsList">
+
+        <div class="conversation-item active" onclick="openConversation(this, 'alex')" data-user="alex">
+          <div class="conv-avatar">A</div>
+          <div class="conv-info">
+            <span class="conv-name">Alex Dancer</span>
+            <span class="conv-preview" id="preview-alex">Hey! Did you see my latest post?</span>
+          </div>
+          <span class="conv-time">2m ago</span>
+        </div>
+
+        <div class="conversation-item" onclick="openConversation(this, 'sarah')" data-user="sarah">
+          <div class="conv-avatar">S</div>
+          <div class="conv-info">
+            <span class="conv-name">Sarah Travels</span>
+            <span class="conv-preview" id="preview-sarah">That travel video was insane 🌍</span>
+          </div>
+          <span class="conv-time">1h ago</span>
+        </div>
+
+        <div class="conversation-item" onclick="openConversation(this, 'mike')" data-user="mike">
+          <div class="conv-avatar">M</div>
+          <div class="conv-info">
+            <span class="conv-name">Mike Runner</span>
+            <span class="conv-preview" id="preview-mike">Training tomorrow? 🏃‍♂️</span>
+          </div>
+          <span class="conv-time">3h ago</span>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT: Active chat -->
+    <main class="chat-panel">
+
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-user-info">
+          <div class="chat-avatar" id="chatAvatar">A</div>
+          <div>
+            <span class="chat-name" id="chatName">Alex Dancer</span>
+            <span class="chat-status">Active now</span>
+          </div>
+        </div>
+        <a href="profile.html" class="view-profile-btn">View Profile</a>
+      </div>
+
+      <!-- Messages area -->
+      <div class="messages-area" id="messagesArea">
+
+        <div class="chat-messages" id="chat-alex">
+          <div class="message received">
+            <div class="msg-avatar">A</div>
+            <div class="msg-bubble">Hey! Did you see my latest post?</div>
+            <span class="msg-time">10:32 AM</span>
+          </div>
+          <div class="message sent">
+            <div class="msg-bubble">Yes! That transition was so smooth 🔥</div>
+            <span class="msg-time">10:34 AM</span>
+          </div>
+          <div class="message received">
+            <div class="msg-avatar">A</div>
+            <div class="msg-bubble">Thanks! Tutorial coming next week 🙏</div>
+            <span class="msg-time">10:35 AM</span>
+          </div>
+        </div>
+
+        <div class="chat-messages hidden" id="chat-sarah">
+          <div class="message received">
+            <div class="msg-avatar">S</div>
+            <div class="msg-bubble">That travel video was insane 🌍</div>
+            <span class="msg-time">9:15 AM</span>
+          </div>
+          <div class="message sent">
+            <div class="msg-bubble">Right?! I can't stop watching it!</div>
+            <span class="msg-time">9:20 AM</span>
+          </div>
+        </div>
+
+        <div class="chat-messages hidden" id="chat-mike">
+          <div class="message received">
+            <div class="msg-avatar">M</div>
+            <div class="msg-bubble">Training tomorrow? 🏃‍♂️</div>
+            <span class="msg-time">7:00 AM</span>
+          </div>
+          <div class="message sent">
+            <div class="msg-bubble">Absolutely! 6am at the track 💪</div>
+            <span class="msg-time">7:05 AM</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-area">
+        <form class="message-form" onsubmit="sendMessage(event)">
+          <input type="text" id="messageInput" class="message-text-input" placeholder="Send a message..."
+            aria-label="Type a message">
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast for shared post -->
+  <div class="toast" id="sharedToast">Post shared to conversation!</div>
+
+  <script>
+    let currentUser = 'alex';
+
+    const userNames = { alex: 'Alex Dancer', sarah: 'Sarah Travels', mike: 'Mike Runner' };
+    const userInitials = { alex: 'A', sarah: 'S', mike: 'M' };
+
+    // ── Handle URL params ───────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const toParam = params.get('to');
+    const sharedPostParam = params.get('sharedPost');
+
+    // If ?to= is specified, auto-open that conversation on load
+    if (toParam && userNames[toParam]) {
+      currentUser = toParam;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Switch to the target conversation
+      if (toParam && userNames[toParam]) {
+        const targetItem = document.querySelector(`.conversation-item[data-user="${toParam}"]`);
+        if (targetItem) openConversation(targetItem, toParam);
+      }
+
+      // Append shared post if present
+      if (sharedPostParam) {
+        try {
+          const sharedPost = JSON.parse(decodeURIComponent(sharedPostParam));
+          appendSharedPost(sharedPost, currentUser);
+          showToast('Post shared to ' + (userNames[currentUser] || currentUser) + '!');
+        } catch (e) { /* invalid data, ignore */ }
+      }
+
+      scrollToBottom();
+    });
+
+    function appendSharedPost(postData, user) {
+      const chatEl = document.getElementById('chat-' + user);
+      if (!chatEl) return;
+
+      const postUrl = 'post.html?post=' +
+        encodeURIComponent(postData.postId || '1') +
+        '&author=' + encodeURIComponent(postData.author || '') +
+        '&caption=' + encodeURIComponent(postData.caption || '');
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message sent';
+      msgDiv.innerHTML = `
+        <div class="msg-bubble shared-post-bubble">
+          <div class="shared-post-preview">
+            <img src="${escapeHtml(postData.image || './media/images/Post_1.png')}" alt="Shared post" class="shared-post-img">
+            <div class="shared-post-info">
+              <span class="shared-post-author">@${escapeHtml(postData.author || 'user')}</span>
+              <span class="shared-post-caption">${escapeHtml(postData.caption || '')}</span>
+              <a href="${escapeHtml(postUrl)}" class="view-post-link">View Post &#x2192;</a>
+            </div>
+          </div>
+        </div>
+        <span class="msg-time">just now</span>
+      `;
+      chatEl.appendChild(msgDiv);
+      scrollToBottom();
+      updatePreview(user, '📎 Shared a post');
+    }
+
+    // ── Switch conversation ─────────────────────────────────────────
+    function openConversation(el, user) {
+      document.querySelectorAll('.conversation-item').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      currentUser = user;
+
+      document.getElementById('chatName').textContent = userNames[user] || user;
+      document.getElementById('chatAvatar').textContent = userInitials[user] || user.charAt(0).toUpperCase();
+
+      document.querySelectorAll('.chat-messages').forEach(c => c.classList.add('hidden'));
+      const chatEl = document.getElementById('chat-' + user);
+      if (chatEl) {
+        chatEl.classList.remove('hidden');
+        scrollToBottom();
+      }
+    }
+
+    // ── Send message ────────────────────────────────────────────────
+    function sendMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatEl = document.getElementById('chat-' + currentUser);
+      if (!chatEl) return;
+
+      appendMessage(chatEl, 'sent', null, text, 'just now');
+      input.value = '';
+      scrollToBottom();
+      updatePreview(currentUser, text);
+
+      // Simulated reply
+      setTimeout(() => {
+        const replies = ['That\'s awesome! 🔥', 'Love it! ❤️', 'For real! 😄', 'Haha yes! 😂', '100%! 💯'];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        appendMessage(chatEl, 'received', userInitials[currentUser] || '?', reply, 'just now');
+        scrollToBottom();
+        updatePreview(currentUser, reply);
+      }, 1500);
+    }
+
+    function appendMessage(chatEl, type, avatarLetter, text, time) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message ' + type;
+      const avatarHtml = type === 'received'
+        ? `<div class="msg-avatar">${escapeHtml(avatarLetter || '?')}</div>`
+        : '';
+      msgDiv.innerHTML = `
+        ${avatarHtml}
+        <div class="msg-bubble">${escapeHtml(text)}</div>
+        <span class="msg-time">${escapeHtml(time)}</span>
+      `;
+      chatEl.appendChild(msgDiv);
+    }
+
+    function updatePreview(user, text) {
+      const el = document.getElementById('preview-' + user);
+      if (el) el.textContent = text.length > 32 ? text.slice(0, 32) + '…' : text;
+    }
+
+    function scrollToBottom() {
+      const area = document.getElementById('messagesArea');
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('sharedToast');
+      toast.textContent = msg;
+      toast.classList.add('visible');
+      setTimeout(() => toast.classList.remove('visible'), 3000);
+    }
+
+    function escapeHtml(text) {
+      if (text == null) return '';
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(text)));
+      return div.innerHTML;
+    }
+
+  </script>
+
+</body>
+
+</html>

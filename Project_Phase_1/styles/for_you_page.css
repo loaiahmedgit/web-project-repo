@@ -499,41 +499,44 @@
   
   /* Individual action buttons */
   .action-btn {
-    background: transparent;  /* Transparent background */
-    border: none;  /* No border */
-    color: var(--text-primary);  /* White text */
-    /* Flex column to stack icon above text as requested */
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
     display: flex;
-    flex-direction: column;  /* Stack vertically */
-    align-items: center;  /* Center horizontally */
-    justify-content: center;  /* Center vertically */
-    gap: 8px;  /* Space between icon and text - increased for more spacing */
-    cursor: pointer;  /* Indicates clickable */
-    padding: 8px;  /* Internal padding */
-    border-radius: 50%;  /* Circular shape */
-    transition: all 0.2s ease;  /* Smooth hover */
-    /* Fixed width for consistency */
-    width: 64px;  /* Fixed width to contain icon and text */
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 6px 4px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+    width: 52px;
   }
-  
-  /* Action button hover effect - using gradient as requested */
+
   .action-btn:hover {
-    background: var(--gradient-primary);  /* Gradient background on hover */
-    transform: scale(1.1);  /* Slight scale up */
+    background: rgba(255, 255, 255, 0.08);
   }
-  
+
   /* Action button icons */
   .action-btn img {
-    width: 32px;  /* Icon size */
-    height: 32px;
-    object-fit: contain;  /* Maintain aspect ratio */
-    filter: brightness(1);  /* Full brightness */
-    transition: filter 0.2s ease;  /* Smooth transition */
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    transition: transform 0.2s ease, filter 0.2s ease;
   }
-  
-  /* Icon glow on hover */
+
+  /* Icon scales up and glows on hover */
   .action-btn:hover img {
-    filter: drop-shadow(0 0 8px var(--orange));  /* Orange glow */
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 6px var(--orange));
+  }
+
+  /* Delete button — subtle red tint on hover */
+  .action-btn.delete-btn:hover {
+    background: rgba(204, 0, 0, 0.15);
+  }
+  .action-btn.delete-btn:hover img {
+    filter: drop-shadow(0 0 6px #ff4444);
   }
   
   /* Action count text (like count, comment count) */
@@ -564,11 +567,17 @@
     flex-wrap: wrap;  /* Wrap on small screens */
   }
   
-  /* Poster username */
+  /* Poster username (also used as <a> link) */
   .poster-name {
     font-size: 18px;
     font-weight: 700;  /* Bold */
     color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .poster-name:hover {
+    color: var(--orange);
   }
   
   /* Verified badge styling */
