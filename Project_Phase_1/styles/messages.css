@@ -88,46 +88,45 @@ body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* ========== MESSAGE ========== */
 .message {
   display: flex;
-  max-width: 60%;
+  width: 100%;
 }
 
-/* 🔁 الاتجاه الجديد */
 .message.sent {
-  align-self: flex-start;   /* أنا → شمال */
+  justify-content: flex-end;
 }
 
 .message.received {
-  align-self: flex-end;     /* الشخص الآخر → يمين */
+  justify-content: flex-start;
 }
 
 /* ========== MESSAGE BUBBLE ========== */
 .msg-bubble {
   padding: 10px 16px;
   border-radius: 20px;
-  word-wrap: break-word;
   font-size: 14px;
+  max-width: 60%;
+  word-wrap: break-word;
 }
 
-/* رسائلك */
 .message.sent .msg-bubble {
   background: linear-gradient(orange, rgb(111, 29, 29));
   color: white;
-  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
-/* رسائل الشخص الآخر */
 .message.received .msg-bubble {
   background: #333;
   color: white;
-  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 
 /* ========== INPUT AREA ========== */
