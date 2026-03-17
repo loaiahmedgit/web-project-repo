@@ -61,7 +61,8 @@
 
             if (username === storedUser.username && password === storedUser.password) {
                 localStorage.setItem("currentUser", username);
-                window.location.href = "profile.html";
+
+                window.location.href = "for_you_page.html";
             } else {
                 document.getElementById("loginMessage").textContent =
                     "Incorrect username or password.";
@@ -78,7 +79,7 @@
             localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("currentUser", user.username);
 
-            window.location.href = "profile.html";
+            window.location.href = "for_you_page.html";
         }
 
         function loginWithApple() {
@@ -87,11 +88,10 @@
                 lastName: "User",
                 username: "apple_" + Math.floor(Math.random() * 1000)
             };
-
             localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("currentUser", user.username);
 
-            window.location.href = "profile.html";
+            window.location.href = "for_you_page.html";
         }
     </script>
 
