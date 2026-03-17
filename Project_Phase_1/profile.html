@@ -1,107 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link rel="stylesheet" href="styles/profile.css">
+    <script src="media-store.js"></script>
 </head>
+
 <body>
 
-<div class="profile-card">
+    <div class="profile-card">
 
-    <div class="top-bar">
-        <div class="menu-icon" onclick="toggleMenu()">☰</div>
+        <div class="top-bar">
+            <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
-        <div class="site-logo">
-            <img src="media/images/Orange Flash Logo.png">
-        </div>
-    </div>
-
-    <div class="side-menu" id="sideMenu">
-        <a href="profile.html">Profile</a>
-        <a href="create.html">Create Post</a>
-        <a href="for_you_page.html">For You</a>
-        <a href="#" onclick="logoutUser()">Logout</a>
-    </div>
-
-    <div class="cover"></div>
-
-    <div class="profile-info">
-
-        <div class="avatar" id="avatarLetter">A</div>
-
-        <h2 id="profileName"></h2>
-
-        <p class="username" id="profileUsername"></p>
-
-        <div class="buttons">
-            <button class="follow">Follow</button>
-            <button class="message">Message</button>
-        </div>
-
-        <div class="stats">
-            <div><h3>273</h3><p>Followers</p></div>
-            <div><h3>1070</h3><p>Following</p></div>
-            <div><h3>860</h3><p>Likes</p></div>
-            <div><h3>3</h3><p>Posts</p></div>
-        </div>
-
-        <div class="posts-section">
-            <h2>User Posts</h2>
-
-            <div class="posts-grid">
-                <div class="post">
-                    <img src="media/images/Post_1.png">
-                </div>
-                <div class="post">
-                    <img src="media/images/Post_2.png">
-                </div>
-                <div class="post">
-                    <img src="media/images/Post_3.png">
-                </div>
+            <div class="site-logo">
+                <img src="media/images/Orange Flash Logo.png">
             </div>
         </div>
 
-        <footer class="footer">
-            © 2026 Your Website
-        </footer>
+        <div class="side-menu" id="sideMenu">
+            <a href="profile.html">Profile</a>
+            <a href="create.html">Create Post</a>
+            <a href="for_you_page.html">For You</a>
+            <a href="#" onclick="logoutUser()">Logout</a>
+        </div>
 
+        <div class="cover"></div>
+
+        <div class="profile-info">
+
+            <div class="avatar" id="avatarLetter">A</div>
+
+            <h2 id="profileName"></h2>
+
+            <p class="username" id="profileUsername"></p>
+
+            <div class="buttons">
+                <button class="follow">Follow</button>
+                <button class="message" onclick="window.location.href='messages.html'">Message</button>
+            </div>
+
+            <div class="stats">
+                <div>
+                    <h3>273</h3>
+                    <p>Followers</p>
+                </div>
+                <div>
+                    <h3>1070</h3>
+                    <p>Following</p>
+                </div>
+                <div>
+                    <h3>860</h3>
+                    <p>Likes</p>
+                </div>
+                <div>
+                    <h3 id="postCountStat">0</h3>
+                    <p>Posts</p>
+                </div>
+            </div>
+
+            <div class="posts-section">
+                <h2>User Posts</h2>
+
+                <div class="posts-grid" id="postsGrid"></div>
+            </div>
+
+            <footer class="footer">
+                © 2026 Your Website
+            </footer>
+
+        </div>
     </div>
-</div>
 
-<script>
-let currentUser = localStorage.getItem("currentUser");
-let user = JSON.parse(localStorage.getItem("user"));
+    <script>
+        let currentUser = localStorage.getItem("currentUser");
+        let user = JSON.parse(localStorage.getItem("user"));
 
-if (!currentUser || !user) {
-    window.location.href = "login.html";
-} else {
-    document.getElementById("profileName").textContent =
-        user.firstName + " " + user.lastName;
+        if (!currentUser || !user) {
+            window.location.href = "login.html";
+        } else {
+            document.getElementById("profileName").textContent =
+                user.firstName + " " + user.lastName;
 
-    document.getElementById("profileUsername").textContent =
-        "@" + user.username;
+            document.getElementById("profileUsername").textContent =
+                "@" + user.username;
 
-    document.getElementById("avatarLetter").textContent =
-        user.firstName.charAt(0).toUpperCase();
-}
+            document.getElementById("avatarLetter").textContent =
+                user.firstName.charAt(0).toUpperCase();
+        }
 
-function logoutUser() {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
-}
+        // ── Load user-created posts into the grid ──────────────────
+        (async function loadUserPostsOnProfile() {
+            const posts  = JSON.parse(localStorage.getItem('userPosts') || '[]');
+            const grid   = document.getElementById('postsGrid');
+            const author = user ? (user.username || 'jordanlee') : 'jordanlee';
 
-function toggleMenu() {
-    let menu = document.getElementById("sideMenu");
+            document.getElementById('postCountStat').textContent = posts.length;
 
-    if (menu.style.left === "0px") {
-        menu.style.left = "-220px";
-    } else {
-        menu.style.left = "0px";
-    }
-}
-</script>
+            if (!posts.length) {
+                grid.innerHTML = '<p style="color:#808080;font-size:14px;text-align:center;padding:24px;grid-column:1/-1;">No posts yet. <a href="create.html" style="color:#F5A623;">Create your first post &#x2192;</a></p>';
+                return;
+            }
+
+            for (const post of posts.slice().reverse()) {
+                // Resolve media — IDB blob URL or legacy data URL
+                let src;
+                if (post.mediaKey) {
+                    src = await MediaStore.getURL(post.mediaKey);
+                } else if (post.image) {
+                    src = post.image;
+                }
+                if (!src) continue;
+
+                const div = document.createElement('div');
+                div.className = 'post';
+                div.style.cursor = 'pointer';
+                const url = 'post.html?post=' + encodeURIComponent(src)
+                    + '&author=' + encodeURIComponent(author)
+                    + '&caption=' + encodeURIComponent(post.caption)
+                    + '&isUserPost=1';
+                div.onclick = (e) => {
+                    if (e.target.classList.contains('delete-post-btn') || e.target.closest('.delete-post-btn')) return;
+                    window.location.href = url;
+                };
+                const isVideo = post.fileType === 'video' || src.startsWith('data:video');
+                const mediaHtml = isVideo
+                    ? '<video src="' + src + '" style="width:100%;height:100%;object-fit:cover;display:block;" muted playsinline></video>'
+                    : '<img src="' + src + '" alt="Your post">';
+                div.innerHTML = mediaHtml
+                    + '<button class="delete-post-btn" title="Delete post" onclick="deletePost(' + post.id + ', \'' + (post.mediaKey || '') + '\', this)"><img src="media/icons/trash.svg" style="width:14px;height:14px;filter:invert(1);"></button>';
+                grid.appendChild(div);
+            }
+        })();
+
+        function deletePost(id, mediaKey, btn) {
+            if (!confirm('Delete this post?')) return;
+            let posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+            posts = posts.filter(p => p.id !== id);
+            localStorage.setItem('userPosts', JSON.stringify(posts));
+            if (mediaKey) MediaStore.remove(mediaKey);
+            btn.closest('.post').remove();
+            document.getElementById('postCountStat').textContent = posts.length;
+            if (!posts.length) {
+                document.getElementById('postsGrid').innerHTML = '<p style="color:#808080;font-size:14px;text-align:center;padding:24px;grid-column:1/-1;">No posts yet. <a href="create.html" style="color:#F5A623;">Create your first post &#x2192;</a></p>';
+            }
+        }
+
+        function logoutUser() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "login.html";
+        }
+
+        function toggleMenu() {
+            let menu = document.getElementById("sideMenu");
+
+            if (menu.style.left === "0px") {
+                menu.style.left = "-220px";
+            } else {
+                menu.style.left = "0px";
+            }
+        }
+    </script>
 
 </body>
+
 </html>
