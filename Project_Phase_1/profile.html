@@ -92,10 +92,9 @@
                 user.firstName.charAt(0).toUpperCase();
         }
 
-        // ── Load user-created posts into the grid ──────────────────
         (async function loadUserPostsOnProfile() {
-            const posts  = JSON.parse(localStorage.getItem('userPosts') || '[]');
-            const grid   = document.getElementById('postsGrid');
+            const posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+            const grid = document.getElementById('postsGrid');
             const author = user ? (user.username || 'jordanlee') : 'jordanlee';
 
             document.getElementById('postCountStat').textContent = posts.length;
@@ -106,7 +105,6 @@
             }
 
             for (const post of posts.slice().reverse()) {
-                // Resolve media — IDB blob URL or legacy data URL
                 let src;
                 if (post.mediaKey) {
                     src = await MediaStore.getURL(post.mediaKey);
