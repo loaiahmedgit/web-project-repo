@@ -14,19 +14,19 @@
         <h1>Create Account</h1>
 
         <form id="createForm">
-            <label for="firstName">First Name</label>
+            <label>First Name</label>
             <input type="text" id="firstName" required>
 
-            <label for="lastName">Last Name</label>
+            <label>Last Name</label>
             <input type="text" id="lastName" required>
 
-            <label for="email">Email</label>
+            <label>Email</label>
             <input type="email" id="email" required>
 
-            <label for="newUsername">Username</label>
+            <label>Username</label>
             <input type="text" id="newUsername" required>
 
-            <label for="newPassword">Password</label>
+            <label>Password</label>
             <input type="password" id="newPassword" required>
 
             <button type="submit">Create Account</button>
@@ -44,25 +44,34 @@
         document.getElementById("createForm").addEventListener("submit", function (event) {
             event.preventDefault();
 
-            let firstName = document.getElementById("firstName").value.trim();
-            let lastName = document.getElementById("lastName").value.trim();
-            let email = document.getElementById("email").value.trim();
-            let username = document.getElementById("newUsername").value.trim();
             let password = document.getElementById("newPassword").value.trim();
-            let message = document.getElementById("createMessage");
 
-            if (firstName === "" || lastName === "" || email === "" || username === "" || password === "") {
-                message.textContent = "Please fill in all fields.";
+            let strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/;
+
+            if (!strongPassword.test(password)) {
+                document.getElementById("createMessage").textContent =
+                    "Password must contain uppercase, lowercase, number and be at least 6 characters.";
                 return;
             }
 
-            localStorage.setItem("savedFirstName", firstName);
-            localStorage.setItem("savedLastName", lastName);
-            localStorage.setItem("savedEmail", email);
-            localStorage.setItem("savedUsername", username);
-            localStorage.setItem("savedPassword", password);
+            let user = {
+                firstName: document.getElementById("firstName").value.trim(),
+                lastName: document.getElementById("lastName").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                username: document.getElementById("newUsername").value.trim(),
+                password: password
+            };
 
-            message.textContent = "Account created successfully. Go to login page.";
+            if (Object.values(user).includes("")) {
+                document.getElementById("createMessage").textContent =
+                    "Please fill in all fields.";
+                return;
+            }
+
+            localStorage.setItem("user", JSON.stringify(user));
+
+            document.getElementById("createMessage").textContent =
+                "Account created successfully!";
             document.getElementById("createForm").reset();
         });
     </script>

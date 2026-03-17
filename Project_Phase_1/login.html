@@ -14,16 +14,21 @@
         <h1>Login</h1>
 
         <form id="loginForm">
-            <label for="loginUsername">Username</label>
+            <label>Username</label>
             <input type="text" id="loginUsername" required>
 
-            <label for="loginPassword">Password</label>
+            <label>Password</label>
             <input type="password" id="loginPassword" required>
 
             <button type="submit">Login</button>
         </form>
 
         <p id="loginMessage"></p>
+
+        <div class="social-login">
+            <button class="google-btn" onclick="loginWithGoogle()">Login with Google</button>
+            <button class="apple-btn" onclick="loginWithApple()">Login with Apple</button>
+        </div>
 
         <p class="link-text">
             Don't have an account?
@@ -38,17 +43,47 @@
             let username = document.getElementById("loginUsername").value.trim();
             let password = document.getElementById("loginPassword").value.trim();
 
-            let savedUsername = localStorage.getItem("savedUsername");
-            let savedPassword = localStorage.getItem("savedPassword");
-            let message = document.getElementById("loginMessage");
+            let storedUser = JSON.parse(localStorage.getItem("user"));
 
-            if (username === savedUsername && password === savedPassword) {
+            if (!storedUser) {
+                document.getElementById("loginMessage").textContent = "No account found.";
+                return;
+            }
+
+            if (username === storedUser.username && password === storedUser.password) {
                 localStorage.setItem("currentUser", username);
                 window.location.href = "profile.html";
             } else {
-                message.textContent = "Incorrect username or password.";
+                document.getElementById("loginMessage").textContent =
+                    "Incorrect username or password.";
             }
         });
+
+        function loginWithGoogle() {
+            let user = {
+                firstName: "Google",
+                lastName: "User",
+                username: "google_user"
+            };
+
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("currentUser", user.username);
+
+            window.location.href = "profile.html";
+        }
+
+        function loginWithApple() {
+            let user = {
+                firstName: "Apple",
+                lastName: "User",
+                username: "apple_user"
+            };
+
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("currentUser", user.username);
+
+            window.location.href = "profile.html";
+        }
     </script>
 
 </body>

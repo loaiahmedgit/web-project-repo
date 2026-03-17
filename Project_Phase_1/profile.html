@@ -1,160 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link rel="stylesheet" href="styles/profile.css">
 </head>
-
 <body>
 
-    <div class="profile-card">
+<div class="profile-card">
 
-        <div class="top-bar">
-            <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    <div class="top-bar">
+        <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
-            <div class="site-logo">
-                <img src="media/images/Orange Flash Logo.png" alt="Logo">
-            </div>
+        <div class="site-logo">
+            <img src="media/images/Orange Flash Logo.png">
         </div>
-
-        <div class="side-menu" id="sideMenu">
-            <a href="profile.html">Profile</a>
-            <a href="create.html">Create Post</a>
-            <a href="for_you_page.html">For You</a>
-            <a href="#" onclick="logoutUser()">Logout</a>
-        </div>
-
-        <div class="cover"></div>
-
-        <div class="profile-info">
-
-            <div class="avatar" id="avatarLetter">A</div>
-
-            <h2 id="profileName"></h2>
-
-            <p class="username" id="profileUsername"></p>
-
-            <div class="buttons">
-                <button class="follow">Follow</button>
-                <button class="message">Message</button>
-            </div>
-
-            <div class="stats">
-
-                <div>
-                    <h3>273</h3>
-                    <p>Followers</p>
-                </div>
-
-                <div>
-                    <h3>1070</h3>
-                    <p>Following</p>
-                </div>
-
-                <div>
-                    <h3>860</h3>
-                    <p>Likes</p>
-                </div>
-
-                <div>
-                    <h3>3</h3>
-                    <p>Posts</p>
-                </div>
-
-            </div>
-
-            <div class="posts-section">
-
-                <h2>User Posts</h2>
-
-                <div class="posts-grid">
-
-                    <div class="post">
-                        <a href="post.html">
-                            <img src="media/images/Post_1.png" alt="Post 1">
-                        </a>
-                    </div>
-
-                    <div class="post">
-                        <a href="post.html">
-                            <img src="media/images/Post_2.png" alt="Post 2">
-                        </a>
-                    </div>
-
-                    <div class="post">
-                        <a href="post.html">
-                            <img src="media/images/Post_3.png" alt="Post 3">
-                        </a>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <footer class="footer">
-                © 2026 Your Website. All rights reserved.
-            </footer>
-
-        </div>
-
     </div>
 
+    <div class="side-menu" id="sideMenu">
+        <a href="profile.html">Profile</a>
+        <a href="create.html">Create Post</a>
+        <a href="for_you_page.html">For You</a>
+        <a href="#" onclick="logoutUser()">Logout</a>
+    </div>
 
-    <script>
+    <div class="cover"></div>
 
-        let currentUser = localStorage.getItem("currentUser");
+    <div class="profile-info">
 
-        let firstName = localStorage.getItem("savedFirstName");
-        let lastName = localStorage.getItem("savedLastName");
-        let email = localStorage.getItem("savedEmail");
-        let username = localStorage.getItem("savedUsername");
+        <div class="avatar" id="avatarLetter">A</div>
 
-        if (!currentUser) {
+        <h2 id="profileName"></h2>
 
-            window.location.href = "login.html";
+        <p class="username" id="profileUsername"></p>
 
-        } else {
+        <div class="buttons">
+            <button class="follow">Follow</button>
+            <button class="message">Message</button>
+        </div>
 
-            document.getElementById("profileName").textContent =
-                firstName + " " + lastName;
+        <div class="stats">
+            <div><h3>273</h3><p>Followers</p></div>
+            <div><h3>1070</h3><p>Following</p></div>
+            <div><h3>860</h3><p>Likes</p></div>
+            <div><h3>3</h3><p>Posts</p></div>
+        </div>
 
-            document.getElementById("profileUsername").textContent =
-                "@" + username;
+        <div class="posts-section">
+            <h2>User Posts</h2>
 
-            document.getElementById("profileBio").textContent =
-                firstName + " " + lastName + " • " + email;
+            <div class="posts-grid">
+                <div class="post">
+                    <img src="media/images/Post_1.png">
+                </div>
+                <div class="post">
+                    <img src="media/images/Post_2.png">
+                </div>
+                <div class="post">
+                    <img src="media/images/Post_3.png">
+                </div>
+            </div>
+        </div>
 
-            document.getElementById("avatarLetter").textContent =
-                firstName.charAt(0).toUpperCase();
-        }
+        <footer class="footer">
+            © 2026 Your Website
+        </footer>
 
-        function logoutUser() {
+    </div>
+</div>
 
-            localStorage.removeItem("currentUser");
+<script>
+let currentUser = localStorage.getItem("currentUser");
+let user = JSON.parse(localStorage.getItem("user"));
 
-            window.location.href = "login.html";
-        }
+if (!currentUser || !user) {
+    window.location.href = "login.html";
+} else {
+    document.getElementById("profileName").textContent =
+        user.firstName + " " + user.lastName;
 
-        function toggleMenu() {
+    document.getElementById("profileUsername").textContent =
+        "@" + user.username;
 
-            let menu = document.getElementById("sideMenu");
+    document.getElementById("avatarLetter").textContent =
+        user.firstName.charAt(0).toUpperCase();
+}
 
-            if (menu.style.left === "0px") {
+function logoutUser() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+}
 
-                menu.style.left = "-220px";
+function toggleMenu() {
+    let menu = document.getElementById("sideMenu");
 
-            } else {
-
-                menu.style.left = "0px";
-
-            }
-        }
-
-    </script>
+    if (menu.style.left === "0px") {
+        menu.style.left = "-220px";
+    } else {
+        menu.style.left = "0px";
+    }
+}
+</script>
 
 </body>
-
 </html>
