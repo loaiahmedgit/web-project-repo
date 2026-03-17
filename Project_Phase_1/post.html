@@ -156,7 +156,6 @@
         </ul>
       </div>
 
-      <!-- Comment Input -->
       <div class="comment-input-section">
         <form class="comment-submit-form" onsubmit="submitComment(event)">
           <input type="text" id="commentInput" class="comment-text-input" placeholder="Add a comment..."
@@ -168,7 +167,6 @@
     </div>
   </div>
 
-  <!-- Share Modal -->
   <div class="share-modal-overlay" id="shareModal" onclick="handleModalOverlayClick(event)">
     <div class="share-modal-box">
       <div class="share-modal-header">
@@ -190,7 +188,6 @@
   </div>
 
   <script>
-    // ── Read URL params ──────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const postId = params.get('post') || '1';
     const author = params.get('author') || 'alexdancer';
@@ -211,7 +208,6 @@
     document.getElementById('postAuthorAvatar').textContent = author.charAt(0).toUpperCase();
     document.getElementById('postCaption').textContent = caption;
 
-    // ── Like toggle ──────────────────────────────────────────────────
     let liked = false;
     function toggleLike(btn) {
       liked = !liked;
@@ -221,28 +217,24 @@
       btn.classList.toggle('liked', liked);
     }
 
-    // ── Follow toggle ────────────────────────────────────────────────
     function toggleFollow(btn) {
       const isFollowing = btn.classList.contains('following');
       btn.textContent = isFollowing ? '+ Follow' : 'Following';
       btn.classList.toggle('following', !isFollowing);
     }
 
-    // ── Comment like toggle ──────────────────────────────────────────
     function toggleCommentLike(btn) {
       btn.classList.toggle('liked');
       btn.querySelector('.heart-icon').innerHTML =
         btn.classList.contains('liked') ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
     }
 
-    // ── Focus comment input ──────────────────────────────────────────
     function focusCommentInput() {
       const input = document.getElementById('commentInput');
       input.focus();
       input.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // ── Submit new comment ───────────────────────────────────────────
     function submitComment(e) {
       e.preventDefault();
       const input = document.getElementById('commentInput');
@@ -282,7 +274,6 @@
       });
     }
 
-    // ── Share modal ──────────────────────────────────────────────────
     function openShareModal() {
       document.getElementById('shareModal').classList.add('active');
       document.getElementById('copyFeedback').textContent = '';
@@ -331,7 +322,6 @@
       window.location.href = 'messages.html?sharedPost=' + encoded;
     }
 
-    // ── Utility ──────────────────────────────────────────────────────
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(text));

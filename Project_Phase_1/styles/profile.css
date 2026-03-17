@@ -14,7 +14,7 @@ body {
 .top-bar {
     width: 100%;
     height: 70px;
-    background-color:  rgb(111, 29, 29);
+    background-color: rgb(111, 29, 29);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -68,7 +68,7 @@ body {
 .cover {
     width: 100%;
     height: 200px;
-    background: linear-gradient( rgb(111, 29, 29), orange);
+    background: linear-gradient(rgb(111, 29, 29), orange);
 }
 
 .profile-info {
@@ -162,7 +162,8 @@ body {
     position: relative;
 }
 
-.post img, .post video {
+.post img,
+.post video {
     width: 100%;
     height: 220px;
     object-fit: cover;
@@ -171,19 +172,31 @@ body {
 
 .delete-post-btn {
     position: absolute;
-    top: 8px; right: 8px;
-    width: 30px; height: 30px;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: rgba(0,0,0,0.7);
-    border: none; color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: #fff;
     font-size: 14px;
-    cursor: pointer; display: flex;
-    align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.2s, background 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
     z-index: 10;
 }
-.post:hover .delete-post-btn { opacity: 1; }
-.delete-post-btn:hover { background: #cc0000; }
+
+.post:hover .delete-post-btn {
+    opacity: 1;
+}
+
+.delete-post-btn:hover {
+    background: #cc0000;
+}
 
 .footer {
     text-align: center;
