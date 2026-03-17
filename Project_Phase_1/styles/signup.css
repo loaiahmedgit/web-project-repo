@@ -87,3 +87,28 @@ button:hover {
 .link-text a:hover {
     text-decoration: underline;
 }
+
+.social-login {
+    margin-top: 20px;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #db4437;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.apple-btn {
+    width: 100%;
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
