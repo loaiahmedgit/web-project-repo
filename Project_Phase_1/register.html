@@ -29,6 +29,8 @@
             <label>Password</label>
             <input type="password" id="newPassword" required>
 
+            <p id="passwordHint" style="font-size:14px; margin-top:5px;"></p>
+
             <button type="submit">Create Account</button>
         </form>
 
@@ -41,26 +43,50 @@
     </div>
 
     <script>
-        document.getElementById("createForm").addEventListener("submit", function (event) {
-            event.preventDefault();
+        let passwordInput = document.getElementById("newPassword");
+        let hint = document.getElementById("passwordHint");
 
-            let password = document.getElementById("newPassword").value.trim();
+        passwordInput.addEventListener("input", function () {
 
-            let strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/;
+            let value = passwordInput.value;
 
-            if (!strongPassword.test(password)) {
-                document.getElementById("createMessage").textContent =
-                    "Password must contain uppercase, lowercase, number and be at least 6 characters.";
+            let hasUpper = /[A-Z]/.test(value);
+            let hasLower = /[a-z]/.test(value);
+            let hasNumber = /\d/.test(value);
+            let isLong = value.length >= 6;
+
+            if (value.length === 0) {
+                hint.textContent = "";
                 return;
             }
+
+            if (hasUpper && hasLower && hasNumber && isLong) {
+                hint.textContent = "Strong password ✅";
+                hint.style.color = "lightgreen";
+            } else {
+                hint.textContent = "Weak password ❌ (Use A, a, 1 and 6+ chars)";
+                hint.style.color = "red";
+            }
+        });
+
+        document.getElementById("createForm").addEventListener("submit", function (event) {
+            event.preventDefault();
 
             let user = {
                 firstName: document.getElementById("firstName").value.trim(),
                 lastName: document.getElementById("lastName").value.trim(),
                 email: document.getElementById("email").value.trim(),
                 username: document.getElementById("newUsername").value.trim(),
-                password: password
+                password: passwordInput.value.trim()
             };
+
+            let strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/;
+
+            if (!strongPassword.test(user.password)) {
+                document.getElementById("createMessage").textContent =
+                    "Password is not strong enough.";
+                return;
+            }
 
             if (Object.values(user).includes("")) {
                 document.getElementById("createMessage").textContent =

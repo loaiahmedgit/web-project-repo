@@ -5,6 +5,7 @@ body {
     background: linear-gradient(orange, rgb(111, 29, 29));
 
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 
@@ -88,27 +89,55 @@ button:hover {
     text-decoration: underline;
 }
 
+/* Social login buttons */
 .social-login {
     margin-top: 20px;
 }
 
-.google-btn {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #db4437;
-    color: white;
-    border: none;
-    border-radius: 6px;
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
 }
 
-.apple-btn {
-    width: 100%;
-    padding: 10px;
-    background: black;
-    color: white;
-    border: none;
-    border-radius: 6px;
+.social-login-outside {
+    width: 380px;
+    margin-top: 20px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.social-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.google {
+    background: white;
+    color: black;
+}
+
+.apple {
+    background: silver;
+    color: white;
+}
+
+.social-btn:hover {
+    opacity: 0.85;
 }
