@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,421 +11,662 @@
     /* ── Letter Avatars ── */
     .avatar-letter {
       border-radius: 50%;
-      background: linear-gradient(135deg,#8A1538,#F5A623);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:700; color:#fff; flex-shrink:0; user-select:none;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      user-select: none;
     }
-    .avatar-letter.avatar-small  { width:40px; height:40px; font-size:16px; }
-    .avatar-letter.avatar-medium { width:48px; height:48px; font-size:18px; }
-    .avatar-letter.avatar-tiny   { width:32px; height:32px; font-size:13px; }
+
+    .avatar-letter.avatar-small {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    .avatar-letter.avatar-medium {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+
+    .avatar-letter.avatar-tiny {
+      width: 32px;
+      height: 32px;
+      font-size: 13px;
+    }
 
     /* ── Poster name link ── */
     .poster-name {
-      color:#fff; text-decoration:none;
-      font-size:18px; font-weight:700; transition:color .2s;
+      color: #fff;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      transition: color .2s;
     }
-    .poster-name:hover { color:#F5A623; }
+
+    .poster-name:hover {
+      color: #F5A623;
+    }
 
     /* ── Post image clickable ── */
-    .post-img-link        { display:block; width:100%; height:100%; }
-    .post-img-link img    { width:100%; height:100%; object-fit:cover; display:block; }
+    .post-img-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .post-img-link img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
     /* ── Heart in comment likes ── */
     .heart-icon-small {
-      width:14px; height:14px; object-fit:contain;
-      vertical-align:middle; transition:filter .2s;
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      vertical-align: middle;
+      transition: filter .2s;
     }
+
     .comment-liked .heart-icon-small {
-      filter:invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1);
+      filter: invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1);
     }
 
     /* ── Your Post badge ── */
     .user-created-badge {
-      display:inline-block;
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      color:#fff; font-size:11px; font-weight:700;
-      padding:2px 8px; border-radius:12px; margin-left:6px;
+      display: inline-block;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 6px;
     }
 
     /* ── COMMENTS SIDEBAR redesign ── */
     .comments-empty-state {
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      flex:1; gap:14px; padding:32px 20px; text-align:center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 14px;
+      padding: 32px 20px;
+      text-align: center;
     }
-    .comments-empty-icon  { font-size:52px; opacity:.5; }
-    .comments-empty-title { font-size:18px; font-weight:700; color:#B0B0B0; }
-    .comments-empty-text  { font-size:14px; color:#808080; line-height:1.5; }
+
+    .comments-empty-icon {
+      font-size: 52px;
+      opacity: .5;
+    }
+
+    .comments-empty-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #B0B0B0;
+    }
+
+    .comments-empty-text {
+      font-size: 14px;
+      color: #808080;
+      line-height: 1.5;
+    }
 
     .comments-active {
-      display:none; flex-direction:column; height:100%;
+      display: none;
+      flex-direction: column;
+      height: 100%;
     }
+
     .comments-post-label {
-      font-size:13px; color:#F5A623; font-weight:600; margin-top:2px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;
+      font-size: 13px;
+      color: #F5A623;
+      font-weight: 600;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
     }
+
     .close-comments-btn {
-      background:transparent; border:none; color:#808080;
-      font-size:18px; cursor:pointer; padding:4px 8px;
-      border-radius:50%; transition:all .2s; flex-shrink:0;
+      background: transparent;
+      border: none;
+      color: #808080;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 50%;
+      transition: all .2s;
+      flex-shrink: 0;
     }
-    .close-comments-btn:hover { background:#2A2A2A; color:#fff; }
+
+    .close-comments-btn:hover {
+      background: #2A2A2A;
+      color: #fff;
+    }
 
     /* ── Feed empty state (Following / LIVE tabs) ── */
     .feed-empty-state {
-      display:none; flex-direction:column;
-      align-items:center; justify-content:center;
-      height:calc(100vh - 56px); gap:16px; text-align:center; padding:24px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 56px);
+      gap: 16px;
+      text-align: center;
+      padding: 24px;
     }
-    .feed-empty-state .empty-icon { font-size:64px; opacity:.4; }
-    .feed-empty-state h3 { font-size:22px; font-weight:700; color:#B0B0B0; }
-    .feed-empty-state p  { font-size:15px; color:#808080; }
-    .feed-empty-state a  {
-      color:#F5A623; text-decoration:none; font-weight:600;
-      border:1px solid #F5A623; padding:10px 24px; border-radius:30px;
-      transition:all .2s;
+
+    .feed-empty-state .empty-icon {
+      font-size: 64px;
+      opacity: .4;
     }
+
+    .feed-empty-state h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #B0B0B0;
+    }
+
+    .feed-empty-state p {
+      font-size: 15px;
+      color: #808080;
+    }
+
+    .feed-empty-state a {
+      color: #F5A623;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid #F5A623;
+      padding: 10px 24px;
+      border-radius: 30px;
+      transition: all .2s;
+    }
+
     .feed-empty-state a:hover {
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      border-color:transparent; color:#fff;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      border-color: transparent;
+      color: #fff;
     }
 
     /* ── Share modal ── */
     .fyp-share-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,.75); z-index:500;
-      align-items:center; justify-content:center;
-      backdrop-filter:blur(4px);
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .75);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
     }
-    .fyp-share-overlay.active { display:flex; }
+
+    .fyp-share-overlay.active {
+      display: flex;
+    }
+
     .fyp-share-box {
-      background:#1A1A1A; border:1px solid rgba(138,21,56,.3);
-      border-radius:20px; padding:28px; width:360px; max-width:92vw;
+      background: #1A1A1A;
+      border: 1px solid rgba(138, 21, 56, .3);
+      border-radius: 20px;
+      padding: 28px;
+      width: 360px;
+      max-width: 92vw;
     }
+
     .fyp-share-header {
-      display:flex; align-items:center;
-      justify-content:space-between; margin-bottom:20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
+
     .fyp-share-header h3 {
-      font-size:20px; font-weight:700;
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
+
     .fyp-close-btn {
-      background:transparent; border:none; color:#808080;
-      font-size:18px; cursor:pointer; padding:4px 8px;
-      border-radius:50%; transition:all .2s;
+      background: transparent;
+      border: none;
+      color: #808080;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 50%;
+      transition: all .2s;
     }
-    .fyp-close-btn:hover { background:#2A2A2A; color:#fff; }
-    .fyp-share-options { display:flex; flex-direction:column; gap:10px; }
+
+    .fyp-close-btn:hover {
+      background: #2A2A2A;
+      color: #fff;
+    }
+
+    .fyp-share-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     .fyp-share-btn {
-      display:flex; align-items:center; gap:14px;
-      padding:14px 18px; background:#2A2A2A;
-      border:1px solid rgba(138,21,56,.3); border-radius:14px;
-      color:#fff; font-size:15px; cursor:pointer;
-      transition:all .2s; width:100%; text-align:left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: #2A2A2A;
+      border: 1px solid rgba(138, 21, 56, .3);
+      border-radius: 14px;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all .2s;
+      width: 100%;
+      text-align: left;
     }
-    .fyp-share-btn span:first-child { font-size:22px; }
+
+    .fyp-share-btn span:first-child {
+      font-size: 22px;
+    }
+
     .fyp-share-btn:hover {
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      border-color:transparent; transform:translateX(3px);
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      border-color: transparent;
+      transform: translateX(3px);
     }
+
     .fyp-share-feedback {
-      margin-top:12px; text-align:center;
-      color:#F5A623; font-size:14px; font-weight:600; min-height:18px;
+      margin-top: 12px;
+      text-align: center;
+      color: #F5A623;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 18px;
     }
 
     /* Contact picker (step 2 of share) */
     .share-back-btn {
-      background:transparent; border:none; color:#F5A623;
-      font-size:14px; font-weight:600; cursor:pointer;
-      padding:0; margin-bottom:14px; display:flex; align-items:center; gap:6px;
+      background: transparent;
+      border: none;
+      color: #F5A623;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
     .share-step-label {
-      font-size:13px; color:#808080; margin-bottom:14px;
+      font-size: 13px;
+      color: #808080;
+      margin-bottom: 14px;
     }
-    .contact-pick-list { display:flex; flex-direction:column; gap:8px; }
+
+    .contact-pick-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .contact-pick-item {
-      display:flex; align-items:center; gap:12px;
-      padding:12px 14px; background:#2A2A2A;
-      border:1px solid rgba(138,21,56,.3); border-radius:14px;
-      cursor:pointer; transition:all .2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #2A2A2A;
+      border: 1px solid rgba(138, 21, 56, .3);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all .2s;
     }
+
     .contact-pick-item:hover {
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      border-color:transparent;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      border-color: transparent;
     }
+
     .contact-pick-avatar {
-      width:38px; height:38px; border-radius:50%;
-      background:linear-gradient(135deg,#8A1538,#F5A623);
-      display:flex; align-items:center; justify-content:center;
-      font-size:15px; font-weight:700; color:#fff; flex-shrink:0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8A1538, #F5A623);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
     }
-    .contact-pick-info { flex:1; display:flex; flex-direction:column; gap:2px; }
-    .contact-pick-name   { font-size:14px; font-weight:600; color:#fff; }
-    .contact-pick-handle { font-size:12px; color:#808080; }
-    .contact-pick-item:hover .contact-pick-handle { color:rgba(255,255,255,.7); }
-    .contact-pick-arrow  { color:#F5A623; font-size:18px; }
-    .contact-pick-item:hover .contact-pick-arrow { color:#fff; }
+
+    .contact-pick-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .contact-pick-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .contact-pick-handle {
+      font-size: 12px;
+      color: #808080;
+    }
+
+    .contact-pick-item:hover .contact-pick-handle {
+      color: rgba(255, 255, 255, .7);
+    }
+
+    .contact-pick-arrow {
+      color: #F5A623;
+      font-size: 18px;
+    }
+
+    .contact-pick-item:hover .contact-pick-arrow {
+      color: #fff;
+    }
   </style>
 </head>
+
 <body>
-<div class="app-container">
+  <div class="app-container">
 
-  <!-- ========== LEFT SIDEBAR ========== -->
-  <aside class="sidebar sidebar-left" data-component="sidebar">
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <aside class="sidebar sidebar-left" data-component="sidebar">
 
-    <div class="brand" data-section="brand">
-      <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="brand-logo">
-      <h1 class="brand-name">MASEERA</h1>
-    </div>
-
-    <nav class="nav-primary" data-section="primary-nav">
-      <ul class="nav-list">
-        <li class="nav-item active" data-nav="for-you">
-          <img src="./media/icons/for-you.png" alt="" class="nav-icon">
-          <span class="nav-text">For You</span>
-        </li>
-        <li class="nav-item" data-nav="create" onclick="window.location.href='create.html'" style="cursor:pointer">
-          <img src="./media/icons/create.png" alt="" class="nav-icon">
-          <span class="nav-text">Create</span>
-        </li>
-        <li class="nav-item" data-nav="profile" onclick="window.location.href='profile.html'" style="cursor:pointer">
-          <img src="./media/icons/profile.png" alt="" class="nav-icon">
-          <span class="nav-text">Profile</span>
-        </li>
-        <li class="nav-item" data-nav="messages" onclick="window.location.href='messages.html'" style="cursor:pointer">
-          <img src="./media/icons/message-circle.png" alt="" class="nav-icon">
-          <span class="nav-text">Messages</span>
-        </li>
-      </ul>
-    </nav>
-
-    <hr class="divider">
-
-    <section class="following-section" data-section="following">
-      <h2 class="section-title">Following</h2>
-      <ul class="following-list">
-        <li class="following-item"><div class="avatar-letter avatar-small">A</div><div class="user-info"><span class="display-name">Alex Dancer</span><span class="handle">@alexdancer</span></div></li>
-        <li class="following-item"><div class="avatar-letter avatar-small">M</div><div class="user-info"><span class="display-name">Mike Runner</span><span class="handle">@mike_runner</span></div></li>
-        <li class="following-item"><div class="avatar-letter avatar-small">S</div><div class="user-info"><span class="display-name">Sarah Travels</span><span class="handle">@sarah_travels</span></div></li>
-        <li class="following-item"><div class="avatar-letter avatar-small">T</div><div class="user-info"><span class="display-name">Tech Guru Dan</span><span class="handle">@techguru_dan</span></div></li>
-      </ul>
-    </section>
-
-    <hr class="divider">
-
-    <section class="hashtags-section" data-section="hashtags">
-      <h2 class="section-title">Categories</h2>
-      <ul class="hashtags-list">
-        <li class="hashtag-item">#comedy</li>
-        <li class="hashtag-item">#trending</li>
-        <li class="hashtag-item">#dance</li>
-        <li class="hashtag-item">#food</li>
-        <li class="hashtag-item">#travel</li>
-        <li class="hashtag-item">#viral</li>
-        <li class="hashtag-item">#music</li>
-        <li class="hashtag-item">#fitness</li>
-        <li class="hashtag-item">#art</li>
-      </ul>
-    </section>
-
-    <hr class="divider">
-
-    <div class="current-user" onclick="window.location.href='profile.html'" style="cursor:pointer">
-      <div class="avatar-letter avatar-medium" id="sidebarAvatar">J</div>
-      <div class="user-info">
-        <span class="display-name" id="sidebarName">Jordan Lee</span>
-        <span class="handle" id="sidebarHandle">@jordanlee</span>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ========== MAIN FEED ========== -->
-  <main class="feed" data-component="video-feed">
-
-    <div class="feed-tabs" data-feed-tabs>
-      <button class="tab-btn" data-tab="following" onclick="switchTab('following',this)">Following</button>
-      <button class="tab-btn active" data-tab="for-you" onclick="switchTab('for-you',this)">For You</button>
-      <button class="tab-btn" data-tab="live" onclick="switchTab('live',this)">LIVE</button>
-    </div>
-
-    <!-- Empty state (Following / LIVE) -->
-    <div class="feed-empty-state" id="feedEmptyState">
-      <div class="empty-icon">&#x1F50D;</div>
-      <h3 id="emptyStateTitle">No posts yet</h3>
-      <p id="emptyStateText">Follow users to see their posts here.</p>
-      <a href="for_you_page.html" onclick="switchTab('for-you', document.querySelector('[data-tab=\'for-you\']')); return false;">Back to For You &#x2192;</a>
-    </div>
-
-    <!-- Posts container -->
-    <div class="videos-container" data-videos-container id="postsContainer">
-
-      <!-- For-You empty state (shown when no posts exist) -->
-      <div id="forYouEmptyState" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 56px);gap:16px;text-align:center;padding:24px;">
-        <div style="font-size:64px;opacity:.4;">&#x1F4F8;</div>
-        <h3 style="font-size:22px;font-weight:700;color:#B0B0B0;">No posts yet</h3>
-        <p style="font-size:15px;color:#808080;">You haven't created any posts yet.</p>
-        <a href="create.html" style="color:#F5A623;text-decoration:none;font-weight:600;border:1px solid #F5A623;padding:10px 24px;border-radius:30px;transition:all .2s;">Create your first post &#x2192;</a>
+      <div class="brand" data-section="brand">
+        <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="brand-logo">
+        <h1 class="brand-name">MASEERA</h1>
       </div>
 
-    </div><!-- /postsContainer -->
-  </main>
+      <nav class="nav-primary" data-section="primary-nav">
+        <ul class="nav-list">
+          <li class="nav-item active" data-nav="for-you">
+            <img src="./media/icons/for-you.png" alt="" class="nav-icon">
+            <span class="nav-text">For You</span>
+          </li>
+          <li class="nav-item" data-nav="create" onclick="window.location.href='create.html'" style="cursor:pointer">
+            <img src="./media/icons/create.png" alt="" class="nav-icon">
+            <span class="nav-text">Create</span>
+          </li>
+          <li class="nav-item" data-nav="profile" onclick="window.location.href='profile.html'" style="cursor:pointer">
+            <img src="./media/icons/profile.png" alt="" class="nav-icon">
+            <span class="nav-text">Profile</span>
+          </li>
+          <li class="nav-item" data-nav="messages" onclick="window.location.href='messages.html'"
+            style="cursor:pointer">
+            <img src="./media/icons/message-circle.png" alt="" class="nav-icon">
+            <span class="nav-text">Messages</span>
+          </li>
+        </ul>
+      </nav>
 
-  <!-- ========== RIGHT SIDEBAR – Comments ========== -->
-  <aside class="sidebar sidebar-right" data-component="comments-sidebar">
+      <hr class="divider">
 
-    <!-- State A: nothing selected yet -->
-    <div class="comments-empty-state" id="commentsEmptyState">
-      <div class="comments-empty-icon">&#x1F4AC;</div>
-      <p class="comments-empty-title">No post selected</p>
-      <p class="comments-empty-text">Tap the &#x1F4AC; comment icon on any post to read and leave comments.</p>
-    </div>
+      <section class="following-section" data-section="following">
+        <h2 class="section-title">Following</h2>
+        <ul class="following-list">
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">A</div>
+            <div class="user-info"><span class="display-name">Alex Dancer</span><span class="handle">@alexdancer</span>
+            </div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">M</div>
+            <div class="user-info"><span class="display-name">Mike Runner</span><span class="handle">@mike_runner</span>
+            </div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">S</div>
+            <div class="user-info"><span class="display-name">Sarah Travels</span><span
+                class="handle">@sarah_travels</span></div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">T</div>
+            <div class="user-info"><span class="display-name">Tech Guru Dan</span><span
+                class="handle">@techguru_dan</span></div>
+          </li>
+        </ul>
+      </section>
 
-    <!-- State B: post selected -->
-    <div class="comments-active" id="commentsActive">
+      <hr class="divider">
 
-      <header class="comments-header">
-        <div style="display:flex;flex-direction:column;gap:2px;overflow:hidden;">
-          <h2 class="comments-title">Comments</h2>
-          <span class="comments-post-label" id="commentsPostLabel">@alexdancer's post</span>
+      <section class="hashtags-section" data-section="hashtags">
+        <h2 class="section-title">Categories</h2>
+        <ul class="hashtags-list">
+          <li class="hashtag-item">#comedy</li>
+          <li class="hashtag-item">#trending</li>
+          <li class="hashtag-item">#dance</li>
+          <li class="hashtag-item">#food</li>
+          <li class="hashtag-item">#travel</li>
+          <li class="hashtag-item">#viral</li>
+          <li class="hashtag-item">#music</li>
+          <li class="hashtag-item">#fitness</li>
+          <li class="hashtag-item">#art</li>
+        </ul>
+      </section>
+
+      <hr class="divider">
+
+      <div class="current-user" onclick="window.location.href='profile.html'" style="cursor:pointer">
+        <div class="avatar-letter avatar-medium" id="sidebarAvatar">J</div>
+        <div class="user-info">
+          <span class="display-name" id="sidebarName">Jordan Lee</span>
+          <span class="handle" id="sidebarHandle">@jordanlee</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="comment-count" id="dynamicCommentTotal">0</span>
-          <button class="close-comments-btn" onclick="closeComments()" title="Close comments">&#x2715;</button>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN FEED ========== -->
+    <main class="feed" data-component="video-feed">
+
+      <div class="feed-tabs" data-feed-tabs>
+        <button class="tab-btn" data-tab="following" onclick="switchTab('following',this)">Following</button>
+        <button class="tab-btn active" data-tab="for-you" onclick="switchTab('for-you',this)">For You</button>
+        <button class="tab-btn" data-tab="live" onclick="switchTab('live',this)">LIVE</button>
+      </div>
+
+      <!-- Empty state (Following / LIVE) -->
+      <div class="feed-empty-state" id="feedEmptyState">
+        <div class="empty-icon">&#x1F50D;</div>
+        <h3 id="emptyStateTitle">No posts yet</h3>
+        <p id="emptyStateText">Follow users to see their posts here.</p>
+        <a href="for_you_page.html"
+          onclick="switchTab('for-you', document.querySelector('[data-tab=\'for-you\']')); return false;">Back to For
+          You &#x2192;</a>
+      </div>
+
+      <!-- Posts container -->
+      <div class="videos-container" data-videos-container id="postsContainer">
+
+        <!-- For-You empty state (shown when no posts exist) -->
+        <div id="forYouEmptyState"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 56px);gap:16px;text-align:center;padding:24px;">
+          <div style="font-size:64px;opacity:.4;">&#x1F4F8;</div>
+          <h3 style="font-size:22px;font-weight:700;color:#B0B0B0;">No posts yet</h3>
+          <p style="font-size:15px;color:#808080;">You haven't created any posts yet.</p>
+          <a href="create.html"
+            style="color:#F5A623;text-decoration:none;font-weight:600;border:1px solid #F5A623;padding:10px 24px;border-radius:30px;transition:all .2s;">Create
+            your first post &#x2192;</a>
         </div>
-      </header>
 
-      <div class="comments-container" id="dynamicCommentsContainer">
-        <ul class="comments-list" id="dynamicCommentsList"></ul>
+      </div><!-- /postsContainer -->
+    </main>
+
+    <!-- ========== RIGHT SIDEBAR – Comments ========== -->
+    <aside class="sidebar sidebar-right" data-component="comments-sidebar">
+
+      <!-- State A: nothing selected yet -->
+      <div class="comments-empty-state" id="commentsEmptyState">
+        <div class="comments-empty-icon">&#x1F4AC;</div>
+        <p class="comments-empty-title">No post selected</p>
+        <p class="comments-empty-text">Tap the &#x1F4AC; comment icon on any post to read and leave comments.</p>
       </div>
 
-      <div class="comment-input-area">
-        <div class="current-user-mini">
-          <div class="avatar-letter avatar-tiny" id="commentUserAvatar">J</div>
-        </div>
-        <form class="comment-form" onsubmit="submitComment(event)">
-          <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment..." aria-label="Write a comment">
-          <button type="submit" class="post-btn">Post</button>
-        </form>
-      </div>
+      <!-- State B: post selected -->
+      <div class="comments-active" id="commentsActive">
 
-    </div>
-  </aside>
-
-</div><!-- /app-container -->
-
-<!-- ========== SHARE MODAL ========== -->
-<div class="fyp-share-overlay" id="shareModal" onclick="handleShareOverlayClick(event)">
-  <div class="fyp-share-box">
-
-    <!-- Step 1: options -->
-    <div id="shareStep1">
-      <div class="fyp-share-header">
-        <h3>Share Post</h3>
-        <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
-      </div>
-      <div class="fyp-share-options">
-        <button class="fyp-share-btn" onclick="copyShareLink()">
-          <span>&#x1F517;</span><span>Copy Link</span>
-        </button>
-        <button class="fyp-share-btn" onclick="showContactPicker()">
-          <span>&#x2709;&#xFE0F;</span><span>Send to Messages</span>
-        </button>
-      </div>
-      <p class="fyp-share-feedback" id="shareFeedback"></p>
-    </div>
-
-    <!-- Step 2: contact picker -->
-    <div id="shareStep2" style="display:none">
-      <div class="fyp-share-header">
-        <h3>Send to…</h3>
-        <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
-      </div>
-      <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
-      <p class="share-step-label">Choose who you want to share this post with:</p>
-      <div class="contact-pick-list">
-        <div class="contact-pick-item" onclick="sendToContact('alex')">
-          <div class="contact-pick-avatar">A</div>
-          <div class="contact-pick-info">
-            <span class="contact-pick-name">Alex Dancer</span>
-            <span class="contact-pick-handle">@alexdancer</span>
+        <header class="comments-header">
+          <div style="display:flex;flex-direction:column;gap:2px;overflow:hidden;">
+            <h2 class="comments-title">Comments</h2>
+            <span class="comments-post-label" id="commentsPostLabel">@alexdancer's post</span>
           </div>
-          <span class="contact-pick-arrow">&#x2192;</span>
-        </div>
-        <div class="contact-pick-item" onclick="sendToContact('sarah')">
-          <div class="contact-pick-avatar">S</div>
-          <div class="contact-pick-info">
-            <span class="contact-pick-name">Sarah Travels</span>
-            <span class="contact-pick-handle">@sarah_travels</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="comment-count" id="dynamicCommentTotal">0</span>
+            <button class="close-comments-btn" onclick="closeComments()" title="Close comments">&#x2715;</button>
           </div>
-          <span class="contact-pick-arrow">&#x2192;</span>
+        </header>
+
+        <div class="comments-container" id="dynamicCommentsContainer">
+          <ul class="comments-list" id="dynamicCommentsList"></ul>
         </div>
-        <div class="contact-pick-item" onclick="sendToContact('mike')">
-          <div class="contact-pick-avatar">M</div>
-          <div class="contact-pick-info">
-            <span class="contact-pick-name">Mike Runner</span>
-            <span class="contact-pick-handle">@mike_runner</span>
+
+        <div class="comment-input-area">
+          <div class="current-user-mini">
+            <div class="avatar-letter avatar-tiny" id="commentUserAvatar">J</div>
           </div>
-          <span class="contact-pick-arrow">&#x2192;</span>
+          <form class="comment-form" onsubmit="submitComment(event)">
+            <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment..."
+              aria-label="Write a comment">
+            <button type="submit" class="post-btn">Post</button>
+          </form>
+        </div>
+
+      </div>
+    </aside>
+
+  </div><!-- /app-container -->
+
+  <!-- ========== SHARE MODAL ========== -->
+  <div class="fyp-share-overlay" id="shareModal" onclick="handleShareOverlayClick(event)">
+    <div class="fyp-share-box">
+
+      <!-- Step 1: options -->
+      <div id="shareStep1">
+        <div class="fyp-share-header">
+          <h3>Share Post</h3>
+          <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
+        </div>
+        <div class="fyp-share-options">
+          <button class="fyp-share-btn" onclick="copyShareLink()">
+            <span>&#x1F517;</span><span>Copy Link</span>
+          </button>
+          <button class="fyp-share-btn" onclick="showContactPicker()">
+            <span>&#x2709;&#xFE0F;</span><span>Send to Messages</span>
+          </button>
+        </div>
+        <p class="fyp-share-feedback" id="shareFeedback"></p>
+      </div>
+
+      <!-- Step 2: contact picker -->
+      <div id="shareStep2" style="display:none">
+        <div class="fyp-share-header">
+          <h3>Send to…</h3>
+          <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
+        </div>
+        <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
+        <p class="share-step-label">Choose who you want to share this post with:</p>
+        <div class="contact-pick-list">
+          <div class="contact-pick-item" onclick="sendToContact('alex')">
+            <div class="contact-pick-avatar">A</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Alex Dancer</span>
+              <span class="contact-pick-handle">@alexdancer</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
+          <div class="contact-pick-item" onclick="sendToContact('sarah')">
+            <div class="contact-pick-avatar">S</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Sarah Travels</span>
+              <span class="contact-pick-handle">@sarah_travels</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
+          <div class="contact-pick-item" onclick="sendToContact('mike')">
+            <div class="contact-pick-avatar">M</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Mike Runner</span>
+              <span class="contact-pick-handle">@mike_runner</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
-</div>
 
-<script>
-// ── Per-post comment data ─────────────────────────────────────────
-const commentsData = {};
+  <script>
+    // ── Per-post comment data ─────────────────────────────────────────
+    const commentsData = {};
 
-// ── Load user info ────────────────────────────────────────────────
-const userData = JSON.parse(localStorage.getItem('user') || 'null');
-const myName   = userData ? (userData.firstName + ' ' + userData.lastName) : 'Jordan Lee';
-const myHandle = '@' + (userData ? userData.username : 'jordanlee');
-const myInit   = myName.charAt(0).toUpperCase();
-document.getElementById('sidebarAvatar').textContent  = myInit;
-document.getElementById('sidebarName').textContent    = myName;
-document.getElementById('sidebarHandle').textContent  = myHandle;
-document.getElementById('commentUserAvatar').textContent = myInit;
+    // ── Load user info ────────────────────────────────────────────────
+    const userData = JSON.parse(localStorage.getItem('user') || 'null');
+    const myName = userData ? (userData.firstName + ' ' + userData.lastName) : 'Jordan Lee';
+    const myHandle = '@' + (userData ? userData.username : 'jordanlee');
+    const myInit = myName.charAt(0).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = myInit;
+    document.getElementById('sidebarName').textContent = myName;
+    document.getElementById('sidebarHandle').textContent = myHandle;
+    document.getElementById('commentUserAvatar').textContent = myInit;
 
-// ── Load user-created posts ───────────────────────────────────────
-(async function loadUserPosts() {
-  const posts     = JSON.parse(localStorage.getItem('userPosts') || '[]');
-  const container = document.getElementById('postsContainer');
-  const emptyEl   = document.getElementById('forYouEmptyState');
-  const author    = userData ? (userData.username || 'jordanlee') : 'jordanlee';
+    // ── Load user-created posts ───────────────────────────────────────
+    (async function loadUserPosts() {
+      const posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+      const container = document.getElementById('postsContainer');
+      const emptyEl = document.getElementById('forYouEmptyState');
+      const author = userData ? (userData.username || 'jordanlee') : 'jordanlee';
 
-  if (!posts.length) { emptyEl.style.display = 'flex'; return; }
-  emptyEl.style.display = 'none';
+      if (!posts.length) { emptyEl.style.display = 'flex'; return; }
+      emptyEl.style.display = 'none';
 
-  for (const post of posts.slice().reverse()) {
-    const id = 'user_' + post.id;
+      for (const post of posts.slice().reverse()) {
+        const id = 'user_' + post.id;
 
-    // Resolve media — IDB blob URL or legacy data URL
-    let src;
-    if (post.mediaKey) {
-      src = await MediaStore.getURL(post.mediaKey);
-    } else if (post.image) {
-      src = post.image;
-    }
-    if (!src) continue;
+        // Resolve media — IDB blob URL or legacy data URL
+        let src;
+        if (post.mediaKey) {
+          src = await MediaStore.getURL(post.mediaKey);
+        } else if (post.image) {
+          src = post.image;
+        }
+        if (!src) continue;
 
-    const isVideo = post.fileType === 'video' || src.startsWith('data:video');
-    const tags    = (post.hashtags || []).map(t => `<span class="hashtag">${esc(t)}</span>`).join('');
-    const postUrl = `post.html?post=${encodeURIComponent(src)}&author=${encodeURIComponent(author)}&caption=${encodeURIComponent(post.caption)}&isUserPost=1`;
+        const isVideo = post.fileType === 'video' || src.startsWith('data:video');
+        const tags = (post.hashtags || []).map(t => `<span class="hashtag">${esc(t)}</span>`).join('');
+        const postUrl = `post.html?post=${encodeURIComponent(src)}&author=${encodeURIComponent(author)}&caption=${encodeURIComponent(post.caption)}&isUserPost=1`;
 
-    const mediaHtml = isVideo
-      ? `<video src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;" muted autoplay loop playsinline></video>`
-      : `<img src="${esc(src)}" alt="Your post">`;
+        const mediaHtml = isVideo
+          ? `<video src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;" muted autoplay loop playsinline></video>`
+          : `<img src="${esc(src)}" alt="Your post">`;
 
-    commentsData[id] = { label: '@' + author + "'s post", count: 0, postImg: src, caption: post.caption, items: [] };
+        commentsData[id] = { label: '@' + author + "'s post", count: 0, postImg: src, caption: post.caption, items: [] };
 
-    const article = document.createElement('article');
-    article.className = 'video-post';
-    article.dataset.videoId = id;
-    article.dataset.author  = author;
-    article.innerHTML = `
+        const article = document.createElement('article');
+        article.className = 'video-post';
+        article.dataset.videoId = id;
+        article.dataset.author = author;
+        article.innerHTML = `
       <div class="video-wrapper">
         <a href="${esc(postUrl)}" class="post-img-link">${mediaHtml}</a>
         <div class="video-overlay">
@@ -459,65 +701,65 @@ document.getElementById('commentUserAvatar').textContent = myInit;
           </div>
         </div>
       </div>`;
-    container.insertBefore(article, emptyEl);
-  }
+        container.insertBefore(article, emptyEl);
+      }
 
-  attachLikeButtons();
-})();
+      attachLikeButtons();
+    })();
 
-// ── Feed tabs ─────────────────────────────────────────────────────
-function switchTab(tab, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
-  const container    = document.getElementById('postsContainer');
-  const feedEmpty    = document.getElementById('feedEmptyState');
-  const forYouEmpty  = document.getElementById('forYouEmptyState');
-  const hasPosts     = container.querySelectorAll('.video-post').length > 0;
+    // ── Feed tabs ─────────────────────────────────────────────────────
+    function switchTab(tab, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+      const container = document.getElementById('postsContainer');
+      const feedEmpty = document.getElementById('feedEmptyState');
+      const forYouEmpty = document.getElementById('forYouEmptyState');
+      const hasPosts = container.querySelectorAll('.video-post').length > 0;
 
-  if (tab === 'for-you') {
-    container.style.display = '';
-    feedEmpty.style.display = 'none';
-    forYouEmpty.style.display = hasPosts ? 'none' : 'flex';
-  } else {
-    container.style.display = 'none';
-    feedEmpty.style.display = 'flex';
-    forYouEmpty.style.display = 'none';
-    document.getElementById('emptyStateTitle').textContent = tab === 'live' ? 'No live streams' : 'No posts yet';
-    document.getElementById('emptyStateText').textContent  = tab === 'live'
-      ? 'No one is live right now. Check back later!'
-      : "You haven't followed anyone yet, or they haven't posted.";
-  }
-}
+      if (tab === 'for-you') {
+        container.style.display = '';
+        feedEmpty.style.display = 'none';
+        forYouEmpty.style.display = hasPosts ? 'none' : 'flex';
+      } else {
+        container.style.display = 'none';
+        feedEmpty.style.display = 'flex';
+        forYouEmpty.style.display = 'none';
+        document.getElementById('emptyStateTitle').textContent = tab === 'live' ? 'No live streams' : 'No posts yet';
+        document.getElementById('emptyStateText').textContent = tab === 'live'
+          ? 'No one is live right now. Check back later!'
+          : "You haven't followed anyone yet, or they haven't posted.";
+      }
+    }
 
-// ── Comments system ───────────────────────────────────────────────
-let activePostId = null;
+    // ── Comments system ───────────────────────────────────────────────
+    let activePostId = null;
 
-function openComments(postId) {
-  activePostId = postId;
-  const data = commentsData[postId] || { label: 'this post', count: 0, items: [] };
+    function openComments(postId) {
+      activePostId = postId;
+      const data = commentsData[postId] || { label: 'this post', count: 0, items: [] };
 
-  document.getElementById('commentsEmptyState').style.display = 'none';
-  document.getElementById('commentsActive').style.display     = 'flex';
-  document.getElementById('commentsPostLabel').textContent    = data.label;
-  document.getElementById('dynamicCommentTotal').textContent  = fmtCount(data.count);
+      document.getElementById('commentsEmptyState').style.display = 'none';
+      document.getElementById('commentsActive').style.display = 'flex';
+      document.getElementById('commentsPostLabel').textContent = data.label;
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
 
-  renderCommentList(data.items);
-  document.getElementById('commentInput').focus();
-}
+      renderCommentList(data.items);
+      document.getElementById('commentInput').focus();
+    }
 
-function closeComments() {
-  activePostId = null;
-  document.getElementById('commentsEmptyState').style.display = 'flex';
-  document.getElementById('commentsActive').style.display     = 'none';
-}
+    function closeComments() {
+      activePostId = null;
+      document.getElementById('commentsEmptyState').style.display = 'flex';
+      document.getElementById('commentsActive').style.display = 'none';
+    }
 
-function renderCommentList(items) {
-  const list = document.getElementById('dynamicCommentsList');
-  if (!items.length) {
-    list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
-    return;
-  }
-  list.innerHTML = items.map(c => `
+    function renderCommentList(items) {
+      const list = document.getElementById('dynamicCommentsList');
+      if (!items.length) {
+        list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
+        return;
+      }
+      list.innerHTML = items.map(c => `
     <li class="comment-item ${c.pinned ? 'pinned' : ''}">
       <div class="avatar-letter avatar-small">${esc(c.i)}</div>
       <div class="comment-content">
@@ -525,8 +767,8 @@ function renderCommentList(items) {
           <span class="comment-username">${esc(c.name)}</span>
           <span class="comment-handle">${esc(c.handle)}</span>
           ${c.pinned
-            ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
-            : `<span class="comment-timestamp">${esc(c.time || '')}</span>`}
+          ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
+          : `<span class="comment-timestamp">${esc(c.time || '')}</span>`}
         </div>
         <p class="comment-text">${esc(c.text)}</p>
         <div class="comment-footer">
@@ -537,188 +779,189 @@ function renderCommentList(items) {
         </div>
       </div>
     </li>`).join('');
-}
+    }
 
-function toggleCommentLike(btn, idx) {
-  if (!activePostId) return;
-  const liked   = btn.classList.toggle('comment-liked');
-  const countEl = btn.querySelector('.like-count');
-  const img     = btn.querySelector('.heart-icon-small');
-  const n       = parseCount(countEl.textContent);
-  const d       = liked ? 1 : -1;
-  commentsData[activePostId].items[idx].likes = n + d;
-  countEl.textContent = fmtCount(n + d);
-  img.style.filter = liked
-    ? 'invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1)' : '';
-}
+    function toggleCommentLike(btn, idx) {
+      if (!activePostId) return;
+      const liked = btn.classList.toggle('comment-liked');
+      const countEl = btn.querySelector('.like-count');
+      const img = btn.querySelector('.heart-icon-small');
+      const n = parseCount(countEl.textContent);
+      const d = liked ? 1 : -1;
+      commentsData[activePostId].items[idx].likes = n + d;
+      countEl.textContent = fmtCount(n + d);
+      img.style.filter = liked
+        ? 'invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1)' : '';
+    }
 
-function submitComment(e) {
-  e.preventDefault();
-  const input = document.getElementById('commentInput');
-  const text  = input.value.trim();
-  if (!text || !activePostId) return;
+    function submitComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text || !activePostId) return;
 
-  const data = commentsData[activePostId];
-  if (!data) return;
+      const data = commentsData[activePostId];
+      if (!data) return;
 
-  data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
-  data.count++;
+      data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
+      data.count++;
 
-  // Re-render
-  renderCommentList(data.items);
-  document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
+      // Re-render
+      renderCommentList(data.items);
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
 
-  // Update count on post button
-  const ccEl = document.getElementById('cc-' + activePostId);
-  if (ccEl) ccEl.textContent = fmtCount(data.count);
+      // Update count on post button
+      const ccEl = document.getElementById('cc-' + activePostId);
+      if (ccEl) ccEl.textContent = fmtCount(data.count);
 
-  input.value = '';
+      input.value = '';
 
-  // Scroll comments to bottom
-  const container = document.getElementById('dynamicCommentsContainer');
-  container.scrollTop = container.scrollHeight;
-}
+      // Scroll comments to bottom
+      const container = document.getElementById('dynamicCommentsContainer');
+      container.scrollTop = container.scrollHeight;
+    }
 
-// ── Like buttons on feed posts ────────────────────────────────────
-function attachLikeButtons() {
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    if (btn._attached) return;
-    btn._attached = true;
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation(); e.preventDefault();
-      const isLiked  = this.classList.toggle('liked');
-      const countEl  = this.querySelector('[data-like-count]');
-      const img      = this.querySelector('img');
-      const raw      = countEl.textContent.replace(/[^0-9.KkMm]/g, '');
-      img.style.filter = isLiked
-        ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' : '';
-      const num = parseFloat(raw);
-      if (!isNaN(num)) {
-        const d = isLiked ? 1 : -1;
-        countEl.textContent = raw.includes('K')
-          ? (num + d / 1000).toFixed(1) + 'K' : String(Math.max(0, num + d));
-      }
+    // ── Like buttons on feed posts ────────────────────────────────────
+    function attachLikeButtons() {
+      document.querySelectorAll('.like-btn').forEach(btn => {
+        if (btn._attached) return;
+        btn._attached = true;
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation(); e.preventDefault();
+          const isLiked = this.classList.toggle('liked');
+          const countEl = this.querySelector('[data-like-count]');
+          const img = this.querySelector('img');
+          const raw = countEl.textContent.replace(/[^0-9.KkMm]/g, '');
+          img.style.filter = isLiked
+            ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' : '';
+          const num = parseFloat(raw);
+          if (!isNaN(num)) {
+            const d = isLiked ? 1 : -1;
+            countEl.textContent = raw.includes('K')
+              ? (num + d / 1000).toFixed(1) + 'K' : String(Math.max(0, num + d));
+          }
+        });
+      });
+    }
+    attachLikeButtons();
+
+    // Follow buttons
+    document.querySelectorAll('[data-follow-btn]').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation(); e.preventDefault();
+        const isFollowing = this.classList.contains('following');
+        this.textContent = isFollowing ? '+ Follow' : 'Following';
+        this.classList.toggle('following', !isFollowing);
+        this.style.background = isFollowing ? 'transparent' : 'linear-gradient(135deg,#8A1538,#F5A623)';
+        this.style.borderColor = isFollowing ? '#F5A623' : 'transparent';
+        this.style.color = isFollowing ? '#F5A623' : '#fff';
+      });
     });
-  });
-}
-attachLikeButtons();
 
-// Follow buttons
-document.querySelectorAll('[data-follow-btn]').forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation(); e.preventDefault();
-    const isFollowing = this.classList.contains('following');
-    this.textContent       = isFollowing ? '+ Follow' : 'Following';
-    this.classList.toggle('following', !isFollowing);
-    this.style.background  = isFollowing ? 'transparent' : 'linear-gradient(135deg,#8A1538,#F5A623)';
-    this.style.borderColor = isFollowing ? '#F5A623' : 'transparent';
-    this.style.color       = isFollowing ? '#F5A623' : '#fff';
-  });
-});
+    // ── Share modal ───────────────────────────────────────────────────
+    let shareState = { postId: null, author: null, postImg: null, caption: null };
 
-// ── Share modal ───────────────────────────────────────────────────
-let shareState = { postId: null, author: null, postImg: null, caption: null };
+    function openShareModal(postId, author, postNum) {
+      const data = commentsData[postId];
+      const imgMap = { '1': 'Post_1.png', '2': 'Post_2.png', '3': 'Post_3.png' };
+      shareState = {
+        postId,
+        author,
+        postImg: data ? data.postImg : ('./media/images/' + (imgMap[postNum] || 'Post_1.png')),
+        caption: data ? data.caption : ''
+      };
+      document.getElementById('shareFeedback').textContent = '';
+      document.getElementById('shareStep1').style.display = '';
+      document.getElementById('shareStep2').style.display = 'none';
+      document.getElementById('shareModal').classList.add('active');
+    }
 
-function openShareModal(postId, author, postNum) {
-  const data = commentsData[postId];
-  const imgMap = { '1':'Post_1.png','2':'Post_2.png','3':'Post_3.png' };
-  shareState = {
-    postId,
-    author,
-    postImg: data ? data.postImg : ('./media/images/' + (imgMap[postNum] || 'Post_1.png')),
-    caption: data ? data.caption : ''
-  };
-  document.getElementById('shareFeedback').textContent = '';
-  document.getElementById('shareStep1').style.display = '';
-  document.getElementById('shareStep2').style.display = 'none';
-  document.getElementById('shareModal').classList.add('active');
-}
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('active');
+    }
 
-function closeShareModal() {
-  document.getElementById('shareModal').classList.remove('active');
-}
+    function handleShareOverlayClick(e) {
+      if (e.target.id === 'shareModal') closeShareModal();
+    }
 
-function handleShareOverlayClick(e) {
-  if (e.target.id === 'shareModal') closeShareModal();
-}
+    function copyShareLink() {
+      const url = window.location.href.split('?')[0]
+        + '?post=' + encodeURIComponent(shareState.postId || '')
+        + '&author=' + encodeURIComponent(shareState.author || '');
+      const write = () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(ok).catch(() => fb(url));
+        } else fb(url);
+      };
+      const fb = u => {
+        const el = document.createElement('textarea');
+        el.value = u; document.body.appendChild(el); el.select();
+        document.execCommand('copy'); document.body.removeChild(el); ok();
+      };
+      const ok = () => {
+        document.getElementById('shareFeedback').innerHTML = '&#x2713; Link copied!';
+      };
+      write();
+    }
 
-function copyShareLink() {
-  const url = window.location.href.split('?')[0]
-    + '?post=' + encodeURIComponent(shareState.postId || '')
-    + '&author=' + encodeURIComponent(shareState.author || '');
-  const write = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(ok).catch(() => fb(url));
-    } else fb(url);
-  };
-  const fb = u => {
-    const el = document.createElement('textarea');
-    el.value = u; document.body.appendChild(el); el.select();
-    document.execCommand('copy'); document.body.removeChild(el); ok();
-  };
-  const ok = () => {
-    document.getElementById('shareFeedback').innerHTML = '&#x2713; Link copied!';
-  };
-  write();
-}
+    function showContactPicker() {
+      document.getElementById('shareStep1').style.display = 'none';
+      document.getElementById('shareStep2').style.display = '';
+    }
 
-function showContactPicker() {
-  document.getElementById('shareStep1').style.display = 'none';
-  document.getElementById('shareStep2').style.display = '';
-}
+    function backToShareOptions() {
+      document.getElementById('shareStep1').style.display = '';
+      document.getElementById('shareStep2').style.display = 'none';
+    }
 
-function backToShareOptions() {
-  document.getElementById('shareStep1').style.display = '';
-  document.getElementById('shareStep2').style.display = 'none';
-}
+    function sendToContact(contactKey) {
+      const payload = JSON.stringify({
+        postId: shareState.postId,
+        author: shareState.author,
+        image: shareState.postImg,
+        caption: shareState.caption
+      });
+      window.location.href = 'messages.html?to=' + contactKey + '&sharedPost=' + encodeURIComponent(payload);
+    }
 
-function sendToContact(contactKey) {
-  const payload = JSON.stringify({
-    postId:  shareState.postId,
-    author:  shareState.author,
-    image:   shareState.postImg,
-    caption: shareState.caption
-  });
-  window.location.href = 'messages.html?to=' + contactKey + '&sharedPost=' + encodeURIComponent(payload);
-}
+    // ── Delete post from feed ─────────────────────────────────────────
+    function deletePostFromFeed(postId, btn) {
+      if (!confirm('Delete this post?')) return;
+      let posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+      const removed = posts.find(p => p.id === postId);
+      posts = posts.filter(p => p.id !== postId);
+      localStorage.setItem('userPosts', JSON.stringify(posts));
+      if (removed && removed.mediaKey) MediaStore.remove(removed.mediaKey);
 
-// ── Delete post from feed ─────────────────────────────────────────
-function deletePostFromFeed(postId, btn) {
-  if (!confirm('Delete this post?')) return;
-  let posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-  const removed = posts.find(p => p.id === postId);
-  posts = posts.filter(p => p.id !== postId);
-  localStorage.setItem('userPosts', JSON.stringify(posts));
-  if (removed && removed.mediaKey) MediaStore.remove(removed.mediaKey);
+      const article = btn.closest('.video-post');
+      if (article) article.remove();
 
-  const article = btn.closest('.video-post');
-  if (article) article.remove();
+      // If no posts left, show empty state
+      const container = document.getElementById('postsContainer');
+      if (!container.querySelectorAll('.video-post').length) {
+        document.getElementById('forYouEmptyState').style.display = 'flex';
+      }
 
-  // If no posts left, show empty state
-  const container = document.getElementById('postsContainer');
-  if (!container.querySelectorAll('.video-post').length) {
-    document.getElementById('forYouEmptyState').style.display = 'flex';
-  }
+      // Close comments panel if it was open for this post
+      if (activePostId === 'user_' + postId) closeComments();
+    }
 
-  // Close comments panel if it was open for this post
-  if (activePostId === 'user_' + postId) closeComments();
-}
-
-// ── Helpers ───────────────────────────────────────────────────────
-function fmtCount(n) {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  return String(n);
-}
-function parseCount(str) {
-  const s = String(str).trim();
-  if (s.includes('K')) return Math.round(parseFloat(s) * 1000);
-  return parseInt(s, 10) || 0;
-}
-function esc(t) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(String(t || '')));
-  return d.innerHTML;
-}
-</script>
+    // ── Helpers ───────────────────────────────────────────────────────
+    function fmtCount(n) {
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(n);
+    }
+    function parseCount(str) {
+      const s = String(str).trim();
+      if (s.includes('K')) return Math.round(parseFloat(s) * 1000);
+      return parseInt(s, 10) || 0;
+    }
+    function esc(t) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(t || '')));
+      return d.innerHTML;
+    }
+  </script>
 </body>
+
 </html>
