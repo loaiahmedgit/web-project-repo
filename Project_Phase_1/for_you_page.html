@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - For You</title>
+  <!-- Link to external CSS file -->
+  <link rel="stylesheet" href="./styles/for_you_page.css">
+</head>
+<body>
+  <!-- Main app container using CSS Grid for 3-column layout -->
+  <div class="app-container">
+
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <!-- LEFT SIDEBAR: Contains app branding, navigation, following list, hashtags, and user profile -->
+    <aside class="sidebar sidebar-left" data-component="sidebar">
+      
+      <!-- App Branding section with logo and app name -->
+      <div class="brand" data-section="brand">
+        <!-- App logo - path to logo image in media/icons folder -->
+        <img src="./media/icons/logo.svg" alt="Maseera" class="brand-logo">
+        <!-- App name with gradient text effect -->
+        <h1 class="brand-name">MASEERA</h1>
+      </div>
+
+      <!-- Primary Navigation - Main app navigation links -->
+      <nav class="nav-primary" data-section="primary-nav">
+        <ul class="nav-list">
+          <!-- For You - Active state indicates current page -->
+          <li class="nav-item active" data-nav="for-you">
+            <!-- Navigation icon from media/icons folder -->
+            <img src="./media/icons/home.svg" alt="" class="nav-icon">
+            <span class="nav-text">For You</span>
+          </li>
+          <!-- Create - Link to content creation page -->
+          <li class="nav-item" data-nav="create">
+            <img src="./media/icons/create.svg" alt="" class="nav-icon">
+            <span class="nav-text">Create</span>
+          </li>
+          <!-- Profile - Link to user profile page -->
+          <li class="nav-item" data-nav="profile">
+            <img src="./media/icons/profile.svg" alt="" class="nav-icon">
+            <span class="nav-text">Profile</span>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Horizontal divider line to separate sections -->
+      <hr class="divider">
+
+      <!-- Following Section - Displays accounts the user follows -->
+      <section class="following-section" data-section="following">
+        <!-- Section title with styling -->
+        <h2 class="section-title">Following</h2>
+        <!-- Dynamic list of followed accounts - will be populated by JavaScript -->
+        <ul class="following-list" data-following-list>
+          <!-- Following item for Alex Dancer - data-user-id for JS targeting -->
+          <li class="following-item" data-user-id="alexdancer">
+            <!-- Avatar image from media/images/avatars folder -->
+            <img src="./media/images/avatars/alexdancer.jpg" alt="" class="avatar-small">
+            <!-- Container for user name and handle -->
+            <div class="user-info">
+              <span class="display-name">Alex Dancer</span>
+              <span class="handle">@alexdancer</span>
+            </div>
+          </li>
+          <!-- Following item for Mike Runner -->
+          <li class="following-item" data-user-id="mike_runner">
+            <img src="./media/images/avatars/mike_runner.jpg" alt="" class="avatar-small">
+            <div class="user-info">
+              <span class="display-name">Mike Runner</span>
+              <span class="handle">@mike_runner</span>
+            </div>
+          </li>
+          <!-- Following item for Sarah Travels -->
+          <li class="following-item" data-user-id="sarah_travels">
+            <img src="./media/images/avatars/sarah_travels.jpg" alt="" class="avatar-small">
+            <div class="user-info">
+              <span class="display-name">Sarah Travels</span>
+              <span class="handle">@sarah_travels</span>
+            </div>
+          </li>
+          <!-- Following item for Tech Guru Dan -->
+          <li class="following-item" data-user-id="techguru_dan">
+            <img src="./media/images/avatars/techguru_dan.jpg" alt="" class="avatar-small">
+            <div class="user-info">
+              <span class="display-name">Tech Guru Dan</span>
+              <span class="handle">@techguru_dan</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Horizontal divider line -->
+      <hr class="divider">
+
+      <!-- Hashtags Section - Content categories for filtering -->
+      <section class="hashtags-section" data-section="hashtags">
+        <!-- Section title -->
+        <h2 class="section-title">Categories</h2>
+        <!-- Hashtags grid container - Will be styled as CSS Grid with 3 columns -->
+        <ul class="hashtags-list" data-hashtags-list>
+          <!-- Individual hashtag items - each will be grid items -->
+          <li class="hashtag-item" data-hashtag="comedy">#comedy</li>
+          <li class="hashtag-item" data-hashtag="trending">#trending</li>
+          <li class="hashtag-item" data-hashtag="dance">#dance</li>
+          <li class="hashtag-item" data-hashtag="food">#food</li>
+          <li class="hashtag-item" data-hashtag="travel">#travel</li>
+          <li class="hashtag-item" data-hashtag="viral">#viral</li>
+          <li class="hashtag-item" data-hashtag="music">#music</li>
+          <li class="hashtag-item" data-hashtag="fitness">#fitness</li>
+          <li class="hashtag-item" data-hashtag="art">#art</li>
+        </ul>
+      </section>
+
+      <!-- Horizontal divider line -->
+      <hr class="divider">
+
+      <!-- Current User Profile Section - Displays logged-in user info -->
+      <div class="current-user" data-section="current-user" data-user-id="current">
+        <!-- User avatar - medium size for profile section -->
+        <img src="./media/images/avatars/current_user.jpg" alt="" class="avatar-medium">
+        <!-- Container for user name and handle -->
+        <div class="user-info">
+          <span class="display-name">Jordan Lee</span>
+          <span class="handle">@jordanlee</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN FEED ========== -->
+    <!-- MAIN FEED: TikTok/Reels-style vertical video feed with snap scrolling -->
+    <main class="feed" data-component="video-feed">
+      
+      <!-- Feed Navigation Tabs - Top tabs for content filtering -->
+      <div class="feed-tabs" data-feed-tabs>
+        <!-- Following tab - Shows posts from followed users -->
+        <button class="tab-btn" data-tab="following">Following</button>
+        <!-- For You tab - Active state, shows personalized feed -->
+        <button class="tab-btn active" data-tab="for-you">For You</button>
+        <!-- Live tab - Shows live streaming content -->
+        <button class="tab-btn" data-tab="live">LIVE</button>
+      </div>
+
+      <!-- Videos Container - Holds all video posts in a scrollable stack -->
+      <div class="videos-container" data-videos-container>
+        
+        <!-- Video Post 1 - Each post takes full viewport height for snap scrolling -->
+        <article class="video-post" data-video-id="vid_001" data-author="alexdancer">
+          
+          <!-- Video Wrapper - Contains video player and all overlays -->
+          <div class="video-wrapper">
+            <!-- Video Player element with loop attribute for continuous playback -->
+            <video class="video-player" data-video-player loop muted>
+              <!-- Video source from media/videos folder -->
+              <source src="./media/videos/dance_transition.mp4" type="video/mp4">
+            </video>
+            
+            <!-- Video Overlay - Contains all UI elements over the video -->
+            <div class="video-overlay">
+              
+              <!-- Right Side Action Buttons - Like, Comment, Share -->
+              <div class="video-actions" data-video-actions>
+                <!-- Like button with count - data-action for JS event handling -->
+                <button class="action-btn like-btn" data-action="like" data-video-id="vid_001">
+                  <!-- Heart icon from media/icons -->
+                  <img src="./media/icons/heart.svg" alt="Like">
+                  <!-- Like count - will be updated by JS -->
+                  <span class="action-count" data-like-count>18.3K</span>
+                </button>
+                
+                <!-- Comment button with count -->
+                <button class="action-btn comment-btn" data-action="comment" data-video-id="vid_001">
+                  <img src="./media/icons/comment.svg" alt="Comment">
+                  <span class="action-count" data-comment-count>5.2K</span>
+                </button>
+                
+                <!-- Share button -->
+                <button class="action-btn share-btn" data-action="share" data-video-id="vid_001">
+                  <img src="./media/icons/share.svg" alt="Share">
+                </button>
+              </div>
+              
+              <!-- Video Information - Bottom section with poster details and caption -->
+              <div class="video-info" data-video-info>
+                <!-- Poster info section with name and follow button -->
+                <div class="poster-info">
+                  <span class="poster-name">@alexdancer</span>
+                  <!-- Verified badge - only shows for verified creators -->
+                  <span class="verified-badge" data-verified>✓</span>
+                  <!-- Follow button - data-user-id for JS targeting -->
+                  <button class="follow-btn" data-follow-btn data-user-id="alexdancer">+ Follow</button>
+                </div>
+                
+                <!-- Video caption with text -->
+                <div class="video-caption">
+                  <p>POV: When you finally nail that transition ✨</p>
+                  <!-- Hashtags container - clickable for filtering -->
+                  <div class="video-hashtags">
+                    <span class="hashtag">#dance</span>
+                    <span class="hashtag">#viral</span>
+                    <span class="hashtag">#transition</span>
+                  </div>
+                </div>
+                
+                <!-- Sound/music information -->
+                <div class="video-sound">
+                  <!-- Music note icon -->
+                  <img src="./media/icons/music.svg" alt="Sound">
+                  <span>Original Sound - alexdancer</span>
+                  <!-- Trending badge - indicates trending audio -->
+                  <span class="trending-badge">trending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Video Post 2 - Mike Runner's video -->
+        <article class="video-post" data-video-id="vid_002" data-author="mike_runner">
+          <div class="video-wrapper">
+            <video class="video-player" data-video-player loop muted>
+              <source src="./media/videos/running_trick.mp4" type="video/mp4">
+            </video>
+            
+            <div class="video-overlay">
+              <div class="video-actions" data-video-actions>
+                <button class="action-btn like-btn" data-action="like" data-video-id="vid_002">
+                  <img src="./media/icons/heart.svg" alt="Like">
+                  <span class="action-count" data-like-count>4.2K</span>
+                </button>
+                <button class="action-btn comment-btn" data-action="comment" data-video-id="vid_002">
+                  <img src="./media/icons/comment.svg" alt="Comment">
+                  <span class="action-count" data-comment-count>987</span>
+                </button>
+                <button class="action-btn share-btn" data-action="share" data-video-id="vid_002">
+                  <img src="./media/icons/share.svg" alt="Share">
+                </button>
+              </div>
+              
+              <div class="video-info" data-video-info>
+                <div class="poster-info">
+                  <span class="poster-name">@mike_runner</span>
+                  <button class="follow-btn" data-follow-btn data-user-id="mike_runner">+ Follow</button>
+                </div>
+                
+                <div class="video-caption">
+                  <p>This is absolutely insane!! The timing is perfect 🏃‍♂️</p>
+                  <div class="video-hashtags">
+                    <span class="hashtag">#running</span>
+                    <span class="hashtag">#trick</span>
+                    <span class="hashtag">#insane</span>
+                  </div>
+                </div>
+                
+                <div class="video-sound">
+                  <img src="./media/icons/music.svg" alt="Sound">
+                  <span>Original Sound - mike_runner</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Video Post 3 - Sarah Travels' video -->
+        <article class="video-post" data-video-id="vid_003" data-author="sarah_travels">
+          <div class="video-wrapper">
+            <video class="video-player" data-video-player loop muted>
+              <source src="./media/videos/travel_magic.mp4" type="video/mp4">
+            </video>
+            
+            <div class="video-overlay">
+              <div class="video-actions" data-video-actions>
+                <button class="action-btn like-btn" data-action="like" data-video-id="vid_003">
+                  <img src="./media/icons/heart.svg" alt="Like">
+                  <span class="action-count" data-like-count>94.2K</span>
+                </button>
+                <button class="action-btn comment-btn" data-action="comment" data-video-id="vid_003">
+                  <img src="./media/icons/comment.svg" alt="Comment">
+                  <span class="action-count" data-comment-count>12.4K</span>
+                </button>
+                <button class="action-btn share-btn" data-action="share" data-video-id="vid_003">
+                  <img src="./media/icons/share.svg" alt="Share">
+                </button>
+              </div>
+              
+              <div class="video-info" data-video-info>
+                <div class="poster-info">
+                  <span class="poster-name">@sarah_travels</span>
+                  <button class="follow-btn" data-follow-btn data-user-id="sarah_travels">+ Follow</button>
+                </div>
+                
+                <div class="video-caption">
+                  <p>I've been watching this on repeat. How is this even possible?! 🌍</p>
+                  <div class="video-hashtags">
+                    <span class="hashtag">#travel</span>
+                    <span class="hashtag">#magic</span>
+                    <span class="hashtag">#wow</span>
+                  </div>
+                </div>
+                
+                <div class="video-sound">
+                  <img src="./media/icons/music.svg" alt="Sound">
+                  <span>Original Sound - sarah_travels</span>
+                  <span class="trending-badge">trending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <!-- ========== RIGHT SIDEBAR ========== -->
+    <!-- RIGHT SIDEBAR: Comments section for the currently playing video -->
+    <aside class="sidebar sidebar-right" data-component="comments-sidebar" data-current-video="vid_001">
+      
+      <!-- Comments Header with title and total count -->
+      <header class="comments-header">
+        <h2 class="comments-title">Comments</h2>
+        <!-- Total comment count - updated by JS -->
+        <span class="comment-count" data-total-comments>18,342</span>
+      </header>
+
+      <!-- Comments Container - Scrollable area for comments -->
+      <div class="comments-container" data-comments-container>
+        <!-- Comments List - Dynamic list populated by JS -->
+        <ul class="comments-list" data-comments-list>
+          
+          <!-- Comment 1 - Sarah Travels comment -->
+          <li class="comment-item" data-comment-id="cmt_001" data-user-id="sarah_travels">
+            <!-- Commenter avatar -->
+            <img src="./media/images/avatars/sarah_travels.jpg" alt="" class="avatar-small">
+            <!-- Comment content container -->
+            <div class="comment-content">
+              <!-- Comment header with username, handle, and timestamp -->
+              <div class="comment-header">
+                <span class="comment-username">Sarah Travels</span>
+                <span class="comment-handle">@sarah_travels</span>
+                <span class="comment-timestamp">3h ago</span>
+              </div>
+              <!-- Comment text -->
+              <p class="comment-text">I've been watching this on repeat. How is this even possible?!</p>
+              <!-- Comment footer with like button and count -->
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_001">
+                  <!-- Small heart icon -->
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">2.8K</span>
+                </button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Comment 2 - Tech Guru Dan (Pinned comment) -->
+          <li class="comment-item pinned" data-comment-id="cmt_002" data-user-id="techguru_dan" data-pinned="true">
+            <img src="./media/images/avatars/techguru_dan.jpg" alt="" class="avatar-small">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">Tech Guru Dan</span>
+                <span class="comment-handle">@techguru_dan</span>
+                <!-- Pinned badge indicator -->
+                <span class="pinned-badge">📌 Pinned</span>
+              </div>
+              <p class="comment-text">Thanks for all the love! Tutorial coming next week 🔥</p>
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_002">
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">1.1K</span>
+                </button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Comment 3 - Kara Designs -->
+          <li class="comment-item" data-comment-id="cmt_003" data-user-id="kara_designs">
+            <img src="./media/images/avatars/kara_designs.jpg" alt="" class="avatar-small">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">Kara Designs</span>
+                <span class="comment-handle">@kara_designs</span>
+                <span class="comment-timestamp">4h ago</span>
+              </div>
+              <p class="comment-text">The song choice is everything! What song is this?</p>
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_003">
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">987</span>
+                </button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Comment 4 - Alex Dancer reply -->
+          <li class="comment-item" data-comment-id="cmt_004" data-user-id="alexdancer">
+            <img src="./media/images/avatars/alexdancer.jpg" alt="" class="avatar-small">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">Alex Dancer</span>
+                <span class="comment-handle">@alexdancer</span>
+                <span class="comment-timestamp">2h ago</span>
+              </div>
+              <p class="comment-text">Thanks everyone! Tutorial dropping next week 🙏</p>
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_004">
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">3.2K</span>
+                </button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Comment 5 - Mike Comedy -->
+          <li class="comment-item" data-comment-id="cmt_005" data-user-id="mikecomedy">
+            <img src="./media/images/avatars/mikecomedy.jpg" alt="" class="avatar-small">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">Mike Comedy</span>
+                <span class="comment-handle">@mikecomedy</span>
+                <span class="comment-timestamp">5h ago</span>
+              </div>
+              <p class="comment-text">This is my new favorite video 🤣</p>
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_005">
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">654</span>
+                </button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Comment 6 - Luna Art -->
+          <li class="comment-item" data-comment-id="cmt_006" data-user-id="luna_art">
+            <img src="./media/images/avatars/luna_art.jpg" alt="" class="avatar-small">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">Luna Art</span>
+                <span class="comment-handle">@luna_art</span>
+                <span class="comment-timestamp">6h ago</span>
+              </div>
+              <p class="comment-text">POV: Me trying this at home and immediately falling 😂</p>
+              <div class="comment-footer">
+                <button class="comment-like-btn" data-like-comment data-comment-id="cmt_006">
+                  <img src="./media/icons/heart-small.svg" alt="">
+                  <span class="like-count">432</span>
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Comment Input Area - Fixed at bottom of right sidebar -->
+      <div class="comment-input-area" data-comment-input-area>
+        <!-- Current user avatar mini -->
+        <div class="current-user-mini">
+          <img src="./media/images/avatars/current_user.jpg" alt="" class="avatar-tiny">
+        </div>
+        <!-- Comment form for submitting new comments -->
+        <form class="comment-form" data-comment-form>
+          <!-- Text input for comment -->
+          <input 
+            type="text" 
+            class="comment-input" 
+            placeholder="Add a comment..." 
+            data-comment-input
+            aria-label="Write a comment"
+          >
+          <!-- Post button to submit comment -->
+          <button type="submit" class="post-btn" data-post-comment>Post</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>
