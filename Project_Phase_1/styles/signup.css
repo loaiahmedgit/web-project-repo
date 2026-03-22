@@ -14,10 +14,9 @@ body {
 
 .form-box {
     width: 380px;
-    background: black;
+    background: silver;
     padding: 40px;
     border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 
 }
 
@@ -29,7 +28,7 @@ h1 {
 
 
 .form-box h1 {
-    color: orange;
+    color: black;
 }
 
 
@@ -42,7 +41,7 @@ label {
     display: block;
     margin-top: 15px;
     margin-bottom: 6px;
-    color: white;
+    color: black;
 }
 
 
@@ -51,7 +50,7 @@ input {
     padding: 10px;
     border: none;
     border-radius: 6px;
-    background: lightgray;
+    background: white;
     box-sizing: border-box;
 }
 
@@ -62,7 +61,7 @@ button {
     margin-top: 25px;
     border: none;
     border-radius: 6px;
-    background: orange;
+    background: brown;
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -80,7 +79,7 @@ button:hover {
 }
 
 .link-text a {
-    color: orange;
+    color: brown;
     text-decoration: none;
 
 }
@@ -134,8 +133,8 @@ button:hover {
 }
 
 .apple {
-    background: silver;
-    color: white;
+    background: white;
+    color: black;
 }
 
 .social-btn:hover {
