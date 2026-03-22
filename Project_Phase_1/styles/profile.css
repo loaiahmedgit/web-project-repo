@@ -231,3 +231,28 @@ body {
         font-size: 28px;
     }
 }
+
+.post {
+    position: relative;
+}
+
+.post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.post:hover .post-overlay {
+    opacity: 1;
+}
+
+.post-overlay span {
+    color: white;
+    font-size: 18px;
+}
