@@ -76,23 +76,10 @@ function initializeDataStore() {
 
       {
         id: 'post2',
-        author: 'omar_salim',
-        type: 'video',
-        mediaPath: './media/videos/Video_2.mp4',
-        audio: './media/audio/Video_2.mp3',
-        caption: ' الاسكندرية❤️',
-        hashtags: ['syria', 'history'],
-        likes: 980,
-        comments: 150,
-        timestamp: '2026-03-18T12:00:00Z'
-      },
-
-      {
-        id: 'post3',
         author: 'mohamed_ali',
         type: 'image',
         mediaPath: './media/images/Post_1.png',
-        caption: 'لحظة مميزة 📸',
+        caption: 'لحظة مميزة',
         hashtags: ['photo'],
         likes: 600,
         comments: 80,
@@ -100,11 +87,25 @@ function initializeDataStore() {
       },
 
       {
+        id: 'post3',
+        author: 'omar_salim',
+        type: 'video',
+        mediaPath: './media/videos/Video_2.mp4',
+        audio: './media/audio/Video_2.mp3',
+        caption: ' الاسكندرية',
+        hashtags: ['syria', 'history'],
+        likes: 980,
+        comments: 150,
+        timestamp: '2026-03-18T12:00:00Z'
+      },
+
+      {
         id: 'post4',
         author: 'youssef_khaled',
         type: 'image',
         mediaPath: './media/images/Post_2.png',
-        caption: 'يوم جميل ☀️',
+        audio: './media/audio/post_audio.mp3',
+        caption: 'يوم جميل في تركيا',
         hashtags: ['life'],
         likes: 430,
         comments: 50,
@@ -116,7 +117,7 @@ function initializeDataStore() {
         author: 'lina_ahmad',
         type: 'image',
         mediaPath: './media/images/Post_3.png',
-        caption: 'تصويري الخاص 🎨',
+        caption: 'تصويري الخاص',
         hashtags: ['art'],
         likes: 720,
         comments: 120,
@@ -430,8 +431,13 @@ function createPostElement(post, author, isLiked, commentCount) {
         data-video-id="${post.id}"
         onclick="handleVideoSound(this, '${post.audio || ''}')"
      ></video>`
-    : `<img src="${post.mediaPath}" alt="Post by ${author.displayName}" class="post-image">`;
 
+    : `<img 
+        src="${post.mediaPath}" 
+        alt="Post by ${author.displayName}" 
+        class="post-image"
+        onclick="handleImageSound('${post.audio || ''}')"
+     >`;
   article.innerHTML = `
     <div class="video-wrapper">
       <a href="${escapeHtml(postUrl)}" class="post-img-link">${mediaHTML}</a>
@@ -801,11 +807,16 @@ class VideoController {
     }
   }
 
-  pauseVideo(video) {
-    if (video && !video.paused) {
-      video.pause();
-    }
+pauseVideo(video) {
+  if (video && !video.paused) {
+    video.pause();
   }
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+}
 
   togglePlayPause(video, videoPost) {
     if (video.paused) {
@@ -1093,7 +1104,8 @@ window.switchTab = function (tab, el) {
   }, 100);
 };
 
-window.currentAudio = null;
+let currentAudio = null;
+
 function handleVideoSound(video, audioPath) {
   if (!audioPath) return;
 
@@ -1105,20 +1117,28 @@ function handleVideoSound(video, audioPath) {
   const audio = new Audio(audioPath);
   currentAudio = audio;
 
-  video.muted = true;
-
   audio.currentTime = video.currentTime;
-  audio.play();
 
-  video.addEventListener('timeupdate', () => {
-    if (audio) audio.currentTime = video.currentTime;
+  audio.play().catch(() => { });
+
+  video.addEventListener('seeked', () => {
+    audio.currentTime = video.currentTime;
   });
 
-  video.addEventListener('pause', () => {
-    audio.pause();
-  });
+  video.addEventListener('pause', () => audio.pause());
+  video.addEventListener('play', () => audio.play());
+}
 
-  video.addEventListener('play', () => {
-    audio.play();
-  });
+function handleImageSound(audioPath) {
+  if (!audioPath) return;
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+
+  const audio = new Audio(audioPath);
+  currentAudio = audio;
+
+  audio.play().catch(() => { });
 }
