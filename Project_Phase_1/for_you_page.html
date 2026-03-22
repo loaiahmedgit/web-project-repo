@@ -8,182 +8,107 @@
   <link rel="stylesheet" href="./styles/for_you_page.css">
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
-<script>
-  // Override or enhance existing functions with data-persistent versions
-  
-  // Initialize data on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    // Ensure data store is initialized
-    getData();
-    
-    // Render initial feed
-    renderFeed('postsContainer', 'for-you');
-    
-    // Update following list in sidebar
-    updateFollowingList();
-  });
-  
-  // Override switchTab to use data layer
-  window.switchTab = function(tab, el) {
-    // Update active tab UI
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (el) el.classList.add('active');
-    
-    // Hide empty states
-    document.getElementById('feedEmptyState').style.display = 'none';
-    
-    // Render appropriate feed
-    renderFeed('postsContainer', tab);
-  };
-  
-  // Update following list in sidebar
-  function updateFollowingList() {
-    const currentUser = getCurrentUser();
-    const data = getData();
-    const followingList = document.querySelector('.following-list');
-    
-    if (!followingList || !currentUser || !currentUser.following) return;
-    
-    // Clear existing items (keep only the first few as static examples or regenerate)
-    // This is simplified - in a real app you'd regenerate the entire list
-    const followingUsers = currentUser.following
-      .map(userId => data.users.find(u => u.id === userId))
-      .filter(Boolean);
-    
-    // You could update the following list here
-  }
-  
-  // Override openComments to use data layer
-  window.openComments = function(postId) {
-    activePostId = postId;
-    const comments = getCommentsForPost(postId);
-    const post = getData().posts.find(p => p.id === postId);
-    const author = post ? post.author : 'unknown';
-    
-    document.getElementById('commentsEmptyState').style.display = 'none';
-    document.getElementById('commentsActive').style.display = 'flex';
-    document.getElementById('commentsPostLabel').textContent = `@${author}'s post`;
-    document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
-    
-    renderCommentList(comments, postId);
-    document.getElementById('commentInput').focus();
-  };
-  
-  // Override renderCommentList to use data
-  function renderCommentList(comments, postId) {
-    const list = document.getElementById('dynamicCommentsList');
-    const currentUser = getCurrentUser();
-    const data = getData();
-    
-    if (!comments || comments.length === 0) {
-      list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
-      return;
-    }
-    
-    list.innerHTML = comments.map(c => {
-      const commentUser = data.users.find(u => u.id === c.userId) || { displayName: c.userId, avatar: c.userId.charAt(0).toUpperCase() };
-      
-      return `
-        <li class="comment-item ${c.pinned ? 'pinned' : ''}" data-comment-id="${c.id}">
-          <div class="avatar-letter avatar-small">${escapeHtml(commentUser.avatar)}</div>
-          <div class="comment-content">
-            <div class="comment-header">
-              <span class="comment-username">${escapeHtml(commentUser.displayName)}</span>
-              <span class="comment-handle">@${escapeHtml(c.userId)}</span>
-              ${c.pinned
-                ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
-                : `<span class="comment-timestamp">${formatTimeAgo(c.timestamp)}</span>`}
-            </div>
-            <p class="comment-text">${escapeHtml(c.text)}</p>
-            <div class="comment-footer">
-              <button class="comment-like-btn" onclick="handleCommentLikeClick('${postId}', '${c.id}', this)">
-                <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
-                <span class="like-count">${formatCount(c.likes || 0)}</span>
-              </button>
-            </div>
-          </div>
-        </li>
-      `;
-    }).join('');
-  }
-  
-  // Format timestamp as time ago
-  function formatTimeAgo(timestamp) {
-    if (!timestamp) return 'unknown';
-    
-    const now = new Date();
-    const past = new Date(timestamp);
-    const diffMs = now - past;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-    
-    if (diffSec < 60) return 'just now';
-    if (diffMin < 60) return diffMin + 'm ago';
-    if (diffHour < 24) return diffHour + 'h ago';
-    return diffDay + 'd ago';
-  }
-  
-  // Handle comment like click
-  window.handleCommentLikeClick = function(postId, commentId, btn) {
-    const liked = toggleCommentLike(postId, commentId);
-    
-    btn.classList.toggle('comment-liked', liked);
-    const img = btn.querySelector('.heart-icon-small');
-    img.style.filter = liked 
-      ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' 
-      : '';
-    
-    const countEl = btn.querySelector('.like-count');
-    const data = getData();
-    const comment = data.comments[postId]?.find(c => c.id === commentId);
-    if (comment) {
-      countEl.textContent = formatCount(comment.likes);
-    }
-  };
-  
-  // Override submitComment to use data layer
-  window.submitComment = function(e) {
-    e.preventDefault();
-    const input = document.getElementById('commentInput');
-    const text = input.value.trim();
-    
-    if (!text || !activePostId) return;
-    
-    const newComment = addComment(activePostId, text);
-    
-    if (newComment) {
-      // Re-render comments
-      const comments = getCommentsForPost(activePostId);
-      renderCommentList(comments, activePostId);
-      
-      // Update comment count
-      document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
-      
-      // Update count on post button
-      const ccEl = document.getElementById('cc-' + activePostId);
-      if (ccEl) {
-        const post = getData().posts.find(p => p.id === activePostId);
-        if (post) ccEl.textContent = formatCount(post.comments);
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      getData();
+
+      await renderFeedWithMedia('postsContainer', 'for-you');
+
+      updateFollowingList();
+    });
+
+    async function renderFeedWithMedia(containerId, type) {
+      const container = document.getElementById(containerId);
+      const data = getData();
+
+      const posts = type === 'for-you'
+        ? getForYouPosts()
+        : getFollowingPosts();
+
+      container.innerHTML = '';
+
+      for (const post of posts) {
+        const author = data.users.find(u => u.id === post.author);
+
+        let mediaURL = post.mediaPath;
+
+        if (post.mediaKey) {
+          const url = await MediaStore.getURL(post.mediaKey);
+          if (url) mediaURL = url;
+        }
+
+        const isLiked = isPostLiked(post.id);
+        const comments = getCommentsForPost(post.id);
+
+        const element = createPostElementWithMedia(
+          post,
+          author,
+          isLiked,
+          comments.length,
+          mediaURL
+        );
+
+        container.appendChild(element);
       }
-      
-      input.value = '';
-      
-      // Scroll comments to bottom
-      const container = document.getElementById('dynamicCommentsContainer');
-      container.scrollTop = container.scrollHeight;
+
+      attachPostEventListeners();
+
+      setTimeout(() => {
+        if (videoController) videoController.destroy();
+        videoController = new VideoController();
+        attachVideoControls();
+      }, 100);
     }
-  };
-  
-  // Make sure share modal functions use the data
-  window.openShareModal = function(postId, author, mediaPath) {
-    // ... existing share modal code ...
-    // But you might want to store the postId for later use
-    window.currentSharePostId = postId;
-    // ... rest of the function ...
-  };
-</script>
+
+    function createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL) {
+      const article = document.createElement('article');
+      article.className = 'video-post';
+      article.dataset.videoId = post.id;
+      article.dataset.author = author.id;
+
+      const mediaHTML = post.type === 'video'
+        ? `<video src="${mediaURL}" class="video-player" autoplay loop muted playsinline></video>`
+        : `<img src="${mediaURL}" class="post-image">`;
+
+      article.innerHTML = `
+      <div class="video-wrapper">
+        ${mediaHTML}
+
+        <div class="video-overlay">
+          <div class="video-actions">
+            <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
+              ❤️ <span data-like-count>${post.likes}</span>
+            </button>
+
+            <button class="action-btn comment-btn" onclick="openComments('${post.id}')">
+              💬 <span id="cc-${post.id}">${commentCount}</span>
+            </button>
+          </div>
+
+          <div class="video-info">
+            <a href="profile.html?userId=${author.id}" class="poster-name">
+              @${author.username}
+            </a>
+
+            <p>${post.caption}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+      return article;
+    }
+
+    window.switchTab = async function (tab, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      document.getElementById('feedEmptyState').style.display = 'none';
+
+      await renderFeedWithMedia('postsContainer', tab);
+    };
+  </script>
+
 </head>
 
 <body>
@@ -429,106 +354,13 @@
     document.getElementById('sidebarHandle').textContent = myHandle;
     document.getElementById('commentUserAvatar').textContent = myInit;
 
-    // ── Load user-created posts ───────────────────────────────────────
-    (async function loadUserPosts() {
-      const posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-      const container = document.getElementById('postsContainer');
-      const emptyEl = document.getElementById('forYouEmptyState');
-      const author = userData ? (userData.username || 'jordanlee') : 'jordanlee';
-
-      if (!posts.length) { emptyEl.style.display = 'flex'; return; }
-      emptyEl.style.display = 'none';
-
-      for (const post of posts.slice().reverse()) {
-        const id = 'user_' + post.id;
-
-        // Resolve media — IDB blob URL or legacy data URL
-        let src;
-        if (post.mediaKey) {
-          src = await MediaStore.getURL(post.mediaKey);
-        } else if (post.image) {
-          src = post.image;
-        }
-        if (!src) continue;
-
-        const isVideo = post.fileType === 'video' || src.startsWith('data:video');
-        const tags = (post.hashtags || []).map(t => `<span class="hashtag">${esc(t)}</span>`).join('');
-        const postUrl = `post.html?post=${encodeURIComponent(src)}&author=${encodeURIComponent(author)}&caption=${encodeURIComponent(post.caption)}&isUserPost=1`;
-
-        const mediaHtml = isVideo
-          ? `<video src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;" muted autoplay loop playsinline></video>`
-          : `<img src="${esc(src)}" alt="Your post">`;
-
-        commentsData[id] = { label: '@' + author + "'s post", count: 0, postImg: src, caption: post.caption, items: [] };
-
-        const article = document.createElement('article');
-        article.className = 'video-post';
-        article.dataset.videoId = id;
-        article.dataset.author = author;
-        article.innerHTML = `
-      <div class="video-wrapper">
-        <a href="${esc(postUrl)}" class="post-img-link">${mediaHtml}</a>
-        <div class="video-overlay">
-          <div class="video-actions">
-            <button class="action-btn like-btn" data-video-id="${id}">
-              <img src="./media/icons/heart.svg" alt="Like">
-              <span class="action-count" data-like-count>0</span>
-            </button>
-            <button class="action-btn comment-btn" data-video-id="${id}" onclick="openComments('${id}')">
-              <img src="./media/icons/comments.svg" alt="Comment">
-              <span class="action-count" data-comment-count id="cc-${id}">0</span>
-            </button>
-            <button class="action-btn share-btn" data-video-id="${id}"
-              onclick="openShareModal('${id}','${esc(author)}','${encodeURIComponent(src)}')">
-              <img src="./media/icons/share.svg" alt="Share">
-            </button>
-            <button class="action-btn delete-btn" data-video-id="${id}"
-              onclick="deletePostFromFeed(${post.id}, this)" title="Delete post">
-              <img src="./media/icons/trash.svg" alt="Delete">
-            </button>
-          </div>
-          <div class="video-info">
-            <div class="poster-info">
-              <a href="profile.html" class="poster-name">@${esc(author)}</a>
-              <span class="user-created-badge">Your Post</span>
-            </div>
-            <div class="video-caption">
-              <p>${esc(post.caption)}</p>
-              <div class="video-hashtags">${tags}</div>
-            </div>
-            <div class="video-sound"><span>&#x266B; Original Sound - ${esc(author)}</span></div>
-          </div>
-        </div>
-      </div>`;
-        container.insertBefore(article, emptyEl);
-      }
-
-      attachLikeButtons();
-    })();
-
     // ── Feed tabs ─────────────────────────────────────────────────────
-    function switchTab(tab, el) {
+    window.switchTab = function (tab, el) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       if (el) el.classList.add('active');
-      const container = document.getElementById('postsContainer');
-      const feedEmpty = document.getElementById('feedEmptyState');
-      const forYouEmpty = document.getElementById('forYouEmptyState');
-      const hasPosts = container.querySelectorAll('.video-post').length > 0;
-
-      if (tab === 'for-you') {
-        container.style.display = '';
-        feedEmpty.style.display = 'none';
-        forYouEmpty.style.display = hasPosts ? 'none' : 'flex';
-      } else {
-        container.style.display = 'none';
-        feedEmpty.style.display = 'flex';
-        forYouEmpty.style.display = 'none';
-        document.getElementById('emptyStateTitle').textContent = tab === 'live' ? 'No live streams' : 'No posts yet';
-        document.getElementById('emptyStateText').textContent = tab === 'live'
-          ? 'No one is live right now. Check back later!'
-          : "You haven't followed anyone yet, or they haven't posted.";
-      }
-    }
+      document.getElementById('feedEmptyState').style.display = 'none';
+      renderFeed('postsContainer', tab);
+    };
 
     // ── Comments system ───────────────────────────────────────────────
     let activePostId = null;
