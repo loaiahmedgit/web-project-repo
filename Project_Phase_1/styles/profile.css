@@ -236,12 +236,30 @@ body {
     margin-top: 30px;
 }
 
+<<<<<<< HEAD
 /* ── Edit Profile Modal ── */
 .edit-modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.65);
+=======
+.bio {
+    color: whitesmoke;;
+    font-size: 25
+px;
+    margin-top: 10px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.edit-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+>>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
     justify-content: center;
     align-items: center;
     z-index: 1000;
@@ -297,6 +315,7 @@ body {
 
 .edit-modal-body {
     padding: 20px;
+<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -379,3 +398,18 @@ body {
     transition: opacity 0.2s;
 }
 .edit-save-btn:hover { opacity: 0.88; }
+=======
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+}
+
+.edit-box input,
+.edit-box textarea {
+    padding: 8px;
+    border: 2px solid orange;
+    border-radius: 5px;
+}
+>>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
