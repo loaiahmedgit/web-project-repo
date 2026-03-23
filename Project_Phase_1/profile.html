@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -6,13 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 
+    ```
     <link rel="stylesheet" href="styles/profile.css">
-
     <script src="media-store.js"></script>
+    ```
+
 </head>
 
 <body>
 
+    ```
     <div class="profile-card">
 
         <!-- TOP BAR -->
@@ -43,8 +47,11 @@
             <h2 id="profileName"></h2>
             <p class="username" id="profileUsername"></p>
 
+            <!-- BIO -->
+            <p class="bio" id="profileBio">No bio yet</p>
+
             <div class="buttons">
-                <button class="edit-btn">Edit Profile</button>
+                <button class="edit-btn" onclick="openEdit()">Edit Profile</button>
                 <button class="message" onclick="window.location.href='messages.html'">Message</button>
             </div>
 
@@ -81,8 +88,25 @@
         </div>
     </div>
 
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="edit-modal">
+        <div class="edit-box">
+            <h2>Edit Profile</h2>
+
+            <input type="text" id="editFirstName" placeholder="First Name">
+            <input type="text" id="editLastName" placeholder="Last Name">
+            <input type="text" id="editUsername" placeholder="Username">
+            <input type="password" id="editPassword" placeholder="New Password">
+
+            <!-- BIO -->
+            <textarea id="editBio" placeholder="Write your bio..." rows="3"></textarea>
+
+            <button onclick="saveProfile()">Save</button>
+            <button onclick="closeEdit()">Cancel</button>
+        </div>
+    </div>
+
     <script>
-        // ================= USER =================
 
         const params = new URLSearchParams(window.location.search);
         const userIdFromURL = params.get("user");
@@ -140,41 +164,11 @@
             `;
         }
 
-        // Follow from profile page
-        function toggleFollowProfile(btn) {
-            const data        = JSON.parse(localStorage.getItem('maseera_data') || '{}');
-            const loggedInId  = currentUser ? currentUser.username : null;
-            if (!loggedInId) return;
+        document.getElementById("profileName").textContent =
+            user.firstName + " " + user.lastName;
 
-            let me = data.users && data.users.find(u => u.id === loggedInId || u.username === loggedInId);
-            if (!me) {
-                me = { id: loggedInId, username: loggedInId, displayName: displayName, following: [], followers: 0 };
-                if (!data.users) data.users = [];
-                data.users.push(me);
-            }
-            if (!me.following) me.following = [];
-
-            const idx = me.following.indexOf(profileUserId);
-            if (idx === -1) {
-                me.following.push(profileUserId);
-                btn.textContent = 'Following';
-                btn.dataset.following = '1';
-                btn.style.background = 'linear-gradient(135deg,#8A1538,#F5A623)';
-                btn.style.color = '#fff';
-                btn.style.borderColor = 'transparent';
-                // update follower count on target user
-                const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
-                if (target) target.followers = (target.followers || 0) + 1;
-            } else {
-                me.following.splice(idx, 1);
-                btn.textContent = '+ Follow';
-                btn.dataset.following = '0';
-                btn.style.background = 'transparent';
-                btn.style.color = '';
-                btn.style.borderColor = '';
-                const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
-                if (target) target.followers = Math.max(0, (target.followers || 0) - 1);
-            }
+        document.getElementById("profileUsername").textContent =
+            "@" + user.username;
 
             // Persist
             const meIdx = data.users.findIndex(u => u.id === loggedInId || u.username === loggedInId);
@@ -182,17 +176,10 @@
             localStorage.setItem('maseera_data', JSON.stringify(data));
         }
 
-        // Show follower count from maseera_data if available
-        if (maseeraData) {
-            const mu = maseeraData.users.find(u => u.id === profileUserId || u.username === profileUserId);
-            if (mu) {
-                const statsEl = document.querySelector('.stats');
-                if (statsEl) {
-                    statsEl.children[0].querySelector('h3').textContent = (mu.followers || 0).toLocaleString();
-                    statsEl.children[1].querySelector('h3').textContent = ((mu.following && mu.following.length) || 0).toLocaleString();
-                }
-            }
-        }
+        // BIO
+        document.getElementById("profileBio").textContent =
+            user.bio || "No bio yet";
+
 
         // ================= POSTS =================
 
@@ -229,23 +216,27 @@
                 const canDelete = isOwnProfile;
 
                 div.innerHTML = `
-                    ${(post.fileType === 'video' || post.type === 'video')
-                        ? `<video class="post-media" autoplay muted loop playsinline></video>`
-                        : `<img class="post-media" alt="post">`}
-                    ${canDelete
-                        ? `<button class="delete-post-btn" onclick="event.stopPropagation(); deletePost('${post.id}', this, '${post._source}')">✕</button>`
-                        : ""}
-                    <div class="post-overlay">
-                        <div class="overlay-item">
-                            <img src="media/icons/heart.svg">
-                            <span>${post.likes || 0}</span>
-                        </div>
-                        <div class="overlay-item">
-                            <img src="media/icons/comments.svg">
-                            <span>${post.comments || 0}</span>
-                        </div>
+                ${post.fileType === 'video'
+                        ? `<video class="post-media" autoplay muted loop></video>`
+                        : `<img class="post-media">`
+                    }
+
+                ${user.username === currentUser.username ?
+                        `<button class="delete-post-btn" onclick="deletePost('${post.id}', this)">X</button>`
+                        : ""
+                    }
+
+                <div class="post-overlay">
+                    <div class="overlay-item">
+                        <img src="media/icons/heart.svg">
+                        <span>${post.likes || 0}</span>
                     </div>
-                `;
+                    <div class="overlay-item">
+                        <img src="media/icons/comments.svg">
+                        <span>${post.comments || 0}</span>
+                    </div>
+                </div>
+            `;
 
                 div.addEventListener("click", function () {
                     const url = "post.html?post=" + encodeURIComponent(post.id) +
@@ -288,7 +279,49 @@
                 posts = posts.filter(p => String(p.id) !== String(id));
                 localStorage.setItem("userPosts", JSON.stringify(posts));
             }
+
+            posts = posts.filter(p => String(p.id) !== String(id));
+            localStorage.setItem("userPosts", JSON.stringify(posts));
+
+            btn.closest(".post").remove();
             loadPosts();
+        }
+
+        // ================= EDIT =================
+
+        function openEdit() {
+            if (user.username !== currentUser.username) return;
+
+            document.getElementById("editFirstName").value = currentUser.firstName || "";
+            document.getElementById("editLastName").value = currentUser.lastName || "";
+            document.getElementById("editUsername").value = currentUser.username || "";
+            document.getElementById("editBio").value = currentUser.bio || "";
+
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function closeEdit() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function saveProfile() {
+            let first = document.getElementById("editFirstName").value;
+            let last = document.getElementById("editLastName").value;
+            let username = document.getElementById("editUsername").value;
+            let password = document.getElementById("editPassword").value;
+            let bio = document.getElementById("editBio").value;
+
+            currentUser.firstName = first;
+            currentUser.lastName = last;
+            currentUser.username = username;
+            currentUser.bio = bio;
+
+            if (password) currentUser.password = password;
+
+            localStorage.setItem("user", JSON.stringify(currentUser));
+
+            closeEdit();
+            location.reload();
         }
 
         // ================= MENU =================
@@ -306,6 +339,7 @@
         }
 
     </script>
+    ```
 
 </body>
 
