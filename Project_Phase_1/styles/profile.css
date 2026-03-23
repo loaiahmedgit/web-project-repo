@@ -234,6 +234,14 @@ body {
     margin-top: 30px;
 }
 
+<<<<<<< HEAD
+/* ── Edit Profile Modal ── */
+.edit-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+=======
 .bio {
     color: whitesmoke;;
     font-size: 25
@@ -249,13 +257,146 @@ px;
     inset: 0;
     background: rgba(0,0,0,0.6);
     display: none;
+>>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
     justify-content: center;
     align-items: center;
+    z-index: 1000;
+    padding: 20px;
 }
 
-.edit-box {
-    background: white;
+.edit-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    animation: modalSlideIn 0.22s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.edit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #8A1538, #c0392b);
+}
+
+.edit-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.edit-modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.edit-modal-close:hover { background: rgba(255,255,255,0.35); }
+
+.edit-modal-body {
     padding: 20px;
+<<<<<<< HEAD
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.edit-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+
+.edit-field input,
+.edit-field textarea {
+    padding: 10px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    color: #222;
+}
+
+.edit-field input:focus,
+.edit-field textarea:focus {
+    border-color: #8A1538;
+}
+
+.edit-field-note {
+    font-size: 11px;
+    color: #999;
+}
+
+.edit-modal-error {
+    margin: 0 20px;
+    padding: 10px 14px;
+    background: #fde8e8;
+    border: 1px solid #e74c3c;
+    border-radius: 8px;
+    color: #c0392b;
+    font-size: 13px;
+}
+
+.edit-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #eee;
+}
+
+.edit-cancel-btn {
+    padding: 9px 20px;
+    border: 1.5px solid #ccc;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #555;
+    transition: background 0.2s;
+}
+.edit-cancel-btn:hover { background: #f5f5f5; }
+
+.edit-save-btn {
+    padding: 9px 24px;
+    background: linear-gradient(135deg, #8A1538, #F5A623);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.edit-save-btn:hover { opacity: 0.88; }
+=======
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -269,3 +410,4 @@ px;
     border: 2px solid orange;
     border-radius: 5px;
 }
+>>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
