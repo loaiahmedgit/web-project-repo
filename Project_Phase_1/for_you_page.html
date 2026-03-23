@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -10,10 +9,104 @@
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       getData();
-      renderFeed('postsContainer', 'for-you');
+
+      await renderFeedWithMedia('postsContainer', 'for-you');
+
+      updateFollowingList();
     });
+
+    async function renderFeedWithMedia(containerId, type) {
+      const container = document.getElementById(containerId);
+      const data = getData();
+
+      const posts = type === 'for-you'
+        ? getForYouPosts()
+        : getFollowingPosts();
+
+      container.innerHTML = '';
+
+      for (const post of posts) {
+        const author = data.users.find(u => u.id === post.author);
+
+        let mediaURL = post.mediaPath;
+
+        if (post.mediaKey) {
+          const url = await MediaStore.getURL(post.mediaKey);
+          if (url) mediaURL = url;
+        }
+
+        const isLiked = isPostLiked(post.id);
+        const comments = getCommentsForPost(post.id);
+
+        const element = createPostElementWithMedia(
+          post,
+          author,
+          isLiked,
+          comments.length,
+          mediaURL
+        );
+
+        container.appendChild(element);
+      }
+
+      attachPostEventListeners();
+
+      setTimeout(() => {
+        if (videoController) videoController.destroy();
+        videoController = new VideoController();
+        attachVideoControls();
+      }, 100);
+    }
+
+    function createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL) {
+      const article = document.createElement('article');
+      article.className = 'video-post';
+      article.dataset.videoId = post.id;
+      article.dataset.author = author.id;
+
+      const mediaHTML = post.type === 'video'
+        ? `<video src="${mediaURL}" class="video-player" autoplay loop muted playsinline></video>`
+        : `<img src="${mediaURL}" class="post-image">`;
+
+      article.innerHTML = `
+      <div class="video-wrapper">
+        ${mediaHTML}
+
+        <div class="video-overlay">
+          <div class="video-actions">
+            <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
+              ❤️ <span data-like-count>${post.likes}</span>
+            </button>
+
+            <button class="action-btn comment-btn" onclick="openComments('${post.id}')">
+              💬 <span id="cc-${post.id}">${commentCount}</span>
+            </button>
+          </div>
+
+          <div class="video-info">
+            <a href="profile.html?user=${author.username}" class="poster-name">
+              @${author.username}
+            </a>
+
+            <p>${post.caption}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+      return article;
+    }
+
+    window.switchTab = async function (tab, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      document.getElementById('feedEmptyState').style.display = 'none';
+
+      await renderFeedWithMedia('postsContainer', tab);
+    };
   </script>
 
 </head>
@@ -217,27 +310,27 @@
         <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
         <p class="share-step-label">Choose who you want to share this post with:</p>
         <div class="contact-pick-list">
-          <div class="contact-pick-item" onclick="sendToContact('ahmed')">
+          <div class="contact-pick-item" onclick="sendToContact('alex')">
             <div class="contact-pick-avatar">A</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Ahmed Yasser</span>
-              <span class="contact-pick-handle">@ahmed</span>
+              <span class="contact-pick-name">Alex Dancer</span>
+              <span class="contact-pick-handle">@alexdancer</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
-          <div class="contact-pick-item" onclick="sendToContact('lina')">
-            <div class="contact-pick-avatar">L</div>
+          <div class="contact-pick-item" onclick="sendToContact('sarah')">
+            <div class="contact-pick-avatar">S</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Lina Omar</span>
-              <span class="contact-pick-handle">@lina</span>
+              <span class="contact-pick-name">Sarah Travels</span>
+              <span class="contact-pick-handle">@sarah_travels</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
-          <div class="contact-pick-item" onclick="sendToContact('youssef')">
-            <div class="contact-pick-avatar">Y</div>
+          <div class="contact-pick-item" onclick="sendToContact('mike')">
+            <div class="contact-pick-avatar">M</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Youssef Khaled</span>
-              <span class="contact-pick-handle">@youssef</span>
+              <span class="contact-pick-name">Mike Runner</span>
+              <span class="contact-pick-handle">@mike_runner</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
@@ -248,9 +341,12 @@
   </div>
 
   <script>
+    // ── Per-post comment data ─────────────────────────────────────────
+    const commentsData = {};
+
     // ── Load user info ────────────────────────────────────────────────
     const userData = JSON.parse(localStorage.getItem('user') || 'null');
-    const myName = userData ? ((userData.firstName || '') + ' ' + (userData.lastName || '')).trim() || userData.username : 'Jordan Lee';
+    const myName = userData ? (userData.firstName + ' ' + userData.lastName) : 'Jordan Lee';
     const myHandle = '@' + (userData ? userData.username : 'jordanlee');
     const myInit = myName.charAt(0).toUpperCase();
     document.getElementById('sidebarAvatar').textContent = myInit;
@@ -269,21 +365,18 @@
     // ── Comments system ───────────────────────────────────────────────
     let activePostId = null;
 
-    window.openComments = function (postId) {
+    function openComments(postId) {
       activePostId = postId;
-      const data = getData();
-      const post = data.posts.find(p => String(p.id) === String(postId));
-      const author = post ? (data.users.find(u => u.id === post.author)?.username || post.author) : 'unknown';
-      const comments = getCommentsForPost(postId);
+      const data = commentsData[postId] || { label: 'this post', count: 0, items: [] };
 
       document.getElementById('commentsEmptyState').style.display = 'none';
       document.getElementById('commentsActive').style.display = 'flex';
-      document.getElementById('commentsPostLabel').textContent = `@${author}'s post`;
-      document.getElementById('dynamicCommentTotal').textContent = fmtCount(post ? post.comments : comments.length);
+      document.getElementById('commentsPostLabel').textContent = data.label;
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
 
-      renderCommentList(comments, postId);
+      renderCommentList(data.items);
       document.getElementById('commentInput').focus();
-    };
+    }
 
     function closeComments() {
       activePostId = null;
@@ -291,104 +384,122 @@
       document.getElementById('commentsActive').style.display = 'none';
     }
 
-    function renderCommentList(comments, postId) {
+    function renderCommentList(items) {
       const list = document.getElementById('dynamicCommentsList');
-      const data = getData();
-
-      if (!comments || !comments.length) {
+      if (!items.length) {
         list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
         return;
       }
-
-      list.innerHTML = comments.map(c => {
-        const commentUser = data.users.find(u => u.id === c.userId) || {};
-        const avatar = c.avatar || commentUser.avatar || c.userId.charAt(0).toUpperCase();
-        const displayName = c.displayName || commentUser.displayName || c.userId;
-        const handle = '@' + c.userId;
-        return `
-          <li class="comment-item ${c.pinned ? 'pinned' : ''}" data-comment-id="${esc(c.id)}">
-            <div class="avatar-letter avatar-small">${esc(avatar)}</div>
-            <div class="comment-content">
-              <div class="comment-header">
-                <span class="comment-username">${esc(displayName)}</span>
-                <span class="comment-handle">${esc(handle)}</span>
-                ${c.pinned
-            ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
-            : `<span class="comment-timestamp">${esc(formatTimeAgo(c.timestamp))}</span>`}
-              </div>
-              <p class="comment-text">${esc(c.text)}</p>
-              <div class="comment-footer">
-                <button class="comment-like-btn" onclick="handleCommentLikeClick('${esc(String(postId))}','${esc(c.id)}',this)">
-                  <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
-                  <span class="like-count">${fmtCount(c.likes || 0)}</span>
-                </button>
-              </div>
-            </div>
-          </li>`;
-      }).join('');
+      list.innerHTML = items.map(c => `
+    <li class="comment-item ${c.pinned ? 'pinned' : ''}">
+      <div class="avatar-letter avatar-small">${esc(c.i)}</div>
+      <div class="comment-content">
+        <div class="comment-header">
+          <span class="comment-username">${esc(c.name)}</span>
+          <span class="comment-handle">${esc(c.handle)}</span>
+          ${c.pinned
+          ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
+          : `<span class="comment-timestamp">${esc(c.time || '')}</span>`}
+        </div>
+        <p class="comment-text">${esc(c.text)}</p>
+        <div class="comment-footer">
+          <button class="comment-like-btn" onclick="toggleCommentLike(this, ${items.indexOf(c)})">
+            <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
+            <span class="like-count">${fmtCount(c.likes || 0)}</span>
+          </button>
+        </div>
+      </div>
+    </li>`).join('');
     }
 
-    function formatTimeAgo(timestamp) {
-      if (!timestamp) return '';
-      const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
-      if (diff < 60) return 'just now';
-      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-      return Math.floor(diff / 86400) + 'd ago';
-    }
-
-    window.handleCommentLikeClick = function (postId, commentId, btn) {
+    function toggleCommentLike(btn, idx) {
+      if (!activePostId) return;
       const liked = btn.classList.toggle('comment-liked');
-      const img = btn.querySelector('.heart-icon-small');
       const countEl = btn.querySelector('.like-count');
+      const img = btn.querySelector('.heart-icon-small');
       const n = parseCount(countEl.textContent);
-      countEl.textContent = fmtCount(liked ? n + 1 : Math.max(0, n - 1));
-      // Clear inline filter so CSS class takes over
-      if (img) img.style.filter = '';
-      // Persist
-      const data = getData();
-      if (data.comments[postId]) {
-        const comment = data.comments[postId].find(c => c.id === commentId);
-        if (comment) {
-          comment.likes = liked ? (comment.likes || 0) + 1 : Math.max(0, (comment.likes || 0) - 1);
-          saveData(data);
-        }
-      }
-    };
+      const d = liked ? 1 : -1;
+      commentsData[activePostId].items[idx].likes = n + d;
+      countEl.textContent = fmtCount(n + d);
+      img.style.filter = liked
+        ? 'invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1)' : '';
+    }
 
-    window.submitComment = function (e) {
+    function submitComment(e) {
       e.preventDefault();
       const input = document.getElementById('commentInput');
       const text = input.value.trim();
       if (!text || !activePostId) return;
 
-      const newComment = addComment(activePostId, text);
-      if (!newComment) return;
+      const data = commentsData[activePostId];
+      if (!data) return;
 
-      const comments = getCommentsForPost(activePostId);
-      renderCommentList(comments, activePostId);
+      data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
+      data.count++;
 
+      // Re-render
+      renderCommentList(data.items);
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
+
+      // Update count on post button
       const ccEl = document.getElementById('cc-' + activePostId);
-      const updatedPost = getData().posts.find(p => String(p.id) === String(activePostId));
-      document.getElementById('dynamicCommentTotal').textContent = fmtCount(updatedPost ? updatedPost.comments : comments.length);
-      if (ccEl && updatedPost) ccEl.textContent = fmtCount(updatedPost.comments);
+      if (ccEl) ccEl.textContent = fmtCount(data.count);
 
       input.value = '';
+
+      // Scroll comments to bottom
       const container = document.getElementById('dynamicCommentsContainer');
       container.scrollTop = container.scrollHeight;
-    };
+    }
+
+    // ── Like buttons on feed posts ────────────────────────────────────
+    function attachLikeButtons() {
+      document.querySelectorAll('.like-btn').forEach(btn => {
+        if (btn._attached) return;
+        btn._attached = true;
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation(); e.preventDefault();
+          const isLiked = this.classList.toggle('liked');
+          const countEl = this.querySelector('[data-like-count]');
+          const img = this.querySelector('img');
+          const raw = countEl.textContent.replace(/[^0-9.KkMm]/g, '');
+          img.style.filter = isLiked
+            ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' : '';
+          const num = parseFloat(raw);
+          if (!isNaN(num)) {
+            const d = isLiked ? 1 : -1;
+            countEl.textContent = raw.includes('K')
+              ? (num + d / 1000).toFixed(1) + 'K' : String(Math.max(0, num + d));
+          }
+        });
+      });
+    }
+    attachLikeButtons();
+
+    // Follow buttons
+    document.querySelectorAll('[data-follow-btn]').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation(); e.preventDefault();
+        const isFollowing = this.classList.contains('following');
+        this.textContent = isFollowing ? '+ Follow' : 'Following';
+        this.classList.toggle('following', !isFollowing);
+        this.style.background = isFollowing ? 'transparent' : 'linear-gradient(135deg,#8A1538,#F5A623)';
+        this.style.borderColor = isFollowing ? '#F5A623' : 'transparent';
+        this.style.color = isFollowing ? '#F5A623' : '#fff';
+      });
+    });
 
     // ── Share modal ───────────────────────────────────────────────────
     let shareState = { postId: null, author: null, postImg: null, caption: null };
 
-    function openShareModal(postId, author, mediaPath) {
-      const appData = getData();
-      const post = appData.posts.find(p => String(p.id) === String(postId));
+    function openShareModal(postId, author, postNum) {
+      const data = commentsData[postId];
+      const imgMap = { '1': 'Post_1.png', '2': 'Post_2.png', '3': 'Post_3.png' };
       shareState = {
         postId,
         author,
-        postImg: (post && post.mediaPath) ? post.mediaPath : (mediaPath || ''),
-        caption: post ? post.caption : ''
+        postImg: data ? data.postImg : ('./media/images/' + (imgMap[postNum] || 'Post_1.png')),
+        caption: data ? data.caption : ''
       };
       document.getElementById('shareFeedback').textContent = '';
       document.getElementById('shareStep1').style.display = '';
@@ -445,36 +556,26 @@
     }
 
     // ── Delete post from feed ─────────────────────────────────────────
-    window.deletePostFromFeed = function (postId, btn) {
+    function deletePostFromFeed(postId, btn) {
       if (!confirm('Delete this post?')) return;
-
-      // Remove from maseera_data (demo / data-layer posts)
-      const data = getData();
-      const idx = data.posts.findIndex(p => String(p.id) === String(postId));
-      if (idx !== -1) {
-        data.posts.splice(idx, 1);
-        delete data.comments[postId];
-        delete data.likes[postId];
-        saveData(data);
-      }
-
-      // Remove from userPosts (create.html posts)
-      let userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-      const removed = userPosts.find(p => String(p.id) === String(postId));
-      userPosts = userPosts.filter(p => String(p.id) !== String(postId));
-      localStorage.setItem('userPosts', JSON.stringify(userPosts));
+      let posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+      const removed = posts.find(p => p.id === postId);
+      posts = posts.filter(p => p.id !== postId);
+      localStorage.setItem('userPosts', JSON.stringify(posts));
       if (removed && removed.mediaKey) MediaStore.remove(removed.mediaKey);
 
       const article = btn.closest('.video-post');
       if (article) article.remove();
 
+      // If no posts left, show empty state
       const container = document.getElementById('postsContainer');
       if (!container.querySelectorAll('.video-post').length) {
         document.getElementById('forYouEmptyState').style.display = 'flex';
       }
 
-      if (String(activePostId) === String(postId)) closeComments();
-    };
+      // Close comments panel if it was open for this post
+      if (activePostId === 'user_' + postId) closeComments();
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────
     function fmtCount(n) {
