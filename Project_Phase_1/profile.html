@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -7,19 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 
-    ```
     <link rel="stylesheet" href="styles/profile.css">
     <script src="media-store.js"></script>
-    ```
 
 </head>
 
 <body>
 
-    ```
     <div class="profile-card">
 
-        <!-- TOP BAR -->
         <div class="top-bar">
             <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
@@ -28,7 +23,6 @@
             </div>
         </div>
 
-        <!-- SIDE MENU -->
         <div class="side-menu" id="sideMenu">
             <a href="profile.html">Profile</a>
             <a href="create.html">Create Post</a>
@@ -36,10 +30,8 @@
             <a href="#" onclick="logoutUser()">Logout</a>
         </div>
 
-        <!-- COVER -->
         <div class="cover"></div>
 
-        <!-- PROFILE INFO -->
         <div class="profile-info">
 
             <div class="avatar" id="avatarLetter">A</div>
@@ -47,19 +39,13 @@
             <h2 id="profileName"></h2>
             <p class="username" id="profileUsername"></p>
 
-            <!-- BIO -->
             <p class="bio" id="profileBio">No bio yet</p>
 
             <div class="buttons">
-<<<<<<< HEAD
                 <button class="edit-btn" onclick="openEditModal()">Edit Profile</button>
-=======
-                <button class="edit-btn" onclick="openEdit()">Edit Profile</button>
->>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
                 <button class="message" onclick="window.location.href='messages.html'">Message</button>
             </div>
 
-            <!-- STATS -->
             <div class="stats">
                 <div>
                     <h3>273</h3>
@@ -79,22 +65,19 @@
                 </div>
             </div>
 
-            <!-- POSTS -->
             <div class="posts-section">
                 <h2>User Posts</h2>
                 <div class="posts-grid" id="postsGrid"></div>
             </div>
 
             <footer class="footer">
-                © 2026 Maseera
+                ©️ 2026 Maseera
             </footer>
 
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- EDIT PROFILE MODAL -->
-    <div class="edit-modal-overlay" id="editModalOverlay" onclick="closeEditModal(event)">
+    <div class="edit-modal-overlay" id="editModalOverlay" style="display:none;" onclick="closeEditModal(event)">
         <div class="edit-modal" id="editModal">
 
             <div class="edit-modal-header">
@@ -128,82 +111,28 @@
                 <button class="edit-cancel-btn" onclick="closeEditModal()">Cancel</button>
                 <button class="edit-save-btn" onclick="saveProfile()">Save</button>
             </div>
-=======
-    <!-- EDIT MODAL -->
-    <div id="editModal" class="edit-modal">
-        <div class="edit-box">
-            <h2>Edit Profile</h2>
-
-            <input type="text" id="editFirstName" placeholder="First Name">
-            <input type="text" id="editLastName" placeholder="Last Name">
-            <input type="text" id="editUsername" placeholder="Username">
-            <input type="password" id="editPassword" placeholder="New Password">
-
-            <!-- BIO -->
-            <textarea id="editBio" placeholder="Write your bio..." rows="3"></textarea>
-
-            <button onclick="saveProfile()">Save</button>
-            <button onclick="closeEdit()">Cancel</button>
->>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
         </div>
     </div>
 
     <script>
 
         const params = new URLSearchParams(window.location.search);
-        const userIdFromURL = params.get("user");
+        const usernameFromURL = params.get("user");
 
         let currentUser = JSON.parse(localStorage.getItem("user"));
-        if (!currentUser) { window.location.href = "login.html"; }
 
-        // maseera_data for looking up demo users
-        const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
-
-        // The profile being viewed
-        let isOwnProfile = true;
-        let profileUserId = currentUser ? currentUser.username : null;
-        let displayName   = currentUser ? ((currentUser.firstName || '') + ' ' + (currentUser.lastName || '')).trim() : '';
-        let displayHandle = currentUser ? currentUser.username : '';
-
-        if (userIdFromURL && userIdFromURL !== (currentUser && currentUser.username)) {
-            isOwnProfile = false;
-            profileUserId = userIdFromURL;
-
-            // Try to find richer info in maseera_data
-            const maseeraUser = maseeraData && maseeraData.users.find(
-                u => u.id === userIdFromURL || u.username === userIdFromURL
-            );
-            if (maseeraUser) {
-                displayName   = maseeraUser.displayName || maseeraUser.username;
-                displayHandle = maseeraUser.username;
-            } else {
-                displayName   = userIdFromURL;
-                displayHandle = userIdFromURL;
-            }
+        if (!currentUser) {
+            window.location.href = "login.html";
         }
 
-        document.getElementById("profileName").textContent    = displayName;
-        document.getElementById("profileUsername").textContent = "@" + displayHandle;
-        document.getElementById("avatarLetter").textContent    = displayHandle.charAt(0).toUpperCase();
+        let user = currentUser;
 
-        // Show/hide buttons based on own vs other profile
-        const btnsEl = document.querySelector(".buttons");
-        if (!isOwnProfile) {
-            // Check if already following
-            const myMaseeraUser = maseeraData && maseeraData.users.find(
-                u => u.id === currentUser.username || u.username === currentUser.username
-            );
-            const alreadyFollowing = myMaseeraUser && myMaseeraUser.following &&
-                myMaseeraUser.following.includes(profileUserId);
-
-            btnsEl.innerHTML = `
-                <button class="edit-btn follow-profile-btn" id="followProfileBtn"
-                    onclick="toggleFollowProfile(this)"
-                    data-following="${alreadyFollowing ? '1' : '0'}">
-                    ${alreadyFollowing ? 'Following' : '+ Follow'}
-                </button>
-                <button class="message" onclick="window.location.href='messages.html'">Message</button>
-            `;
+        if (usernameFromURL) {
+            user = {
+                username: usernameFromURL,
+                firstName: usernameFromURL,
+                lastName: ""
+            };
         }
 
         document.getElementById("profileName").textContent =
@@ -212,50 +141,31 @@
         document.getElementById("profileUsername").textContent =
             "@" + user.username;
 
-            // Persist
-            const meIdx = data.users.findIndex(u => u.id === loggedInId || u.username === loggedInId);
-            if (meIdx !== -1) data.users[meIdx] = me;
-            localStorage.setItem('maseera_data', JSON.stringify(data));
-        }
+        document.getElementById("avatarLetter").textContent =
+            user.username.charAt(0).toUpperCase();
 
-        // BIO
         document.getElementById("profileBio").textContent =
             user.bio || "No bio yet";
-
 
         // ================= POSTS =================
 
         function loadPosts() {
-            const grid = document.getElementById("postsGrid");
+            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+            posts = posts.filter(p => p.author === user.username);
+
+            let grid = document.getElementById("postsGrid");
+
             grid.innerHTML = "";
-            let allPosts = [];
+            document.getElementById("postCountStat").textContent = posts.length;
 
-            // 1. Posts from userPosts (create.html uploads)
-            const userPosts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-            // Only include posts explicitly authored by this user
-            const up = userPosts.filter(p => p.author === profileUserId);
-            up.forEach(p => allPosts.push({ ...p, _source: 'userPosts' }));
-
-            // 2. Posts from maseera_data (demo posts) — always read fresh from localStorage
-            const freshMaseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
-            if (freshMaseeraData && freshMaseeraData.posts) {
-                freshMaseeraData.posts.filter(p => p.author === profileUserId).forEach(p => {
-                    allPosts.push({ ...p, _source: 'maseera' });
-                });
-            }
-
-            document.getElementById("postCountStat").textContent = allPosts.length;
-
-            if (!allPosts.length) {
-                grid.innerHTML = "<p style='color:#808080;padding:20px;'>No posts yet</p>";
+            if (!posts.length) {
+                grid.innerHTML = "<p>No posts yet</p>";
                 return;
             }
 
-            allPosts.forEach(post => {
-                const div = document.createElement("div");
+            posts.forEach(post => {
+                let div = document.createElement("div");
                 div.className = "post";
-                div.style.cursor = "pointer";
-                const canDelete = isOwnProfile;
 
                 div.innerHTML = `
                 ${post.fileType === 'video'
@@ -280,24 +190,15 @@
                 </div>
             `;
 
-                div.addEventListener("click", function () {
-                    const url = "post.html?post=" + encodeURIComponent(post.id) +
-                        "&author=" + encodeURIComponent(post.author || profileUserId) +
-                        "&caption=" + encodeURIComponent(post.caption || '') +
-                        "&source=" + encodeURIComponent(post._source || 'maseera');
-                    window.location.href = url;
-                });
                 grid.appendChild(div);
 
-                const mediaEl = div.querySelector(".post-media");
-                if (post._source === 'maseera') {
-                    mediaEl.src = post.mediaPath;
-                } else if (post.mediaKey) {
-                    MediaStore.getURL(post.mediaKey).then(url => { if (url) mediaEl.src = url; });
-                } else if (post.mediaURL) {
-                    // Legacy posts stored data URL directly in localStorage
-                    mediaEl.src = post.mediaURL;
-                }
+                const mediaElement = div.querySelector(".post-media");
+
+                MediaStore.getURL(post.mediaKey).then(url => {
+                    if (url) {
+                        mediaElement.src = url;
+                    }
+                });
             });
         }
 
@@ -305,21 +206,13 @@
 
         // ================= DELETE =================
 
-        function deletePost(id, btn, source) {
-            if (source === 'maseera') {
-                const data = JSON.parse(localStorage.getItem('maseera_data') || '{}');
-                if (data.posts) {
-                    data.posts = data.posts.filter(p => String(p.id) !== String(id));
-                    delete (data.comments || {})[id];
-                    delete (data.likes || {})[id];
-                    localStorage.setItem('maseera_data', JSON.stringify(data));
-                }
-            } else {
-                let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-                const post = posts.find(p => String(p.id) === String(id));
-                if (post && post.mediaKey) MediaStore.remove(post.mediaKey);
-                posts = posts.filter(p => String(p.id) !== String(id));
-                localStorage.setItem("userPosts", JSON.stringify(posts));
+        function deletePost(id, btn) {
+            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+
+            const post = posts.find(p => String(p.id) === String(id));
+
+            if (post && post.mediaKey) {
+                MediaStore.remove(post.mediaKey);
             }
 
             posts = posts.filter(p => String(p.id) !== String(id));
@@ -329,15 +222,14 @@
             loadPosts();
         }
 
-<<<<<<< HEAD
         // ================= EDIT PROFILE =================
 
         function openEditModal() {
             const u = JSON.parse(localStorage.getItem('user') || '{}');
             document.getElementById('editFirstName').value = u.firstName || '';
-            document.getElementById('editLastName').value  = u.lastName  || '';
-            document.getElementById('editUsername').value  = u.username  || '';
-            document.getElementById('editBio').value       = u.bio       || '';
+            document.getElementById('editLastName').value = u.lastName || '';
+            document.getElementById('editUsername').value = u.username || '';
+            document.getElementById('editBio').value = u.bio || '';
             document.getElementById('editModalError').style.display = 'none';
             document.getElementById('editModalOverlay').style.display = 'flex';
         }
@@ -351,10 +243,10 @@
 
         function saveProfile() {
             const firstName = document.getElementById('editFirstName').value.trim();
-            const lastName  = document.getElementById('editLastName').value.trim();
-            const username  = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
-            const bio       = document.getElementById('editBio').value.trim();
-            const errorEl   = document.getElementById('editModalError');
+            const lastName = document.getElementById('editLastName').value.trim();
+            const username = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const bio = document.getElementById('editBio').value.trim();
+            const errorEl = document.getElementById('editModalError');
 
             // Basic validation
             if (!username) {
@@ -382,7 +274,7 @@
                 if (mData.users) {
                     const mu = mData.users.find(u => u.id === oldUsername || u.username === oldUsername);
                     if (mu) {
-                        mu.id       = username;
+                        mu.id = username;
                         mu.username = username;
                         mu.displayName = (firstName + ' ' + lastName).trim() || username;
                     }
@@ -392,66 +284,29 @@
 
             // Save updated user
             u.firstName = firstName;
-            u.lastName  = lastName;
-            u.username  = username;
-            u.bio       = bio;
+            u.lastName = lastName;
+            u.username = username;
+            u.bio = bio;
             localStorage.setItem('user', JSON.stringify(u));
 
             // Update page display immediately
             const fullName = (firstName + ' ' + lastName).trim() || username;
-            document.getElementById('profileName').textContent     = fullName;
+            document.getElementById('profileName').textContent = fullName;
             document.getElementById('profileUsername').textContent = '@' + username;
-            document.getElementById('avatarLetter').textContent    = username.charAt(0).toUpperCase();
+            document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
 
             // Update bio if there's a bio element
             const bioEl = document.getElementById('profileBio');
             if (bioEl) bioEl.textContent = bio;
 
             // Refresh in-memory vars
-            currentUser   = u;
+            currentUser = u;
             profileUserId = username;
-            displayName   = fullName;
+            displayName = fullName;
             displayHandle = username;
 
             document.getElementById('editModalOverlay').style.display = 'none';
             loadPosts();
-=======
-        // ================= EDIT =================
-
-        function openEdit() {
-            if (user.username !== currentUser.username) return;
-
-            document.getElementById("editFirstName").value = currentUser.firstName || "";
-            document.getElementById("editLastName").value = currentUser.lastName || "";
-            document.getElementById("editUsername").value = currentUser.username || "";
-            document.getElementById("editBio").value = currentUser.bio || "";
-
-            document.getElementById("editModal").style.display = "flex";
-        }
-
-        function closeEdit() {
-            document.getElementById("editModal").style.display = "none";
-        }
-
-        function saveProfile() {
-            let first = document.getElementById("editFirstName").value;
-            let last = document.getElementById("editLastName").value;
-            let username = document.getElementById("editUsername").value;
-            let password = document.getElementById("editPassword").value;
-            let bio = document.getElementById("editBio").value;
-
-            currentUser.firstName = first;
-            currentUser.lastName = last;
-            currentUser.username = username;
-            currentUser.bio = bio;
-
-            if (password) currentUser.password = password;
-
-            localStorage.setItem("user", JSON.stringify(currentUser));
-
-            closeEdit();
-            location.reload();
->>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
         }
 
         // ================= MENU =================
@@ -464,12 +319,11 @@
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("user");
+            localStorage.removeItem("currentUser");
             window.location.href = "login.html";
         }
 
     </script>
-    ```
 
 </body>
 
