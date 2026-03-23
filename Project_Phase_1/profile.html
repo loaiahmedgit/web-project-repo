@@ -47,7 +47,6 @@
             <h2 id="profileName"></h2>
             <p class="username" id="profileUsername"></p>
 
-            <!-- BIO -->
             <p class="bio" id="profileBio">No bio yet</p>
 
             <div class="buttons">
@@ -88,7 +87,6 @@
         </div>
     </div>
 
-    <!-- EDIT MODAL -->
     <div id="editModal" class="edit-modal">
         <div class="edit-box">
             <h2>Edit Profile</h2>
@@ -98,7 +96,6 @@
             <input type="text" id="editUsername" placeholder="Username">
             <input type="password" id="editPassword" placeholder="New Password">
 
-            <!-- BIO -->
             <textarea id="editBio" placeholder="Write your bio..." rows="3"></textarea>
 
             <button onclick="saveProfile()">Save</button>
@@ -109,59 +106,22 @@
     <script>
 
         const params = new URLSearchParams(window.location.search);
-        const userIdFromURL = params.get("user");
+        const usernameFromURL = params.get("user");
 
         let currentUser = JSON.parse(localStorage.getItem("user"));
-        if (!currentUser) { window.location.href = "login.html"; }
 
-        // maseera_data for looking up demo users
-        const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
-
-        // The profile being viewed
-        let isOwnProfile = true;
-        let profileUserId = currentUser ? currentUser.username : null;
-        let displayName   = currentUser ? ((currentUser.firstName || '') + ' ' + (currentUser.lastName || '')).trim() : '';
-        let displayHandle = currentUser ? currentUser.username : '';
-
-        if (userIdFromURL && userIdFromURL !== (currentUser && currentUser.username)) {
-            isOwnProfile = false;
-            profileUserId = userIdFromURL;
-
-            // Try to find richer info in maseera_data
-            const maseeraUser = maseeraData && maseeraData.users.find(
-                u => u.id === userIdFromURL || u.username === userIdFromURL
-            );
-            if (maseeraUser) {
-                displayName   = maseeraUser.displayName || maseeraUser.username;
-                displayHandle = maseeraUser.username;
-            } else {
-                displayName   = userIdFromURL;
-                displayHandle = userIdFromURL;
-            }
+        if (!currentUser) {
+            window.location.href = "login.html";
         }
 
-        document.getElementById("profileName").textContent    = displayName;
-        document.getElementById("profileUsername").textContent = "@" + displayHandle;
-        document.getElementById("avatarLetter").textContent    = displayHandle.charAt(0).toUpperCase();
+        let user = currentUser;
 
-        // Show/hide buttons based on own vs other profile
-        const btnsEl = document.querySelector(".buttons");
-        if (!isOwnProfile) {
-            // Check if already following
-            const myMaseeraUser = maseeraData && maseeraData.users.find(
-                u => u.id === currentUser.username || u.username === currentUser.username
-            );
-            const alreadyFollowing = myMaseeraUser && myMaseeraUser.following &&
-                myMaseeraUser.following.includes(profileUserId);
-
-            btnsEl.innerHTML = `
-                <button class="edit-btn follow-profile-btn" id="followProfileBtn"
-                    onclick="toggleFollowProfile(this)"
-                    data-following="${alreadyFollowing ? '1' : '0'}">
-                    ${alreadyFollowing ? 'Following' : '+ Follow'}
-                </button>
-                <button class="message" onclick="window.location.href='messages.html'">Message</button>
-            `;
+        if (usernameFromURL) {
+            user = {
+                username: usernameFromURL,
+                firstName: usernameFromURL,
+                lastName: ""
+            };
         }
 
         document.getElementById("profileName").textContent =
@@ -170,50 +130,31 @@
         document.getElementById("profileUsername").textContent =
             "@" + user.username;
 
-            // Persist
-            const meIdx = data.users.findIndex(u => u.id === loggedInId || u.username === loggedInId);
-            if (meIdx !== -1) data.users[meIdx] = me;
-            localStorage.setItem('maseera_data', JSON.stringify(data));
-        }
+        document.getElementById("avatarLetter").textContent =
+            user.username.charAt(0).toUpperCase();
 
-        // BIO
         document.getElementById("profileBio").textContent =
             user.bio || "No bio yet";
-
 
         // ================= POSTS =================
 
         function loadPosts() {
-            const grid = document.getElementById("postsGrid");
+            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+            posts = posts.filter(p => p.author === user.username);
+
+            let grid = document.getElementById("postsGrid");
+
             grid.innerHTML = "";
-            let allPosts = [];
+            document.getElementById("postCountStat").textContent = posts.length;
 
-            // 1. Posts from userPosts (create.html uploads)
-            const userPosts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-            // Only include posts explicitly authored by this user
-            const up = userPosts.filter(p => p.author === profileUserId);
-            up.forEach(p => allPosts.push({ ...p, _source: 'userPosts' }));
-
-            // 2. Posts from maseera_data (demo posts) — always read fresh from localStorage
-            const freshMaseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
-            if (freshMaseeraData && freshMaseeraData.posts) {
-                freshMaseeraData.posts.filter(p => p.author === profileUserId).forEach(p => {
-                    allPosts.push({ ...p, _source: 'maseera' });
-                });
-            }
-
-            document.getElementById("postCountStat").textContent = allPosts.length;
-
-            if (!allPosts.length) {
-                grid.innerHTML = "<p style='color:#808080;padding:20px;'>No posts yet</p>";
+            if (!posts.length) {
+                grid.innerHTML = "<p>No posts yet</p>";
                 return;
             }
 
-            allPosts.forEach(post => {
-                const div = document.createElement("div");
+            posts.forEach(post => {
+                let div = document.createElement("div");
                 div.className = "post";
-                div.style.cursor = "pointer";
-                const canDelete = isOwnProfile;
 
                 div.innerHTML = `
                 ${post.fileType === 'video'
@@ -238,24 +179,15 @@
                 </div>
             `;
 
-                div.addEventListener("click", function () {
-                    const url = "post.html?post=" + encodeURIComponent(post.id) +
-                        "&author=" + encodeURIComponent(post.author || profileUserId) +
-                        "&caption=" + encodeURIComponent(post.caption || '') +
-                        "&source=" + encodeURIComponent(post._source || 'maseera');
-                    window.location.href = url;
-                });
                 grid.appendChild(div);
 
-                const mediaEl = div.querySelector(".post-media");
-                if (post._source === 'maseera') {
-                    mediaEl.src = post.mediaPath;
-                } else if (post.mediaKey) {
-                    MediaStore.getURL(post.mediaKey).then(url => { if (url) mediaEl.src = url; });
-                } else if (post.mediaURL) {
-                    // Legacy posts stored data URL directly in localStorage
-                    mediaEl.src = post.mediaURL;
-                }
+                const mediaElement = div.querySelector(".post-media");
+
+                MediaStore.getURL(post.mediaKey).then(url => {
+                    if (url) {
+                        mediaElement.src = url;
+                    }
+                });
             });
         }
 
@@ -263,21 +195,13 @@
 
         // ================= DELETE =================
 
-        function deletePost(id, btn, source) {
-            if (source === 'maseera') {
-                const data = JSON.parse(localStorage.getItem('maseera_data') || '{}');
-                if (data.posts) {
-                    data.posts = data.posts.filter(p => String(p.id) !== String(id));
-                    delete (data.comments || {})[id];
-                    delete (data.likes || {})[id];
-                    localStorage.setItem('maseera_data', JSON.stringify(data));
-                }
-            } else {
-                let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-                const post = posts.find(p => String(p.id) === String(id));
-                if (post && post.mediaKey) MediaStore.remove(post.mediaKey);
-                posts = posts.filter(p => String(p.id) !== String(id));
-                localStorage.setItem("userPosts", JSON.stringify(posts));
+        function deletePost(id, btn) {
+            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+
+            const post = posts.find(p => String(p.id) === String(id));
+
+            if (post && post.mediaKey) {
+                MediaStore.remove(post.mediaKey);
             }
 
             posts = posts.filter(p => String(p.id) !== String(id));
@@ -334,7 +258,7 @@
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("user");
+            localStorage.removeItem("currentUser");
             window.location.href = "login.html";
         }
 
