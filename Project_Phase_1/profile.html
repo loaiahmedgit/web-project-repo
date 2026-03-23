@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -7,19 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
 
-    ```
     <link rel="stylesheet" href="styles/profile.css">
     <script src="media-store.js"></script>
-    ```
 
 </head>
 
 <body>
 
-    ```
     <div class="profile-card">
 
-        <!-- TOP BAR -->
         <div class="top-bar">
             <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
@@ -28,7 +23,6 @@
             </div>
         </div>
 
-        <!-- SIDE MENU -->
         <div class="side-menu" id="sideMenu">
             <a href="profile.html">Profile</a>
             <a href="create.html">Create Post</a>
@@ -36,10 +30,8 @@
             <a href="#" onclick="logoutUser()">Logout</a>
         </div>
 
-        <!-- COVER -->
         <div class="cover"></div>
 
-        <!-- PROFILE INFO -->
         <div class="profile-info">
 
             <div class="avatar" id="avatarLetter">A</div>
@@ -50,11 +42,10 @@
             <p class="bio" id="profileBio">No bio yet</p>
 
             <div class="buttons">
-                <button class="edit-btn" onclick="openEdit()">Edit Profile</button>
+                <button class="edit-btn" onclick="openEditModal()">Edit Profile</button>
                 <button class="message" onclick="window.location.href='messages.html'">Message</button>
             </div>
 
-            <!-- STATS -->
             <div class="stats">
                 <div>
                     <h3>273</h3>
@@ -74,14 +65,13 @@
                 </div>
             </div>
 
-            <!-- POSTS -->
             <div class="posts-section">
                 <h2>User Posts</h2>
                 <div class="posts-grid" id="postsGrid"></div>
             </div>
 
             <footer class="footer">
-                © 2026 Maseera
+                ©️ 2026 Maseera
             </footer>
 
         </div>
@@ -91,15 +81,37 @@
         <div class="edit-box">
             <h2>Edit Profile</h2>
 
-            <input type="text" id="editFirstName" placeholder="First Name">
-            <input type="text" id="editLastName" placeholder="Last Name">
-            <input type="text" id="editUsername" placeholder="Username">
-            <input type="password" id="editPassword" placeholder="New Password">
+            <div class="edit-modal-header">
+                <h3>Edit Profile</h3>
+                <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
+            </div>
 
-            <textarea id="editBio" placeholder="Write your bio..." rows="3"></textarea>
+            <div class="edit-modal-body">
+                <div class="edit-field">
+                    <label>First Name</label>
+                    <input type="text" id="editFirstName" placeholder="First name">
+                </div>
+                <div class="edit-field">
+                    <label>Last Name</label>
+                    <input type="text" id="editLastName" placeholder="Last name">
+                </div>
+                <div class="edit-field">
+                    <label>Username</label>
+                    <input type="text" id="editUsername" placeholder="Username">
+                    <span class="edit-field-note">Changing your username will update all your posts.</span>
+                </div>
+                <div class="edit-field">
+                    <label>Bio</label>
+                    <textarea id="editBio" placeholder="Tell people about yourself..." rows="3"></textarea>
+                </div>
+            </div>
 
-            <button onclick="saveProfile()">Save</button>
-            <button onclick="closeEdit()">Cancel</button>
+            <div id="editModalError" class="edit-modal-error" style="display:none;"></div>
+
+            <div class="edit-modal-footer">
+                <button class="edit-cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="edit-save-btn" onclick="saveProfile()">Save</button>
+            </div>
         </div>
     </div>
 
@@ -211,41 +223,91 @@
             loadPosts();
         }
 
-        // ================= EDIT =================
+        // ================= EDIT PROFILE =================
 
-        function openEdit() {
-            if (user.username !== currentUser.username) return;
-
-            document.getElementById("editFirstName").value = currentUser.firstName || "";
-            document.getElementById("editLastName").value = currentUser.lastName || "";
-            document.getElementById("editUsername").value = currentUser.username || "";
-            document.getElementById("editBio").value = currentUser.bio || "";
-
-            document.getElementById("editModal").style.display = "flex";
+        function openEditModal() {
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('editFirstName').value = u.firstName || '';
+            document.getElementById('editLastName').value = u.lastName || '';
+            document.getElementById('editUsername').value = u.username || '';
+            document.getElementById('editBio').value = u.bio || '';
+            document.getElementById('editModalError').style.display = 'none';
+            document.getElementById('editModalOverlay').style.display = 'flex';
         }
 
-        function closeEdit() {
-            document.getElementById("editModal").style.display = "none";
+        function closeEditModal(e) {
+            // Close when: called directly (no event), or user clicked the dark backdrop
+            if (!e || e.target === document.getElementById('editModalOverlay')) {
+                document.getElementById('editModalOverlay').style.display = 'none';
+            }
         }
 
         function saveProfile() {
-            let first = document.getElementById("editFirstName").value;
-            let last = document.getElementById("editLastName").value;
-            let username = document.getElementById("editUsername").value;
-            let password = document.getElementById("editPassword").value;
-            let bio = document.getElementById("editBio").value;
+            const firstName = document.getElementById('editFirstName').value.trim();
+            const lastName = document.getElementById('editLastName').value.trim();
+            const username = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const bio = document.getElementById('editBio').value.trim();
+            const errorEl = document.getElementById('editModalError');
 
-            currentUser.firstName = first;
-            currentUser.lastName = last;
-            currentUser.username = username;
-            currentUser.bio = bio;
+            // Basic validation
+            if (!username) {
+                errorEl.textContent = 'Username cannot be empty.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                errorEl.textContent = 'Username can only contain letters, numbers and underscores.';
+                errorEl.style.display = 'block';
+                return;
+            }
 
-            if (password) currentUser.password = password;
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            const oldUsername = u.username;
 
-            localStorage.setItem("user", JSON.stringify(currentUser));
+            // If username changed, update all userPosts that belong to this user
+            if (oldUsername && username !== oldUsername) {
+                const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+                userPosts.forEach(p => { if (p.author === oldUsername) p.author = username; });
+                localStorage.setItem('userPosts', JSON.stringify(userPosts));
 
-            closeEdit();
-            location.reload();
+                // Update maseera_data user entry if it exists
+                const mData = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+                if (mData.users) {
+                    const mu = mData.users.find(u => u.id === oldUsername || u.username === oldUsername);
+                    if (mu) {
+                        mu.id = username;
+                        mu.username = username;
+                        mu.displayName = (firstName + ' ' + lastName).trim() || username;
+                    }
+                }
+                localStorage.setItem('maseera_data', JSON.stringify(mData));
+            }
+
+            // Save updated user
+            u.firstName = firstName;
+            u.lastName = lastName;
+            u.username = username;
+            u.bio = bio;
+            localStorage.setItem('user', JSON.stringify(u));
+
+            // Update page display immediately
+            const fullName = (firstName + ' ' + lastName).trim() || username;
+            document.getElementById('profileName').textContent = fullName;
+            document.getElementById('profileUsername').textContent = '@' + username;
+            document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
+
+            // Update bio if there's a bio element
+            const bioEl = document.getElementById('profileBio');
+            if (bioEl) bioEl.textContent = bio;
+
+            // Refresh in-memory vars
+            currentUser = u;
+            profileUserId = username;
+            displayName = fullName;
+            displayHandle = username;
+
+            document.getElementById('editModalOverlay').style.display = 'none';
+            loadPosts();
         }
 
         // ================= MENU =================
@@ -263,7 +325,6 @@
         }
 
     </script>
-    ```
 
 </body>
 
