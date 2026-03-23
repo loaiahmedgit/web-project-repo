@@ -6,11 +6,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - Post</title>
   <link rel="stylesheet" href="./styles/post.css">
-  <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
 <script>
-  // Ensure data store is ready
-  document.addEventListener('DOMContentLoaded', function() { getData(); });
+  // Override or enhance existing functions with data-persistent versions
+  
+  // Initialize data on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ensure data store is initialized
+    getData();
+    
+    // Render initial feed
+    renderFeed('postsContainer', 'for-you');
+    
+    // Update following list in sidebar
+    updateFollowingList();
+  });
+  
+  // Override switchTab to use data layer
+  window.switchTab = function(tab, el) {
+    // Update active tab UI
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    
+    // Hide empty states
+    document.getElementById('feedEmptyState').style.display = 'none';
+    
+    // Render appropriate feed
+    renderFeed('postsContainer', tab);
+  };
+  
+  // Update following list in sidebar
+  function updateFollowingList() {
+    const currentUser = getCurrentUser();
+    const data = getData();
+    const followingList = document.querySelector('.following-list');
+    
+    if (!followingList || !currentUser || !currentUser.following) return;
+    
+    // Clear existing items (keep only the first few as static examples or regenerate)
+    // This is simplified - in a real app you'd regenerate the entire list
+    const followingUsers = currentUser.following
+      .map(userId => data.users.find(u => u.id === userId))
+      .filter(Boolean);
+    
+    // You could update the following list here
+  }
+  
+  // Override openComments to use data layer
+  window.openComments = function(postId) {
+    activePostId = postId;
+    const comments = getCommentsForPost(postId);
+    const post = getData().posts.find(p => p.id === postId);
+    const author = post ? post.author : 'unknown';
+    
+    document.getElementById('commentsEmptyState').style.display = 'none';
+    document.getElementById('commentsActive').style.display = 'flex';
+    document.getElementById('commentsPostLabel').textContent = `@${author}'s post`;
+    document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
+    
+    renderCommentList(comments, postId);
+    document.getElementById('commentInput').focus();
+  };
+  
+  // Override renderCommentList to use data
+  function renderCommentList(comments, postId) {
+    const list = document.getElementById('dynamicCommentsList');
+    const currentUser = getCurrentUser();
+    const data = getData();
+    
+    if (!comments || comments.length === 0) {
+      list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
+      return;
+    }
+    
+    list.innerHTML = comments.map(c => {
+      const commentUser = data.users.find(u => u.id === c.userId) || { displayName: c.userId, avatar: c.userId.charAt(0).toUpperCase() };
+      
+      return `
+        <li class="comment-item ${c.pinned ? 'pinned' : ''}" data-comment-id="${c.id}">
+          <div class="avatar-letter avatar-small">${escapeHtml(commentUser.avatar)}</div>
+          <div class="comment-content">
+            <div class="comment-header">
+              <span class="comment-username">${escapeHtml(commentUser.displayName)}</span>
+              <span class="comment-handle">@${escapeHtml(c.userId)}</span>
+              ${c.pinned
+                ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
+                : `<span class="comment-timestamp">${formatTimeAgo(c.timestamp)}</span>`}
+            </div>
+            <p class="comment-text">${escapeHtml(c.text)}</p>
+            <div class="comment-footer">
+              <button class="comment-like-btn" onclick="handleCommentLikeClick('${postId}', '${c.id}', this)">
+                <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
+                <span class="like-count">${formatCount(c.likes || 0)}</span>
+              </button>
+            </div>
+          </div>
+        </li>
+      `;
+    }).join('');
+  }
+  
+  // Format timestamp as time ago
+  function formatTimeAgo(timestamp) {
+    if (!timestamp) return 'unknown';
+    
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now - past;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    
+    if (diffSec < 60) return 'just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHour < 24) return diffHour + 'h ago';
+    return diffDay + 'd ago';
+  }
+  
+  // Handle comment like click
+  window.handleCommentLikeClick = function(postId, commentId, btn) {
+    const liked = toggleCommentLike(postId, commentId);
+    
+    btn.classList.toggle('comment-liked', liked);
+    const img = btn.querySelector('.heart-icon-small');
+    img.style.filter = liked 
+      ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' 
+      : '';
+    
+    const countEl = btn.querySelector('.like-count');
+    const data = getData();
+    const comment = data.comments[postId]?.find(c => c.id === commentId);
+    if (comment) {
+      countEl.textContent = formatCount(comment.likes);
+    }
+  };
+  
+  // Override submitComment to use data layer
+  window.submitComment = function(e) {
+    e.preventDefault();
+    const input = document.getElementById('commentInput');
+    const text = input.value.trim();
+    
+    if (!text || !activePostId) return;
+    
+    const newComment = addComment(activePostId, text);
+    
+    if (newComment) {
+      // Re-render comments
+      const comments = getCommentsForPost(activePostId);
+      renderCommentList(comments, activePostId);
+      
+      // Update comment count
+      document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
+      
+      // Update count on post button
+      const ccEl = document.getElementById('cc-' + activePostId);
+      if (ccEl) {
+        const post = getData().posts.find(p => p.id === activePostId);
+        if (post) ccEl.textContent = formatCount(post.comments);
+      }
+      
+      input.value = '';
+      
+      // Scroll comments to bottom
+      const container = document.getElementById('dynamicCommentsContainer');
+      container.scrollTop = container.scrollHeight;
+    }
+  };
+  
+  // Make sure share modal functions use the data
+  window.openShareModal = function(postId, author, mediaPath) {
+    // ... existing share modal code ...
+    // But you might want to store the postId for later use
+    window.currentSharePostId = postId;
+    // ... rest of the function ...
+  };
 </script>
 </head>
 
@@ -66,9 +237,7 @@
       <!-- Like / Comment / Share Actions -->
       <div class="post-actions-bar">
         <button class="post-action-btn like-post-btn" id="likeBtn" onclick="toggleLike(this)">
-          <svg class="heart-post-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:fill .2s,stroke .2s;">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
+          <span class="action-icon">&#x1F90D;</span>
           <span class="action-label" id="likeCount">18.3K</span>
           <span class="action-text">Likes</span>
         </button>
@@ -196,120 +365,33 @@
   </div>
 
   <script>
-    const params    = new URLSearchParams(window.location.search);
-    const postId    = params.get('post')   || '';
-    const authorId  = params.get('author') || '';
-    const rawCap    = params.get('caption');
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('post') || '1';
+    const author = params.get('author') || 'alexdancer';
+    const rawCap = params.get('caption');
+    const caption = rawCap ? decodeURIComponent(rawCap) : 'Check out this amazing moment! ✨';
 
-    // Load real post data from maseera_data
-    (function loadPost() {
-      const data       = getData();
-      const postRecord = data.posts.find(p => String(p.id) === String(postId));
-      const authorRec  = postRecord
-        ? data.users.find(u => u.id === postRecord.author)
-        : data.users.find(u => u.id === authorId);
+    const postData = {
+      '1': { image: './media/images/Post_1.png', likes: '18.3K', comments: '5,234' },
+      '2': { image: './media/images/Post_2.png', likes: '4.2K', comments: '987' },
+      '3': { image: './media/images/Post_3.png', likes: '94.2K', comments: '12,400' }
+    };
+    const post = postData[postId] || postData['1'];
 
-      // Media
-      const mediaContainer = document.querySelector('.post-image-container');
-      if (postRecord) {
-        if (postRecord.type === 'video') {
-          mediaContainer.innerHTML = `<video src="${postRecord.mediaPath}" controls autoplay class="post-image" style="width:100%;height:auto;border-radius:16px;background:#000;"></video>`;
-        } else {
-          document.getElementById('postImage').src = postRecord.mediaPath;
-        }
-        // Counts
-        document.getElementById('likeCount').textContent    = formatCount(postRecord.likes);
-        document.getElementById('commentCount').textContent = formatCount(postRecord.comments);
-        document.getElementById('commentTotal').textContent = formatCount(postRecord.comments);
-        // Caption
-        const caption = rawCap ? decodeURIComponent(rawCap) : postRecord.caption;
-        document.getElementById('postCaption').textContent = caption;
-        // Hashtags
-        const hashEl = document.getElementById('postHashtags');
-        if (postRecord.hashtags && postRecord.hashtags.length) {
-          hashEl.innerHTML = postRecord.hashtags.map(t =>
-            `<span class="hashtag">#${escapeHtml(t.replace(/^#/, ''))}</span>`).join('');
-        } else {
-          hashEl.innerHTML = '';
-        }
-        // Liked state
-        if (isPostLiked(postRecord.id)) {
-          const likeBtn = document.getElementById('likeBtn');
-          likeBtn.classList.add('liked');
-          likeBtn.querySelector('.heart-post-svg').style.fill   = '#ff2d55';
-          likeBtn.querySelector('.heart-post-svg').style.stroke = '#ff2d55';
-        }
-      } else {
-        // Try userPosts (posts created via create.html)
-        const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-        const userPost  = userPosts.find(p => String(p.id) === String(postId));
+    document.getElementById('postImage').src = post.image;
+    document.getElementById('likeCount').textContent = post.likes;
+    document.getElementById('commentTotal').textContent = post.comments;
+    document.getElementById('postAuthorName').textContent = '@' + author;
+    document.getElementById('postAuthorAvatar').textContent = author.charAt(0).toUpperCase();
+    document.getElementById('postCaption').textContent = caption;
 
-        if (userPost) {
-          const isVideo = userPost.fileType === 'video' || userPost.type === 'video';
-          if (isVideo) {
-            const vid = document.createElement('video');
-            vid.controls = true;
-            vid.autoplay = true;
-            vid.className = 'post-image';
-            vid.style.cssText = 'width:100%;height:auto;border-radius:16px;background:#000;';
-            if (userPost.mediaKey) {
-              MediaStore.getURL(userPost.mediaKey).then(url => { if (url) vid.src = url; });
-            } else if (userPost.mediaURL) {
-              vid.src = userPost.mediaURL;
-            }
-            mediaContainer.innerHTML = '';
-            mediaContainer.appendChild(vid);
-          } else {
-            const imgEl = document.getElementById('postImage');
-            if (userPost.mediaKey) {
-              MediaStore.getURL(userPost.mediaKey).then(url => { if (url) imgEl.src = url; });
-            } else if (userPost.mediaURL) {
-              imgEl.src = userPost.mediaURL;
-            }
-          }
-          // Caption / counts
-          document.getElementById('postCaption').textContent =
-            (rawCap ? decodeURIComponent(rawCap) : userPost.caption) || '';
-          document.getElementById('postHashtags').innerHTML = '';
-          document.getElementById('likeCount').textContent    = formatCount(userPost.likes || 0);
-          document.getElementById('commentCount').textContent = formatCount(userPost.comments || 0);
-          document.getElementById('commentTotal').textContent = formatCount(userPost.comments || 0);
-          // Author display
-          const ownerHandle = userPost.author || authorId || 'you';
-          document.getElementById('postAuthorName').textContent   = '@' + ownerHandle;
-          document.getElementById('postAuthorAvatar').textContent = ownerHandle.charAt(0).toUpperCase();
-        } else {
-          // Final fallback
-          document.getElementById('postCaption').textContent =
-            rawCap ? decodeURIComponent(rawCap) : '';
-          if (authorId) {
-            document.getElementById('postAuthorName').textContent   = '@' + authorId;
-            document.getElementById('postAuthorAvatar').textContent = authorId.charAt(0).toUpperCase();
-          }
-        }
-        return; // skip maseera author block below
-      }
-
-      // Author (maseera post)
-      if (authorRec) {
-        document.getElementById('postAuthorName').textContent   = '@' + authorRec.username;
-        document.getElementById('postAuthorAvatar').textContent = authorRec.avatar || authorRec.username.charAt(0).toUpperCase();
-      } else if (authorId) {
-        document.getElementById('postAuthorName').textContent   = '@' + authorId;
-        document.getElementById('postAuthorAvatar').textContent = authorId.charAt(0).toUpperCase();
-      }
-    })();
-
+    let liked = false;
     function toggleLike(btn) {
-      const nowLiked = togglePostLike(postId);
-      btn.classList.toggle('liked', nowLiked);
-      const svg = btn.querySelector('.heart-post-svg');
-      svg.style.fill   = nowLiked ? '#ff2d55' : 'none';
-      svg.style.stroke = nowLiked ? '#ff2d55' : 'currentColor';
-      // Update count
-      const data = getData();
-      const rec  = data.posts.find(p => String(p.id) === String(postId));
-      if (rec) document.getElementById('likeCount').textContent = formatCount(rec.likes);
+      liked = !liked;
+      btn.querySelector('.action-icon').textContent = liked ? '\u2764\uFE0F' : '\u1F90D';
+      // Use innerHTML for heart emoji
+      btn.querySelector('.action-icon').innerHTML = liked ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+      btn.classList.toggle('liked', liked);
     }
 
     function toggleFollow(btn) {
@@ -320,8 +402,8 @@
 
     function toggleCommentLike(btn) {
       btn.classList.toggle('liked');
-      const isLiked = btn.classList.contains('liked');
-      btn.querySelector('.heart-icon').innerHTML = isLiked ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+      btn.querySelector('.heart-icon').innerHTML =
+        btn.classList.contains('liked') ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
     }
 
     function focusCommentInput() {
@@ -333,27 +415,18 @@
     function submitComment(e) {
       e.preventDefault();
       const input = document.getElementById('commentInput');
-      const text  = input.value.trim();
+      const text = input.value.trim();
       if (!text) return;
 
-      // Save to data store (handles user fallback internally)
-      if (postId) addComment(postId, text);
-
-      // Get display info for current user
-      const userData    = JSON.parse(localStorage.getItem('user') || 'null');
-      const myUsername  = userData ? userData.username : 'you';
-      const myHandle    = '@' + myUsername;
-      const myInitial   = myUsername.charAt(0).toUpperCase();
-
       const list = document.getElementById('commentsList');
-      const li   = document.createElement('li');
+      const li = document.createElement('li');
       li.className = 'comment-item new-comment';
       li.innerHTML = `
-        <div class="comment-avatar">${escapeHtml(myInitial)}</div>
+        <div class="comment-avatar">Y</div>
         <div class="comment-body">
           <div class="comment-meta">
-            <span class="comment-user">${escapeHtml(myUsername)}</span>
-            <span class="comment-handle">${escapeHtml(myHandle)}</span>
+            <span class="comment-user">You</span>
+            <span class="comment-handle">@jordanlee</span>
             <span class="comment-time">just now</span>
           </div>
           <p class="comment-text">${escapeHtml(text)}</p>
@@ -370,14 +443,12 @@
       scroll.scrollTop = scroll.scrollHeight;
 
       // Update count display
-      if (postId) {
-        const rec = getData().posts.find(p => String(p.id) === String(postId));
-        if (rec) {
-          document.getElementById('commentTotal').textContent = formatCount(rec.comments);
-          const cc = document.getElementById('commentCount');
-          if (cc) cc.textContent = formatCount(rec.comments);
-        }
-      }
+      const totalEl = document.getElementById('commentTotal');
+      const countEl = document.getElementById('commentCount');
+      [totalEl, countEl].forEach(el => {
+        const n = parseFloat(el.textContent.replace(/,/g, '')) || 0;
+        el.textContent = (n + 1).toLocaleString();
+      });
     }
 
     function openShareModal() {
