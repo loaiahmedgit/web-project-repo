@@ -5,10 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-
     <link rel="stylesheet" href="styles/profile.css">
     <script src="media-store.js"></script>
-
 </head>
 
 <body>
@@ -17,7 +15,6 @@
 
         <div class="top-bar">
             <div class="menu-icon" onclick="toggleMenu()">☰</div>
-
             <div class="site-logo">
                 <img src="media/images/Orange Flash Logo.png">
             </div>
@@ -38,31 +35,18 @@
 
             <h2 id="profileName"></h2>
             <p class="username" id="profileUsername"></p>
-
             <p class="bio" id="profileBio">No bio yet</p>
 
-            <div class="buttons">
+            <div class="buttons" id="profileButtons">
                 <button class="edit-btn" onclick="openEditModal()">Edit Profile</button>
                 <button class="message" onclick="window.location.href='messages.html'">Message</button>
             </div>
 
             <div class="stats">
-                <div>
-                    <h3>273</h3>
-                    <p>Followers</p>
-                </div>
-                <div>
-                    <h3>1070</h3>
-                    <p>Following</p>
-                </div>
-                <div>
-                    <h3>860</h3>
-                    <p>Likes</p>
-                </div>
-                <div>
-                    <h3 id="postCountStat">0</h3>
-                    <p>Posts</p>
-                </div>
+                <div><h3 id="statFollowers">0</h3><p>Followers</p></div>
+                <div><h3 id="statFollowing">0</h3><p>Following</p></div>
+                <div><h3>860</h3><p>Likes</p></div>
+                <div><h3 id="postCountStat">0</h3><p>Posts</p></div>
             </div>
 
             <div class="posts-section">
@@ -70,16 +54,13 @@
                 <div class="posts-grid" id="postsGrid"></div>
             </div>
 
-            <footer class="footer">
-                ©️ 2026 Maseera
-            </footer>
-
+            <footer class="footer">© 2026 Maseera</footer>
         </div>
     </div>
 
-    <div id="editModal" class="edit-modal">
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editModal" class="edit-modal" onclick="handleModalBackdropClick(event)">
         <div class="edit-box">
-            <h2>Edit Profile</h2>
 
             <div class="edit-modal-header">
                 <h3>Edit Profile</h3>
@@ -98,7 +79,7 @@
                 <div class="edit-field">
                     <label>Username</label>
                     <input type="text" id="editUsername" placeholder="Username">
-                    <span class="edit-field-note">Changing your username will update all your posts.</span>
+                    <span class="edit-field-note">Changing your username updates all your posts.</span>
                 </div>
                 <div class="edit-field">
                     <label>Bio</label>
@@ -117,89 +98,185 @@
 
     <script>
 
-        const params = new URLSearchParams(window.location.search);
-        const usernameFromURL = params.get("user");
+        // ================= USER =================
+
+        const params        = new URLSearchParams(window.location.search);
+        const userIdFromURL = params.get("user");
 
         let currentUser = JSON.parse(localStorage.getItem("user"));
+        if (!currentUser) { window.location.href = "login.html"; }
 
-        if (!currentUser) {
-            window.location.href = "login.html";
+        let isOwnProfile  = true;
+        let profileUserId = currentUser ? currentUser.username : null;
+
+        function getDisplayName(u) {
+            return ((u.firstName || '') + ' ' + (u.lastName || '')).trim() || u.username || '';
         }
 
-        let user = currentUser;
+        // Viewing another user's profile?
+        if (userIdFromURL && userIdFromURL !== (currentUser && currentUser.username)) {
+            isOwnProfile  = false;
+            profileUserId = userIdFromURL;
 
-        if (usernameFromURL) {
-            user = {
-                username: usernameFromURL,
-                firstName: usernameFromURL,
-                lastName: ""
-            };
+            const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
+            const maseeraUser = maseeraData && maseeraData.users &&
+                maseeraData.users.find(u => u.id === userIdFromURL || u.username === userIdFromURL);
+
+            const name   = maseeraUser ? (maseeraUser.displayName || maseeraUser.username) : userIdFromURL;
+            const handle = maseeraUser ? maseeraUser.username : userIdFromURL;
+
+            document.getElementById("profileName").textContent     = name;
+            document.getElementById("profileUsername").textContent  = "@" + handle;
+            document.getElementById("avatarLetter").textContent     = handle.charAt(0).toUpperCase();
+            document.getElementById("profileBio").textContent       = "No bio yet";
+
+            // Replace buttons with Follow / Message
+            const maseeraDataFresh = JSON.parse(localStorage.getItem("maseera_data") || "{}");
+            const myEntry = maseeraDataFresh.users &&
+                maseeraDataFresh.users.find(u => u.id === currentUser.username || u.username === currentUser.username);
+            const alreadyFollowing = myEntry && myEntry.following && myEntry.following.includes(profileUserId);
+
+            document.getElementById("profileButtons").innerHTML = `
+                <button class="edit-btn follow-profile-btn" id="followProfileBtn"
+                    onclick="toggleFollowProfile(this)"
+                    data-following="${alreadyFollowing ? '1' : '0'}">
+                    ${alreadyFollowing ? 'Following' : '+ Follow'}
+                </button>
+                <button class="message" onclick="window.location.href='messages.html'">Message</button>
+            `;
+
+            if (maseeraUser) {
+                document.getElementById("statFollowers").textContent = (maseeraUser.followers || 0).toLocaleString();
+                document.getElementById("statFollowing").textContent = ((maseeraUser.following && maseeraUser.following.length) || 0).toLocaleString();
+            }
+        } else {
+            // Own profile
+            document.getElementById("profileName").textContent     = getDisplayName(currentUser);
+            document.getElementById("profileUsername").textContent  = "@" + currentUser.username;
+            document.getElementById("avatarLetter").textContent     = (currentUser.username || 'U').charAt(0).toUpperCase();
+            document.getElementById("profileBio").textContent       = currentUser.bio || "No bio yet";
+
+            const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
+            if (maseeraData && maseeraData.users) {
+                const mu = maseeraData.users.find(u => u.id === profileUserId || u.username === profileUserId);
+                if (mu) {
+                    document.getElementById("statFollowers").textContent = (mu.followers || 0).toLocaleString();
+                    document.getElementById("statFollowing").textContent = ((mu.following && mu.following.length) || 0).toLocaleString();
+                }
+            }
         }
 
-        document.getElementById("profileName").textContent =
-            user.firstName + " " + user.lastName;
+        // ================= FOLLOW (other profile) =================
 
-        document.getElementById("profileUsername").textContent =
-            "@" + user.username;
+        function toggleFollowProfile(btn) {
+            const data       = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+            const loggedInId = currentUser ? currentUser.username : null;
+            if (!loggedInId) return;
 
-        document.getElementById("avatarLetter").textContent =
-            user.username.charAt(0).toUpperCase();
+            if (!data.users) data.users = [];
+            let me = data.users.find(u => u.id === loggedInId || u.username === loggedInId);
+            if (!me) {
+                me = { id: loggedInId, username: loggedInId, displayName: getDisplayName(currentUser), following: [], followers: 0 };
+                data.users.push(me);
+            }
+            if (!me.following) me.following = [];
 
-        document.getElementById("profileBio").textContent =
-            user.bio || "No bio yet";
+            const idx = me.following.indexOf(profileUserId);
+            if (idx === -1) {
+                me.following.push(profileUserId);
+                btn.textContent = 'Following';
+                btn.dataset.following = '1';
+                btn.style.background  = 'linear-gradient(135deg,#8A1538,#F5A623)';
+                btn.style.color       = '#fff';
+                btn.style.borderColor = 'transparent';
+                const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
+                if (target) target.followers = (target.followers || 0) + 1;
+            } else {
+                me.following.splice(idx, 1);
+                btn.textContent = '+ Follow';
+                btn.dataset.following = '0';
+                btn.style.background  = 'transparent';
+                btn.style.color       = '';
+                btn.style.borderColor = '';
+                const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
+                if (target) target.followers = Math.max(0, (target.followers || 0) - 1);
+            }
+
+            const meIdx = data.users.findIndex(u => u.id === loggedInId || u.username === loggedInId);
+            if (meIdx !== -1) data.users[meIdx] = me;
+            localStorage.setItem('maseera_data', JSON.stringify(data));
+        }
 
         // ================= POSTS =================
 
         function loadPosts() {
-            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-            posts = posts.filter(p => p.author === user.username);
-
-            let grid = document.getElementById("postsGrid");
-
+            const grid = document.getElementById("postsGrid");
             grid.innerHTML = "";
-            document.getElementById("postCountStat").textContent = posts.length;
+            let allPosts = [];
 
-            if (!posts.length) {
-                grid.innerHTML = "<p>No posts yet</p>";
+            // 1. Posts from create.html (userPosts)
+            const userPostsRaw = JSON.parse(localStorage.getItem("userPosts") || "[]");
+            userPostsRaw.filter(p => p.author === profileUserId)
+                        .forEach(p => allPosts.push({ ...p, _source: 'userPosts' }));
+
+            // 2. Demo posts from maseera_data — always read fresh
+            const freshMaseera = JSON.parse(localStorage.getItem("maseera_data") || "null");
+            if (freshMaseera && freshMaseera.posts) {
+                freshMaseera.posts.filter(p => p.author === profileUserId)
+                                  .forEach(p => allPosts.push({ ...p, _source: 'maseera' }));
+            }
+
+            document.getElementById("postCountStat").textContent = allPosts.length;
+
+            if (!allPosts.length) {
+                grid.innerHTML = "<p style='color:#808080;padding:20px;'>No posts yet</p>";
                 return;
             }
 
-            posts.forEach(post => {
-                let div = document.createElement("div");
-                div.className = "post";
+            allPosts.forEach(post => {
+                const div = document.createElement("div");
+                div.className    = "post";
+                div.style.cursor = "pointer";
+
+                const isVideo = post.fileType === 'video' || post.type === 'video';
 
                 div.innerHTML = `
-                ${post.fileType === 'video'
-                        ? `<video class="post-media" autoplay muted loop></video>`
-                        : `<img class="post-media">`
-                    }
-
-                ${user.username === currentUser.username ?
-                        `<button class="delete-post-btn" onclick="deletePost('${post.id}', this)">X</button>`
-                        : ""
-                    }
-
-                <div class="post-overlay">
-                    <div class="overlay-item">
-                        <img src="media/icons/heart.svg">
-                        <span>${post.likes || 0}</span>
+                    ${isVideo
+                        ? `<video class="post-media" autoplay muted loop playsinline></video>`
+                        : `<img class="post-media" alt="post">`}
+                    ${isOwnProfile
+                        ? `<button class="delete-post-btn" onclick="event.stopPropagation(); deletePost('${post.id}', this, '${post._source}')">✕</button>`
+                        : ""}
+                    <div class="post-overlay">
+                        <div class="overlay-item">
+                            <img src="media/icons/heart.svg">
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        <div class="overlay-item">
+                            <img src="media/icons/comments.svg">
+                            <span>${post.comments || 0}</span>
+                        </div>
                     </div>
-                    <div class="overlay-item">
-                        <img src="media/icons/comments.svg">
-                        <span>${post.comments || 0}</span>
-                    </div>
-                </div>
-            `;
+                `;
+
+                // Click to view post
+                div.addEventListener("click", function () {
+                    window.location.href = "post.html?post=" + encodeURIComponent(post.id) +
+                        "&author=" + encodeURIComponent(post.author || profileUserId) +
+                        "&caption=" + encodeURIComponent(post.caption || '');
+                });
 
                 grid.appendChild(div);
 
-                const mediaElement = div.querySelector(".post-media");
-
-                MediaStore.getURL(post.mediaKey).then(url => {
-                    if (url) {
-                        mediaElement.src = url;
-                    }
-                });
+                // Load media
+                const mediaEl = div.querySelector(".post-media");
+                if (post._source === 'maseera') {
+                    mediaEl.src = post.mediaPath;
+                } else if (post.mediaKey) {
+                    MediaStore.getURL(post.mediaKey).then(url => { if (url) mediaEl.src = url; });
+                } else if (post.mediaURL) {
+                    mediaEl.src = post.mediaURL;
+                }
             });
         }
 
@@ -207,19 +284,22 @@
 
         // ================= DELETE =================
 
-        function deletePost(id, btn) {
-            let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-
-            const post = posts.find(p => String(p.id) === String(id));
-
-            if (post && post.mediaKey) {
-                MediaStore.remove(post.mediaKey);
+        function deletePost(id, btn, source) {
+            if (source === 'maseera') {
+                const data = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+                if (data.posts) {
+                    data.posts = data.posts.filter(p => String(p.id) !== String(id));
+                    if (data.comments) delete data.comments[id];
+                    if (data.likes)    delete data.likes[id];
+                    localStorage.setItem('maseera_data', JSON.stringify(data));
+                }
+            } else {
+                let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+                const post = posts.find(p => String(p.id) === String(id));
+                if (post && post.mediaKey) MediaStore.remove(post.mediaKey);
+                posts = posts.filter(p => String(p.id) !== String(id));
+                localStorage.setItem("userPosts", JSON.stringify(posts));
             }
-
-            posts = posts.filter(p => String(p.id) !== String(id));
-            localStorage.setItem("userPosts", JSON.stringify(posts));
-
-            btn.closest(".post").remove();
             loadPosts();
         }
 
@@ -227,100 +307,94 @@
 
         function openEditModal() {
             const u = JSON.parse(localStorage.getItem('user') || '{}');
-            document.getElementById('editFirstName').value = u.firstName || '';
-            document.getElementById('editLastName').value = u.lastName || '';
-            document.getElementById('editUsername').value = u.username || '';
-            document.getElementById('editBio').value = u.bio || '';
+            document.getElementById('editFirstName').value  = u.firstName || '';
+            document.getElementById('editLastName').value   = u.lastName  || '';
+            document.getElementById('editUsername').value   = u.username  || '';
+            document.getElementById('editBio').value        = u.bio       || '';
             document.getElementById('editModalError').style.display = 'none';
-            document.getElementById('editModalOverlay').style.display = 'flex';
+            document.getElementById('editModal').style.display      = 'flex';
         }
 
-        function closeEditModal(e) {
-            // Close when: called directly (no event), or user clicked the dark backdrop
-            if (!e || e.target === document.getElementById('editModalOverlay')) {
-                document.getElementById('editModalOverlay').style.display = 'none';
-            }
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function handleModalBackdropClick(e) {
+            if (e.target === document.getElementById('editModal')) closeEditModal();
         }
 
         function saveProfile() {
             const firstName = document.getElementById('editFirstName').value.trim();
-            const lastName = document.getElementById('editLastName').value.trim();
-            const username = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
-            const bio = document.getElementById('editBio').value.trim();
-            const errorEl = document.getElementById('editModalError');
+            const lastName  = document.getElementById('editLastName').value.trim();
+            const username  = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const bio       = document.getElementById('editBio').value.trim();
+            const errorEl   = document.getElementById('editModalError');
 
-            // Basic validation
             if (!username) {
-                errorEl.textContent = 'Username cannot be empty.';
-                errorEl.style.display = 'block';
+                errorEl.textContent    = 'Username cannot be empty.';
+                errorEl.style.display  = 'block';
                 return;
             }
             if (!/^[a-z0-9_]+$/.test(username)) {
-                errorEl.textContent = 'Username can only contain letters, numbers and underscores.';
-                errorEl.style.display = 'block';
+                errorEl.textContent    = 'Username can only contain letters, numbers and underscores.';
+                errorEl.style.display  = 'block';
                 return;
             }
 
-            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            const u           = JSON.parse(localStorage.getItem('user') || '{}');
             const oldUsername = u.username;
 
-            // If username changed, update all userPosts that belong to this user
+            // If username changed, update all owned posts and maseera_data
             if (oldUsername && username !== oldUsername) {
                 const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
                 userPosts.forEach(p => { if (p.author === oldUsername) p.author = username; });
                 localStorage.setItem('userPosts', JSON.stringify(userPosts));
 
-                // Update maseera_data user entry if it exists
                 const mData = JSON.parse(localStorage.getItem('maseera_data') || '{}');
                 if (mData.users) {
                     const mu = mData.users.find(u => u.id === oldUsername || u.username === oldUsername);
                     if (mu) {
-                        mu.id = username;
-                        mu.username = username;
+                        mu.id          = username;
+                        mu.username    = username;
                         mu.displayName = (firstName + ' ' + lastName).trim() || username;
                     }
                 }
                 localStorage.setItem('maseera_data', JSON.stringify(mData));
             }
 
-            // Save updated user
+            // Save updated user object
             u.firstName = firstName;
-            u.lastName = lastName;
-            u.username = username;
-            u.bio = bio;
+            u.lastName  = lastName;
+            u.username  = username;
+            u.bio       = bio;
             localStorage.setItem('user', JSON.stringify(u));
 
-            // Update page display immediately
+            // Update page immediately
             const fullName = (firstName + ' ' + lastName).trim() || username;
-            document.getElementById('profileName').textContent = fullName;
-            document.getElementById('profileUsername').textContent = '@' + username;
-            document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('profileName').textContent     = fullName;
+            document.getElementById('profileUsername').textContent  = '@' + username;
+            document.getElementById('avatarLetter').textContent     = username.charAt(0).toUpperCase();
+            document.getElementById('profileBio').textContent       = bio || 'No bio yet';
 
-            // Update bio if there's a bio element
-            const bioEl = document.getElementById('profileBio');
-            if (bioEl) bioEl.textContent = bio;
-
-            // Refresh in-memory vars
-            currentUser = u;
+            // Keep in-memory state in sync
+            currentUser   = u;
             profileUserId = username;
-            displayName = fullName;
-            displayHandle = username;
 
-            document.getElementById('editModalOverlay').style.display = 'none';
+            closeEditModal();
             loadPosts();
         }
 
         // ================= MENU =================
 
         function toggleMenu() {
-            let menu = document.getElementById("sideMenu");
+            const menu = document.getElementById("sideMenu");
             menu.style.left = menu.style.left === "0px" ? "-220px" : "0px";
         }
 
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("currentUser");
+            localStorage.removeItem("user");
             window.location.href = "login.html";
         }
 

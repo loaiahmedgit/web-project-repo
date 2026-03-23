@@ -95,6 +95,13 @@ body {
     color: black;
 }
 
+.bio {
+    color: whitesmoke;
+    font-size: 16px;
+    margin: 10px auto 0;
+    max-width: 400px;
+}
+
 .buttons {
     margin: 20px 0;
     display: flex;
@@ -191,12 +198,13 @@ body {
     color: white;
     border: none;
     cursor: pointer;
-    opacity: 0;
+    opacity: 1;
+    z-index: 10;
     transition: 0.3s;
 }
 
-.post:hover .delete-post-btn {
-    opacity: 1;
+.delete-post-btn:hover {
+    background: rgba(180, 0, 0, 0.85);
 }
 
 .post-overlay {
@@ -234,43 +242,25 @@ body {
     margin-top: 30px;
 }
 
-<<<<<<< HEAD
 /* ── Edit Profile Modal ── */
-.edit-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-=======
-.bio {
-    color: whitesmoke;;
-    font-size: 25
-px;
-    margin-top: 10px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 .edit-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     display: none;
->>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
     justify-content: center;
     align-items: center;
     z-index: 1000;
     padding: 20px;
 }
 
-.edit-modal {
+.edit-box {
     background: #fff;
     border-radius: 16px;
     width: 100%;
     max-width: 420px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
     animation: modalSlideIn 0.22s ease-out;
 }
 
@@ -296,7 +286,7 @@ px;
 }
 
 .edit-modal-close {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     color: #fff;
     width: 30px;
@@ -309,11 +299,10 @@ px;
     justify-content: center;
     transition: background 0.2s;
 }
-.edit-modal-close:hover { background: rgba(255,255,255,0.35); }
+.edit-modal-close:hover { background: rgba(255, 255, 255, 0.35); }
 
 .edit-modal-body {
     padding: 20px;
-<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -396,18 +385,3 @@ px;
     transition: opacity 0.2s;
 }
 .edit-save-btn:hover { opacity: 0.88; }
-=======
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 300px;
-}
-
-.edit-box input,
-.edit-box textarea {
-    padding: 8px;
-    border: 2px solid orange;
-    border-radius: 5px;
-}
->>>>>>> cd59508beb1b14b347edd386e13df65ee8115bb3
