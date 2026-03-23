@@ -67,7 +67,38 @@
     renderCommentList(comments, postId);
     document.getElementById('commentInput').focus();
   };
-  
+  function createPost() {
+    const fileInput = document.getElementById("postFile");
+    const caption = document.getElementById("caption").value;
+
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+
+        const newPost = {
+            id: Date.now(),   // ✅ IMPORTANT
+            mediaURL: e.target.result, // ✅ FIX IMAGE
+            caption: caption,
+            likes: 0,
+            comments: 0
+        };
+
+        posts.push(newPost);
+        localStorage.setItem("userPosts", JSON.stringify(posts));
+
+        window.location.href = "profile.html";
+    };
+
+    reader.readAsDataURL(file); // 🔥 REQUIRED
+}
   // Override renderCommentList to use data
   function renderCommentList(comments, postId) {
     const list = document.getElementById('dynamicCommentsList');
@@ -374,6 +405,7 @@
       el.textContent = val || 'Your caption will appear here...';
       el.style.color = val ? '#fff' : '#808080';
     });
+
 
     function updateCharCount(el) {
       document.getElementById('charCount').textContent = el.value.length;
