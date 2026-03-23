@@ -256,3 +256,45 @@ body {
     color: white;
     font-size: 18px;
 }
+
+.post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+
+    opacity: 0;
+    transition: 0.3s ease;
+}
+
+.post:hover .post-overlay {
+    opacity: 1;
+}
+
+.overlay-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+
+    transform: translateY(10px);
+    transition: 0.3s;
+}
+
+.post:hover .overlay-item {
+    transform: translateY(0);
+}
+
+.overlay-item img {
+    width: 26px;
+    height: 26px;
+    filter: invert(1);
+}
