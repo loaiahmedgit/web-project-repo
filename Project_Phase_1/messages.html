@@ -93,42 +93,127 @@
     let currentChat = "ahmed";
 
     const chatNames = {
-      ahmed: "Ahmed Yasser",
-      lina: "lina Omar",
-      youssef: "يوسف خالد"
+      ahmed:   "Ahmed Yasser",
+      lina:    "Lina Omar",
+      youssef: "Youssef Khaled"
     };
 
     function openChat(user, element) {
       currentChat = user;
 
-      document.getElementById("chatName").textContent = chatNames[user];
+      document.getElementById("chatName").textContent = chatNames[user] || user;
 
       document.querySelectorAll(".chat-box").forEach(c => c.classList.add("hidden"));
-      document.getElementById("chat-" + user).classList.remove("hidden");
+      const box = document.getElementById("chat-" + user);
+      if (box) box.classList.remove("hidden");
 
       document.querySelectorAll(".conversation-item").forEach(c => c.classList.remove("active"));
-      element.classList.add("active");
+      if (element) element.classList.add("active");
     }
 
     function sendMessage(e) {
       e.preventDefault();
 
-      let input = document.getElementById("messageInput");
-      let text = input.value.trim();
-
+      const input = document.getElementById("messageInput");
+      const text  = input.value.trim();
       if (!text) return;
 
-      let msg = document.createElement("div");
-      msg.className = "message sent";
-      msg.innerHTML = `<div class="msg-bubble">${text}</div>`;
-
-      document.getElementById("chat-" + currentChat).appendChild(msg);
-
+      appendSentMessage(currentChat, text);
       input.value = "";
-
-      let area = document.getElementById("messagesArea");
-      area.scrollTop = area.scrollHeight;
     }
+
+    function appendSentMessage(chatKey, text) {
+      const box = document.getElementById("chat-" + chatKey);
+      if (!box) return;
+      const msg = document.createElement("div");
+      msg.className = "message sent";
+      msg.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div>`;
+      box.appendChild(msg);
+      document.getElementById("messagesArea").scrollTop = 99999;
+    }
+
+    function appendSharedPost(chatKey, sharedPost) {
+      const box = document.getElementById("chat-" + chatKey);
+      if (!box) return;
+
+      const caption  = sharedPost.caption ? escapeHtml(sharedPost.caption) : '';
+      const author   = sharedPost.author  ? escapeHtml(sharedPost.author)  : '';
+      const mediaSrc = sharedPost.image   || '';
+
+      // Decide whether the media is a video or image
+      const isVideo  = mediaSrc && /\.(mp4|webm|ogg|mov)$/i.test(mediaSrc);
+      const isImage  = mediaSrc && !isVideo;
+
+      let mediaPart = '';
+      if (isImage) {
+        mediaPart = `<img src="${mediaSrc}" alt="post" style="width:100%;display:block;max-height:180px;object-fit:cover;border-radius:10px 10px 0 0;">`;
+      } else if (isVideo) {
+        mediaPart = `
+          <div style="width:100%;height:120px;background:#111;display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;">
+            <span style="font-size:36px;">&#9654;</span>
+          </div>`;
+      }
+
+      const msg = document.createElement("div");
+      msg.className = "message sent";
+      msg.innerHTML = `
+        <div style="
+          max-width:240px;
+          background:#1a1a1a;
+          border:1px solid rgba(245,166,35,0.5);
+          border-radius:12px;
+          overflow:hidden;
+          font-size:13px;
+          color:#fff;
+        ">
+          ${mediaPart}
+          <div style="padding:10px 12px;">
+            <p style="font-size:11px;color:#F5A623;margin:0 0 4px;font-weight:600;">
+              &#128279; Shared Post ${author ? '· @' + author : ''}
+            </p>
+            ${caption ? `<p style="margin:0;color:#ddd;line-height:1.4;">${caption}</p>` : ''}
+          </div>
+        </div>`;
+
+      box.appendChild(msg);
+      document.getElementById("messagesArea").scrollTop = 99999;
+    }
+
+    function escapeHtml(t) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(t || '')));
+      return d.innerHTML;
+    }
+
+    // ── Handle URL params (?to=ahmed&sharedPost=...) ──────────────────
+    (function handleURLParams() {
+      const p          = new URLSearchParams(window.location.search);
+      const toParam    = p.get('to');
+      const sharedRaw  = p.get('sharedPost');
+
+      if (toParam && document.getElementById('chat-' + toParam)) {
+        // Open the right conversation
+        const convItem = [...document.querySelectorAll('.conversation-item')]
+          .find(el => el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + toParam + "'"));
+        openChat(toParam, convItem || null);
+
+        // Highlight the correct sidebar item manually if openChat couldn't find element
+        document.querySelectorAll('.conversation-item').forEach(el => {
+          if (el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + toParam + "'")) {
+            el.classList.add('active');
+          }
+        });
+      }
+
+      if (sharedRaw) {
+        try {
+          const sharedPost = JSON.parse(decodeURIComponent(sharedRaw));
+          const target     = toParam || currentChat;
+          // Small delay so the chat box is visible first
+          setTimeout(() => appendSharedPost(target, sharedPost), 50);
+        } catch (e) { /* malformed JSON — ignore */ }
+      }
+    })();
 
   </script>
 
