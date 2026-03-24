@@ -43,10 +43,22 @@
             </div>
 
             <div class="stats">
-                <div><h3 id="statFollowers">0</h3><p>Followers</p></div>
-                <div><h3 id="statFollowing">0</h3><p>Following</p></div>
-                <div><h3>860</h3><p>Likes</p></div>
-                <div><h3 id="postCountStat">0</h3><p>Posts</p></div>
+                <div>
+                    <h3 id="statFollowers">0</h3>
+                    <p>Followers</p>
+                </div>
+                <div>
+                    <h3 id="statFollowing">0</h3>
+                    <p>Following</p>
+                </div>
+                <div>
+                    <h3>860</h3>
+                    <p>Likes</p>
+                </div>
+                <div>
+                    <h3 id="postCountStat">0</h3>
+                    <p>Posts</p>
+                </div>
             </div>
 
             <div class="posts-section">
@@ -100,13 +112,13 @@
 
         // ================= USER =================
 
-        const params        = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
         const userIdFromURL = params.get("user");
 
         let currentUser = JSON.parse(localStorage.getItem("user"));
         if (!currentUser) { window.location.href = "login.html"; }
 
-        let isOwnProfile  = true;
+        let isOwnProfile = true;
         let profileUserId = currentUser ? currentUser.username : null;
 
         function getDisplayName(u) {
@@ -115,20 +127,20 @@
 
         // Viewing another user's profile?
         if (userIdFromURL && userIdFromURL !== (currentUser && currentUser.username)) {
-            isOwnProfile  = false;
+            isOwnProfile = false;
             profileUserId = userIdFromURL;
 
             const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
             const maseeraUser = maseeraData && maseeraData.users &&
                 maseeraData.users.find(u => u.id === userIdFromURL || u.username === userIdFromURL);
 
-            const name   = maseeraUser ? (maseeraUser.displayName || maseeraUser.username) : userIdFromURL;
+            const name = maseeraUser ? (maseeraUser.displayName || maseeraUser.username) : userIdFromURL;
             const handle = maseeraUser ? maseeraUser.username : userIdFromURL;
 
-            document.getElementById("profileName").textContent     = name;
-            document.getElementById("profileUsername").textContent  = "@" + handle;
-            document.getElementById("avatarLetter").textContent     = handle.charAt(0).toUpperCase();
-            document.getElementById("profileBio").textContent       = "No bio yet";
+            document.getElementById("profileName").textContent = name;
+            document.getElementById("profileUsername").textContent = "@" + handle;
+            document.getElementById("avatarLetter").textContent = handle.charAt(0).toUpperCase();
+            document.getElementById("profileBio").textContent = "No bio yet";
 
             // Replace buttons with Follow / Message
             const maseeraDataFresh = JSON.parse(localStorage.getItem("maseera_data") || "{}");
@@ -151,10 +163,10 @@
             }
         } else {
             // Own profile
-            document.getElementById("profileName").textContent     = getDisplayName(currentUser);
-            document.getElementById("profileUsername").textContent  = "@" + currentUser.username;
-            document.getElementById("avatarLetter").textContent     = (currentUser.username || 'U').charAt(0).toUpperCase();
-            document.getElementById("profileBio").textContent       = currentUser.bio || "No bio yet";
+            document.getElementById("profileName").textContent = getDisplayName(currentUser);
+            document.getElementById("profileUsername").textContent = "@" + currentUser.username;
+            document.getElementById("avatarLetter").textContent = (currentUser.username || 'U').charAt(0).toUpperCase();
+            document.getElementById("profileBio").textContent = currentUser.bio || "No bio yet";
 
             const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
             if (maseeraData && maseeraData.users) {
@@ -169,7 +181,7 @@
         // ================= FOLLOW (other profile) =================
 
         function toggleFollowProfile(btn) {
-            const data       = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+            const data = JSON.parse(localStorage.getItem('maseera_data') || '{}');
             const loggedInId = currentUser ? currentUser.username : null;
             if (!loggedInId) return;
 
@@ -186,8 +198,8 @@
                 me.following.push(profileUserId);
                 btn.textContent = 'Following';
                 btn.dataset.following = '1';
-                btn.style.background  = 'linear-gradient(135deg,#8A1538,#F5A623)';
-                btn.style.color       = '#fff';
+                btn.style.background = 'linear-gradient(135deg,#8A1538,#F5A623)';
+                btn.style.color = '#fff';
                 btn.style.borderColor = 'transparent';
                 const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
                 if (target) target.followers = (target.followers || 0) + 1;
@@ -195,8 +207,8 @@
                 me.following.splice(idx, 1);
                 btn.textContent = '+ Follow';
                 btn.dataset.following = '0';
-                btn.style.background  = 'transparent';
-                btn.style.color       = '';
+                btn.style.background = 'transparent';
+                btn.style.color = '';
                 btn.style.borderColor = '';
                 const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
                 if (target) target.followers = Math.max(0, (target.followers || 0) - 1);
@@ -217,13 +229,13 @@
             // 1. Posts from create.html (userPosts)
             const userPostsRaw = JSON.parse(localStorage.getItem("userPosts") || "[]");
             userPostsRaw.filter(p => p.author === profileUserId)
-                        .forEach(p => allPosts.push({ ...p, _source: 'userPosts' }));
+                .forEach(p => allPosts.push({ ...p, _source: 'userPosts' }));
 
             // 2. Demo posts from maseera_data — always read fresh
             const freshMaseera = JSON.parse(localStorage.getItem("maseera_data") || "null");
             if (freshMaseera && freshMaseera.posts) {
                 freshMaseera.posts.filter(p => p.author === profileUserId)
-                                  .forEach(p => allPosts.push({ ...p, _source: 'maseera' }));
+                    .forEach(p => allPosts.push({ ...p, _source: 'maseera' }));
             }
 
             document.getElementById("postCountStat").textContent = allPosts.length;
@@ -235,7 +247,7 @@
 
             allPosts.forEach(post => {
                 const div = document.createElement("div");
-                div.className    = "post";
+                div.className = "post";
                 div.style.cursor = "pointer";
 
                 const isVideo = post.fileType === 'video' || post.type === 'video';
@@ -284,35 +296,23 @@
 
         // ================= DELETE =================
 
+        let deleteTarget = null;
+
         function deletePost(id, btn, source) {
-            if (source === 'maseera') {
-                const data = JSON.parse(localStorage.getItem('maseera_data') || '{}');
-                if (data.posts) {
-                    data.posts = data.posts.filter(p => String(p.id) !== String(id));
-                    if (data.comments) delete data.comments[id];
-                    if (data.likes)    delete data.likes[id];
-                    localStorage.setItem('maseera_data', JSON.stringify(data));
-                }
-            } else {
-                let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
-                const post = posts.find(p => String(p.id) === String(id));
-                if (post && post.mediaKey) MediaStore.remove(post.mediaKey);
-                posts = posts.filter(p => String(p.id) !== String(id));
-                localStorage.setItem("userPosts", JSON.stringify(posts));
-            }
-            loadPosts();
+            deleteTarget = { id, btn, source };
+            document.getElementById("deleteModal").style.display = "flex";
         }
 
         // ================= EDIT PROFILE =================
 
         function openEditModal() {
             const u = JSON.parse(localStorage.getItem('user') || '{}');
-            document.getElementById('editFirstName').value  = u.firstName || '';
-            document.getElementById('editLastName').value   = u.lastName  || '';
-            document.getElementById('editUsername').value   = u.username  || '';
-            document.getElementById('editBio').value        = u.bio       || '';
+            document.getElementById('editFirstName').value = u.firstName || '';
+            document.getElementById('editLastName').value = u.lastName || '';
+            document.getElementById('editUsername').value = u.username || '';
+            document.getElementById('editBio').value = u.bio || '';
             document.getElementById('editModalError').style.display = 'none';
-            document.getElementById('editModal').style.display      = 'flex';
+            document.getElementById('editModal').style.display = 'flex';
         }
 
         function closeEditModal() {
@@ -325,23 +325,23 @@
 
         function saveProfile() {
             const firstName = document.getElementById('editFirstName').value.trim();
-            const lastName  = document.getElementById('editLastName').value.trim();
-            const username  = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
-            const bio       = document.getElementById('editBio').value.trim();
-            const errorEl   = document.getElementById('editModalError');
+            const lastName = document.getElementById('editLastName').value.trim();
+            const username = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const bio = document.getElementById('editBio').value.trim();
+            const errorEl = document.getElementById('editModalError');
 
             if (!username) {
-                errorEl.textContent    = 'Username cannot be empty.';
-                errorEl.style.display  = 'block';
+                errorEl.textContent = 'Username cannot be empty.';
+                errorEl.style.display = 'block';
                 return;
             }
             if (!/^[a-z0-9_]+$/.test(username)) {
-                errorEl.textContent    = 'Username can only contain letters, numbers and underscores.';
-                errorEl.style.display  = 'block';
+                errorEl.textContent = 'Username can only contain letters, numbers and underscores.';
+                errorEl.style.display = 'block';
                 return;
             }
 
-            const u           = JSON.parse(localStorage.getItem('user') || '{}');
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
             const oldUsername = u.username;
 
             // If username changed, update all owned posts and maseera_data
@@ -354,8 +354,8 @@
                 if (mData.users) {
                     const mu = mData.users.find(u => u.id === oldUsername || u.username === oldUsername);
                     if (mu) {
-                        mu.id          = username;
-                        mu.username    = username;
+                        mu.id = username;
+                        mu.username = username;
                         mu.displayName = (firstName + ' ' + lastName).trim() || username;
                     }
                 }
@@ -364,20 +364,20 @@
 
             // Save updated user object
             u.firstName = firstName;
-            u.lastName  = lastName;
-            u.username  = username;
-            u.bio       = bio;
+            u.lastName = lastName;
+            u.username = username;
+            u.bio = bio;
             localStorage.setItem('user', JSON.stringify(u));
 
             // Update page immediately
             const fullName = (firstName + ' ' + lastName).trim() || username;
-            document.getElementById('profileName').textContent     = fullName;
-            document.getElementById('profileUsername').textContent  = '@' + username;
-            document.getElementById('avatarLetter').textContent     = username.charAt(0).toUpperCase();
-            document.getElementById('profileBio').textContent       = bio || 'No bio yet';
+            document.getElementById('profileName').textContent = fullName;
+            document.getElementById('profileUsername').textContent = '@' + username;
+            document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('profileBio').textContent = bio || 'No bio yet';
 
             // Keep in-memory state in sync
-            currentUser   = u;
+            currentUser = u;
             profileUserId = username;
 
             closeEditModal();
@@ -397,9 +397,62 @@
             localStorage.removeItem("user");
             window.location.href = "login.html";
         }
+        function closeDeleteModal() {
+            document.getElementById("deleteModal").style.display = "none";
+            deleteTarget = null;
+        }
 
+        document.addEventListener("DOMContentLoaded", function () {
+
+            document.getElementById("confirmDeleteBtn").addEventListener("click", async function () {
+
+                if (!deleteTarget) return;
+
+                const { id, source } = deleteTarget;
+
+                if (source === "userPosts") {
+                    let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+
+                    const post = posts.find(p => p.id == id);
+
+                    if (post && post.mediaKey) {
+                        await MediaStore.remove(post.mediaKey);
+                    }
+
+                    posts = posts.filter(p => p.id != id);
+                    localStorage.setItem("userPosts", JSON.stringify(posts));
+                }
+
+                if (source === "maseera") {
+                    let data = JSON.parse(localStorage.getItem("maseera_data") || "{}");
+
+                    if (data.posts) {
+                        data.posts = data.posts.filter(p => p.id != id);
+                    }
+
+                    localStorage.setItem("maseera_data", JSON.stringify(data));
+                }
+
+                loadPosts();
+                closeDeleteModal();
+            });
+
+        });
     </script>
 
+    <!-- DELETE MODAL -->
+    <div id="deleteModal" class="delete-modal" onclick="handleDeleteBackdrop(event)">
+        <div class="delete-box">
+
+            <h3>Delete Post?</h3>
+
+            <div class="delete-actions">
+                <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+                <button class="delete-btn" id="confirmDeleteBtn">Delete</button>
+            </div>
+
+        </div>
+    </div>
 </body>
 
 </html>
