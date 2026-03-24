@@ -56,14 +56,46 @@
           if (url) mediaURL = url;
         }
 
-        const isLiked = isPostLiked(post.id);
-        const comments = getCommentsForPost(post.id);
+        let likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
+
+        const saved = likesData[post.id];
+        const isLiked = saved ? saved.liked : false;
+
+        if (saved) {
+          post.likes = saved.count;
+        }
+
+let savedComments = commentsData[post.id];
+
+let commentCount;
+
+if (savedComments) {
+  commentCount = savedComments.count;
+} else {
+  const comments = getCommentsForPost(post.id);
+  commentCount = comments.length;
+}
+
+        if (!commentsData[post.id]) {
+          commentsData[post.id] = {
+            label: `@${author.username}'s post`,
+            count: commentCount,
+            items: comments.map(c => ({
+              i: c.userId?.charAt(0).toUpperCase() || 'U',
+              name: c.userId || 'User',
+              handle: '@' + (c.userId || 'user'),
+              time: 'now',
+              text: c.text || '',
+              likes: c.likes || 0
+            }))
+          };
+        }
 
         const element = createPostElementWithMedia(
           post,
           author,
           isLiked,
-          comments.length,
+          commentCount,
           mediaURL
         );
 
@@ -362,7 +394,7 @@
 
   <script>
     // ── Per-post comment data ─────────────────────────────────────────
-    const commentsData = {};
+    let commentsData = JSON.parse(localStorage.getItem("commentsData") || "{}");
 
     // ── Load user info ────────────────────────────────────────────────
     const userData = JSON.parse(localStorage.getItem('user') || 'null');
@@ -449,6 +481,15 @@
       data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
       data.count++;
 
+      let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+      posts = posts.map(p => {
+        if (p.id == activePostId) {
+          return { ...p, comments: data.count };
+        }
+        return p;
+      });
+      localStorage.setItem("userPosts", JSON.stringify(posts));
+
       // Re-render
       renderCommentList(data.items);
       document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
@@ -462,6 +503,7 @@
       // Scroll comments to bottom
       const container = document.getElementById('dynamicCommentsContainer');
       container.scrollTop = container.scrollHeight;
+      localStorage.setItem("commentsData", JSON.stringify(commentsData));
     }
 
     // ── Like buttons on feed posts ────────────────────────────────────
@@ -474,24 +516,32 @@
           e.stopPropagation();
           e.preventDefault();
 
-          const isLiked = this.classList.toggle('liked');
-          const countEl = this.querySelector('[data-like-count]');
+          const postId = this.dataset.postId;
+          let likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
 
+          const countEl = this.querySelector('[data-like-count]');
           const heart = this.querySelector('.heart');
 
-          if (heart) {
-            heart.style.color = isLiked ? 'red' : 'white';
+          if (!likesData[postId]) {
+            likesData[postId] = {
+              liked: false,
+              count: parseCount(countEl.textContent)
+            };
           }
 
-          const raw = countEl.textContent.replace(/[^0-9.KkMm]/g, '');
-          const num = parseFloat(raw);
+          // toggle
+          likesData[postId].liked = !likesData[postId].liked;
+          likesData[postId].count += likesData[postId].liked ? 1 : -1;
 
-          if (!isNaN(num)) {
-            const d = isLiked ? 1 : -1;
+          // save
+          localStorage.setItem("likesData", JSON.stringify(likesData));
 
-            countEl.textContent = raw.includes('K')
-              ? (num + d / 1000).toFixed(1) + 'K'
-              : String(Math.max(0, num + d));
+          // update UI
+          countEl.textContent = fmtCount(likesData[postId].count);
+          this.classList.toggle('liked', likesData[postId].liked);
+
+          if (heart) {
+            heart.style.color = likesData[postId].liked ? 'red' : 'white';
           }
         });
       });
