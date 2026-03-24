@@ -455,10 +455,12 @@
       const newPost = {
         id:        postId,
         mediaKey:  mediaKey,
-        fileType:  selectedFileType,
+        type:      selectedFileType,
         caption:   caption,
         hashtags:  hashtags,
         author:    author,
+        likes:     0,
+        comments:  0,
         timestamp: new Date().toISOString()
       };
 
