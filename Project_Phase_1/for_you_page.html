@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - For You</title>
   <link rel="stylesheet" href="./styles/for_you_page.css">
+  <style>
+    .like-btn .action-icon { transition: filter 0.15s; }
+  </style>
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
   <script>
@@ -25,6 +28,14 @@
 
       if (type === 'for-you') {
         posts = getForYouPosts();
+        // Merge user-created posts at the top
+        const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+        userPosts.forEach(up => {
+          up.type = up.type || up.fileType || 'image';
+          up.likes = up.likes || 0;
+          up.comments = up.comments || 0;
+          posts.unshift(up);
+        });
 
       } else if (type === 'following') {
         posts = getFollowingPosts();
@@ -47,40 +58,30 @@
       container.innerHTML = '';
 
       for (const post of posts) {
-        const author = data.users.find(u => u.id === post.author);
+        const author = data.users.find(u => u.id === post.author) ||
+          { id: post.author, username: post.author };
 
         let mediaURL = post.mediaPath;
-
         if (post.mediaKey) {
           const url = await MediaStore.getURL(post.mediaKey);
           if (url) mediaURL = url;
         }
 
         let likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
-
         const saved = likesData[post.id];
         const isLiked = saved ? saved.liked : false;
+        if (saved) post.likes = saved.count;
 
-        if (saved) {
-          post.likes = saved.count;
-        }
-
-let savedComments = commentsData[post.id];
-
-let commentCount;
-
-if (savedComments) {
-  commentCount = savedComments.count;
-} else {
-  const comments = getCommentsForPost(post.id);
-  commentCount = comments.length;
-}
+        const postComments = getCommentsForPost(post.id);
+        let commentCount = commentsData[post.id]
+          ? commentsData[post.id].count
+          : postComments.length;
 
         if (!commentsData[post.id]) {
           commentsData[post.id] = {
             label: `@${author.username}'s post`,
             count: commentCount,
-            items: comments.map(c => ({
+            items: postComments.map(c => ({
               i: c.userId?.charAt(0).toUpperCase() || 'U',
               name: c.userId || 'User',
               handle: '@' + (c.userId || 'user'),
@@ -91,13 +92,7 @@ if (savedComments) {
           };
         }
 
-        const element = createPostElementWithMedia(
-          post,
-          author,
-          isLiked,
-          commentCount,
-          mediaURL
-        );
+        const element = createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL);
 
         container.appendChild(element);
       }
@@ -117,8 +112,12 @@ if (savedComments) {
       article.dataset.videoId = post.id;
       article.dataset.author = author.id;
 
+      const loggedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      const myUsername = loggedUser ? loggedUser.username : 'jordanlee';
+      const isOwnPost = post.author === myUsername;
+
       const mediaHTML = post.type === 'video'
-        ? `<video src="${mediaURL}" class="video-player" autoplay loop muted playsinline></video>`
+        ? `<video src="${mediaURL}" class="video-player" autoplay loop ${soundOn ? '' : 'muted'} playsinline></video>`
         : `<img src="${mediaURL}" class="post-image">`;
 
       article.innerHTML = `
@@ -128,13 +127,22 @@ if (savedComments) {
         <div class="video-overlay">
           <div class="video-actions">
             <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
-              <span class="heart">❤️</span>
-                <span data-like-count>${post.likes}</span>
+              <img src="./media/icons/heart.svg" alt="Like" class="action-icon" ${isLiked ? 'style="filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)"' : ''}>
+              <span data-like-count>${post.likes}</span>
             </button>
 
             <button class="action-btn comment-btn" onclick="openComments('${post.id}')">
-              💬 <span id="cc-${post.id}">${commentCount}</span>
+              <img src="./media/icons/comments.svg" alt="Comment" class="action-icon">
+              <span id="cc-${post.id}">${commentCount}</span>
             </button>
+
+            <button class="action-btn" onclick="openShareModal('${post.id}', '${author.username}', '')">
+              <img src="./media/icons/share.svg" alt="Share" class="action-icon">
+            </button>
+
+            ${isOwnPost ? `<button class="action-btn" onclick="deletePostFromFeed('${post.id}', this)" title="Delete post">
+              <img src="./media/icons/trash.svg" alt="Delete" class="action-icon">
+            </button>` : ''}
           </div>
 
           <div class="video-info">
@@ -361,27 +369,27 @@ if (savedComments) {
         <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
         <p class="share-step-label">Choose who you want to share this post with:</p>
         <div class="contact-pick-list">
-          <div class="contact-pick-item" onclick="sendToContact('alex')">
+          <div class="contact-pick-item" onclick="sendToContact('ahmed')">
             <div class="contact-pick-avatar">A</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Alex Dancer</span>
-              <span class="contact-pick-handle">@alexdancer</span>
+              <span class="contact-pick-name">Ahmed Yasser</span>
+              <span class="contact-pick-handle">@ahmed</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
-          <div class="contact-pick-item" onclick="sendToContact('sarah')">
-            <div class="contact-pick-avatar">S</div>
+          <div class="contact-pick-item" onclick="sendToContact('lina')">
+            <div class="contact-pick-avatar">L</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Sarah Travels</span>
-              <span class="contact-pick-handle">@sarah_travels</span>
+              <span class="contact-pick-name">Lina Omar</span>
+              <span class="contact-pick-handle">@lina</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
-          <div class="contact-pick-item" onclick="sendToContact('mike')">
-            <div class="contact-pick-avatar">M</div>
+          <div class="contact-pick-item" onclick="sendToContact('youssef')">
+            <div class="contact-pick-avatar">Y</div>
             <div class="contact-pick-info">
-              <span class="contact-pick-name">Mike Runner</span>
-              <span class="contact-pick-handle">@mike_runner</span>
+              <span class="contact-pick-name">Youssef</span>
+              <span class="contact-pick-handle">@youssef</span>
             </div>
             <span class="contact-pick-arrow">&#x2192;</span>
           </div>
@@ -517,31 +525,23 @@ if (savedComments) {
 
           const postId = this.dataset.postId;
           let likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
-
           const countEl = this.querySelector('[data-like-count]');
-          const heart = this.querySelector('.heart');
 
           if (!likesData[postId]) {
-            likesData[postId] = {
-              liked: false,
-              count: parseCount(countEl.textContent)
-            };
+            likesData[postId] = { liked: false, count: parseCount(countEl.textContent) };
           }
 
-          // toggle
           likesData[postId].liked = !likesData[postId].liked;
           likesData[postId].count += likesData[postId].liked ? 1 : -1;
-
-          // save
           localStorage.setItem("likesData", JSON.stringify(likesData));
 
-          // update UI
           countEl.textContent = fmtCount(likesData[postId].count);
           this.classList.toggle('liked', likesData[postId].liked);
 
-          if (heart) {
-            heart.style.color = likesData[postId].liked ? 'red' : 'white';
-          }
+          const img = this.querySelector('img');
+          if (img) img.style.filter = likesData[postId].liked
+            ? 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)'
+            : '';
         });
       });
     }
@@ -563,15 +563,16 @@ if (savedComments) {
     // ── Share modal ───────────────────────────────────────────────────
     let shareState = { postId: null, author: null, postImg: null, caption: null };
 
-    function openShareModal(postId, author, postNum) {
-      const data = commentsData[postId];
-      const imgMap = { '1': 'Post_1.png', '2': 'Post_2.png', '3': 'Post_3.png' };
-      shareState = {
-        postId,
-        author,
-        postImg: data ? data.postImg : ('./media/images/' + (imgMap[postNum] || 'Post_1.png')),
-        caption: data ? data.caption : ''
-      };
+    function openShareModal(postId, author) {
+      let caption = '';
+      const maseeraPost = getData().posts.find(p => String(p.id) === String(postId));
+      if (maseeraPost) {
+        caption = maseeraPost.caption;
+      } else {
+        const up = JSON.parse(localStorage.getItem('userPosts') || '[]').find(p => String(p.id) === String(postId));
+        if (up) caption = up.caption;
+      }
+      shareState = { postId, author, caption };
       document.getElementById('shareFeedback').textContent = '';
       document.getElementById('shareStep1').style.display = '';
       document.getElementById('shareStep2').style.display = 'none';
@@ -630,8 +631,8 @@ if (savedComments) {
     function deletePostFromFeed(postId, btn) {
       if (!confirm('Delete this post?')) return;
       let posts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-      const removed = posts.find(p => p.id === postId);
-      posts = posts.filter(p => p.id !== postId);
+      const removed = posts.find(p => String(p.id) === String(postId));
+      posts = posts.filter(p => String(p.id) !== String(postId));
       localStorage.setItem('userPosts', JSON.stringify(posts));
       if (removed && removed.mediaKey) MediaStore.remove(removed.mediaKey);
 
