@@ -6,183 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - Post</title>
   <link rel="stylesheet" href="./styles/post.css">
+  <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
-<script>
-  // Override or enhance existing functions with data-persistent versions
-  
-  // Initialize data on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    // Ensure data store is initialized
-    getData();
-    
-    // Render initial feed
-    renderFeed('postsContainer', 'for-you');
-    
-    // Update following list in sidebar
-    updateFollowingList();
-  });
-  
-  // Override switchTab to use data layer
-  window.switchTab = function(tab, el) {
-    // Update active tab UI
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (el) el.classList.add('active');
-    
-    // Hide empty states
-    document.getElementById('feedEmptyState').style.display = 'none';
-    
-    // Render appropriate feed
-    renderFeed('postsContainer', tab);
-  };
-  
-  // Update following list in sidebar
-  function updateFollowingList() {
-    const currentUser = getCurrentUser();
-    const data = getData();
-    const followingList = document.querySelector('.following-list');
-    
-    if (!followingList || !currentUser || !currentUser.following) return;
-    
-    // Clear existing items (keep only the first few as static examples or regenerate)
-    // This is simplified - in a real app you'd regenerate the entire list
-    const followingUsers = currentUser.following
-      .map(userId => data.users.find(u => u.id === userId))
-      .filter(Boolean);
-    
-    // You could update the following list here
-  }
-  
-  // Override openComments to use data layer
-  window.openComments = function(postId) {
-    activePostId = postId;
-    const comments = getCommentsForPost(postId);
-    const post = getData().posts.find(p => p.id === postId);
-    const author = post ? post.author : 'unknown';
-    
-    document.getElementById('commentsEmptyState').style.display = 'none';
-    document.getElementById('commentsActive').style.display = 'flex';
-    document.getElementById('commentsPostLabel').textContent = `@${author}'s post`;
-    document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
-    
-    renderCommentList(comments, postId);
-    document.getElementById('commentInput').focus();
-  };
-  
-  // Override renderCommentList to use data
-  function renderCommentList(comments, postId) {
-    const list = document.getElementById('dynamicCommentsList');
-    const currentUser = getCurrentUser();
-    const data = getData();
-    
-    if (!comments || comments.length === 0) {
-      list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
-      return;
-    }
-    
-    list.innerHTML = comments.map(c => {
-      const commentUser = data.users.find(u => u.id === c.userId) || { displayName: c.userId, avatar: c.userId.charAt(0).toUpperCase() };
-      
-      return `
-        <li class="comment-item ${c.pinned ? 'pinned' : ''}" data-comment-id="${c.id}">
-          <div class="avatar-letter avatar-small">${escapeHtml(commentUser.avatar)}</div>
-          <div class="comment-content">
-            <div class="comment-header">
-              <span class="comment-username">${escapeHtml(commentUser.displayName)}</span>
-              <span class="comment-handle">@${escapeHtml(c.userId)}</span>
-              ${c.pinned
-                ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
-                : `<span class="comment-timestamp">${formatTimeAgo(c.timestamp)}</span>`}
-            </div>
-            <p class="comment-text">${escapeHtml(c.text)}</p>
-            <div class="comment-footer">
-              <button class="comment-like-btn" onclick="handleCommentLikeClick('${postId}', '${c.id}', this)">
-                <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
-                <span class="like-count">${formatCount(c.likes || 0)}</span>
-              </button>
-            </div>
-          </div>
-        </li>
-      `;
-    }).join('');
-  }
-  
-  // Format timestamp as time ago
-  function formatTimeAgo(timestamp) {
-    if (!timestamp) return 'unknown';
-    
-    const now = new Date();
-    const past = new Date(timestamp);
-    const diffMs = now - past;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-    
-    if (diffSec < 60) return 'just now';
-    if (diffMin < 60) return diffMin + 'm ago';
-    if (diffHour < 24) return diffHour + 'h ago';
-    return diffDay + 'd ago';
-  }
-  
-  // Handle comment like click
-  window.handleCommentLikeClick = function(postId, commentId, btn) {
-    const liked = toggleCommentLike(postId, commentId);
-    
-    btn.classList.toggle('comment-liked', liked);
-    const img = btn.querySelector('.heart-icon-small');
-    img.style.filter = liked 
-      ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' 
-      : '';
-    
-    const countEl = btn.querySelector('.like-count');
-    const data = getData();
-    const comment = data.comments[postId]?.find(c => c.id === commentId);
-    if (comment) {
-      countEl.textContent = formatCount(comment.likes);
-    }
-  };
-  
-  // Override submitComment to use data layer
-  window.submitComment = function(e) {
-    e.preventDefault();
-    const input = document.getElementById('commentInput');
-    const text = input.value.trim();
-    
-    if (!text || !activePostId) return;
-    
-    const newComment = addComment(activePostId, text);
-    
-    if (newComment) {
-      // Re-render comments
-      const comments = getCommentsForPost(activePostId);
-      renderCommentList(comments, activePostId);
-      
-      // Update comment count
-      document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
-      
-      // Update count on post button
-      const ccEl = document.getElementById('cc-' + activePostId);
-      if (ccEl) {
-        const post = getData().posts.find(p => p.id === activePostId);
-        if (post) ccEl.textContent = formatCount(post.comments);
-      }
-      
-      input.value = '';
-      
-      // Scroll comments to bottom
-      const container = document.getElementById('dynamicCommentsContainer');
-      container.scrollTop = container.scrollHeight;
-    }
-  };
-  
-  // Make sure share modal functions use the data
-  window.openShareModal = function(postId, author, mediaPath) {
-    // ... existing share modal code ...
-    // But you might want to store the postId for later use
-    window.currentSharePostId = postId;
-    // ... rest of the function ...
-  };
-</script>
 </head>
 
 <body>
@@ -213,37 +38,33 @@
           <div class="author-avatar" id="postAuthorAvatar">A</div>
           <div class="author-details">
             <a href="profile.html" class="author-name" id="postAuthorName">@alexdancer</a>
-            <span class="post-time">3 hours ago</span>
+            <span class="post-time" id="postTime">3 hours ago</span>
           </div>
         </div>
         <button class="follow-btn-post" id="followBtn" onclick="toggleFollow(this)">+ Follow</button>
       </div>
 
-      <!-- Post Image -->
-      <div class="post-image-container">
+      <!-- Post Media (image or video) -->
+      <div class="post-image-container" id="postMediaContainer">
         <img src="./media/images/Post_1.png" alt="Post" class="post-image" id="postImage">
       </div>
 
       <!-- Caption & Hashtags -->
       <div class="post-caption">
         <p id="postCaption">Check out this amazing moment! ✨</p>
-        <div class="post-hashtags" id="postHashtags">
-          <span class="hashtag">#viral</span>
-          <span class="hashtag">#trending</span>
-          <span class="hashtag">#amazing</span>
-        </div>
+        <div class="post-hashtags" id="postHashtags"></div>
       </div>
 
       <!-- Like / Comment / Share Actions -->
       <div class="post-actions-bar">
         <button class="post-action-btn like-post-btn" id="likeBtn" onclick="toggleLike(this)">
           <span class="action-icon">&#x1F90D;</span>
-          <span class="action-label" id="likeCount">18.3K</span>
+          <span class="action-label" id="likeCount">0</span>
           <span class="action-text">Likes</span>
         </button>
         <button class="post-action-btn comment-post-btn" onclick="focusCommentInput()">
           <span class="action-icon">&#x1F4AC;</span>
-          <span class="action-label" id="commentCount">5.2K</span>
+          <span class="action-label" id="commentCount">0</span>
           <span class="action-text">Comments</span>
         </button>
         <button class="post-action-btn share-post-btn" onclick="openShareModal()">
@@ -260,77 +81,11 @@
 
       <div class="comments-panel-header">
         <h2>Comments</h2>
-        <span class="comment-total" id="commentTotal">5,234</span>
+        <span class="comment-total" id="commentTotal">0</span>
       </div>
 
       <div class="comments-scroll" id="commentsScroll">
-        <ul class="comments-list" id="commentsList">
-
-          <li class="comment-item">
-            <div class="comment-avatar">S</div>
-            <div class="comment-body">
-              <div class="comment-meta">
-                <span class="comment-user">Sarah Travels</span>
-                <span class="comment-handle">@sarah_travels</span>
-                <span class="comment-time">3h ago</span>
-              </div>
-              <p class="comment-text">I've been watching this on repeat. How is this even possible?!</p>
-              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-                <span class="heart-icon">&#x1F90D;</span>
-                <span class="clc">2.8K</span>
-              </button>
-            </div>
-          </li>
-
-          <li class="comment-item pinned-comment">
-            <div class="comment-avatar">T</div>
-            <div class="comment-body">
-              <div class="comment-meta">
-                <span class="comment-user">Tech Guru Dan</span>
-                <span class="comment-handle">@techguru_dan</span>
-                <span class="pinned-label">&#x1F4CC; Pinned</span>
-              </div>
-              <p class="comment-text">Thanks for all the love! Tutorial coming next week 🔥</p>
-              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-                <span class="heart-icon">&#x1F90D;</span>
-                <span class="clc">1.1K</span>
-              </button>
-            </div>
-          </li>
-
-          <li class="comment-item">
-            <div class="comment-avatar">K</div>
-            <div class="comment-body">
-              <div class="comment-meta">
-                <span class="comment-user">Kara Designs</span>
-                <span class="comment-handle">@kara_designs</span>
-                <span class="comment-time">4h ago</span>
-              </div>
-              <p class="comment-text">The song choice is everything! What song is this?</p>
-              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-                <span class="heart-icon">&#x1F90D;</span>
-                <span class="clc">987</span>
-              </button>
-            </div>
-          </li>
-
-          <li class="comment-item">
-            <div class="comment-avatar">A</div>
-            <div class="comment-body">
-              <div class="comment-meta">
-                <span class="comment-user">Alex Dancer</span>
-                <span class="comment-handle">@alexdancer</span>
-                <span class="comment-time">2h ago</span>
-              </div>
-              <p class="comment-text">Thanks everyone! Tutorial dropping next week 🙏</p>
-              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-                <span class="heart-icon">&#x1F90D;</span>
-                <span class="clc">3.2K</span>
-              </button>
-            </div>
-          </li>
-
-        </ul>
+        <ul class="comments-list" id="commentsList"></ul>
       </div>
 
       <div class="comment-input-section">
@@ -344,6 +99,7 @@
     </div>
   </div>
 
+  <!-- Share Modal -->
   <div class="share-modal-overlay" id="shareModal" onclick="handleModalOverlayClick(event)">
     <div class="share-modal-box">
       <div class="share-modal-header">
@@ -365,31 +121,173 @@
   </div>
 
   <script>
+    // ── Helpers ───────────────────────────────────────────────────────
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(text || '')));
+      return div.innerHTML;
+    }
+
+    function fmtCount(n) {
+      n = parseInt(n) || 0;
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    }
+
+    // ── Read URL params ───────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const postId = params.get('post') || '1';
     const author = params.get('author') || 'alexdancer';
     const rawCap = params.get('caption');
-    const caption = rawCap ? decodeURIComponent(rawCap) : 'Check out this amazing moment! ✨';
+    const caption = rawCap ? decodeURIComponent(rawCap) : '';
 
-    const postData = {
-      '1': { image: './media/images/Post_1.png', likes: '18.3K', comments: '5,234' },
-      '2': { image: './media/images/Post_2.png', likes: '4.2K', comments: '987' },
-      '3': { image: './media/images/Post_3.png', likes: '94.2K', comments: '12,400' }
-    };
-    const post = postData[postId] || postData['1'];
-
-    document.getElementById('postImage').src = post.image;
-    document.getElementById('likeCount').textContent = post.likes;
-    document.getElementById('commentTotal').textContent = post.comments;
+    // ── Set author info ───────────────────────────────────────────────
     document.getElementById('postAuthorName').textContent = '@' + author;
     document.getElementById('postAuthorAvatar').textContent = author.charAt(0).toUpperCase();
     document.getElementById('postCaption').textContent = caption;
 
+    // ── Load post media & stats ───────────────────────────────────────
+    const maseeraData = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+    const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+
+    let foundPost = (maseeraData.posts || []).find(p => String(p.id) === String(postId))
+      || userPosts.find(p => String(p.id) === String(postId));
+
+    function setMedia(url, isVideo) {
+      const container = document.getElementById('postMediaContainer');
+      if (isVideo) {
+        container.innerHTML = `<video src="${url}" class="post-image" controls autoplay loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
+      } else {
+        container.innerHTML = `<img src="${url}" alt="Post" class="post-image" id="postImage">`;
+      }
+    }
+
+    if (foundPost) {
+      const isVideo = foundPost.type === 'video' || foundPost.fileType === 'video';
+      document.getElementById('likeCount').textContent = fmtCount(foundPost.likes || 0);
+      document.getElementById('commentCount').textContent = fmtCount(foundPost.comments || 0);
+      document.getElementById('commentTotal').textContent = fmtCount(foundPost.comments || 0);
+
+      // Hashtags
+      if (foundPost.hashtags && foundPost.hashtags.length) {
+        document.getElementById('postHashtags').innerHTML =
+          foundPost.hashtags.map(t => `<span class="hashtag">#${escapeHtml(t)}</span>`).join('');
+      }
+
+      if (foundPost.mediaKey) {
+        // User-created post stored in IndexedDB via MediaStore
+        MediaStore.getURL(foundPost.mediaKey).then(url => {
+          if (url) setMedia(url, isVideo);
+        });
+      } else if (foundPost.mediaPath) {
+        setMedia(foundPost.mediaPath, isVideo);
+      } else if (foundPost.mediaURL) {
+        setMedia(foundPost.mediaURL, isVideo);
+      }
+    }
+
+    // ── Load comments ─────────────────────────────────────────────────
+    function loadComments() {
+      const list = document.getElementById('commentsList');
+
+      // Check commentsData (from for_you_page interactions)
+      const commentsData = JSON.parse(localStorage.getItem('commentsData') || '{}');
+      const maseeraFresh = JSON.parse(localStorage.getItem('maseera_data') || '{}');
+      const maseeraComments = maseeraFresh.comments && maseeraFresh.comments[postId];
+
+      let items = [];
+
+      if (commentsData[postId] && commentsData[postId].items && commentsData[postId].items.length) {
+        // Comments saved from for_you_page or post.html interactions
+        items = commentsData[postId].items;
+        const count = commentsData[postId].count || items.length;
+        document.getElementById('commentTotal').textContent = fmtCount(count);
+        document.getElementById('commentCount').textContent = fmtCount(count);
+
+      } else if (maseeraComments && maseeraComments.length) {
+        // Fallback: demo comments from maseera_data
+        items = maseeraComments.map(c => ({
+          i: (c.userId || 'U').charAt(0).toUpperCase(),
+          name: c.userId || 'User',
+          handle: '@' + (c.userId || 'user'),
+          time: 'now',
+          text: c.text || '',
+          likes: c.likes || 0,
+          pinned: c.pinned || false
+        }));
+        document.getElementById('commentTotal').textContent = fmtCount(items.length);
+        document.getElementById('commentCount').textContent = fmtCount(items.length);
+      }
+
+      if (!items.length) {
+        list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
+        return;
+      }
+
+      list.innerHTML = items.map(c => `
+        <li class="comment-item ${c.pinned ? 'pinned-comment' : ''}">
+          <div class="comment-avatar">${escapeHtml(c.i || 'U')}</div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="comment-user">${escapeHtml(c.name || '')}</span>
+              <span class="comment-handle">${escapeHtml(c.handle || '')}</span>
+              ${c.pinned
+          ? `<span class="pinned-label">&#x1F4CC; Pinned</span>`
+          : `<span class="comment-time">${escapeHtml(c.time || '')}</span>`}
+            </div>
+            <p class="comment-text">${escapeHtml(c.text || '')}</p>
+            <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+              <span class="heart-icon">&#x1F90D;</span>
+              <span class="clc">${fmtCount(c.likes || 0)}</span>
+            </button>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    loadComments();
+
+    // ── Submit comment ────────────────────────────────────────────────
+    function submitComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const myName = ((userData.firstName || '') + ' ' + (userData.lastName || '')).trim() || 'You';
+      const myHandle = '@' + (userData.username || 'you');
+      const myInit = myName.charAt(0).toUpperCase();
+
+      // Save to commentsData in localStorage
+      let commentsData = JSON.parse(localStorage.getItem('commentsData') || '{}');
+      if (!commentsData[postId]) {
+        commentsData[postId] = { label: `@${author}'s post`, count: 0, items: [] };
+      }
+      commentsData[postId].items.push({
+        i: myInit, name: myName, handle: myHandle,
+        time: 'just now', text, likes: 0, pinned: false
+      });
+      commentsData[postId].count++;
+      localStorage.setItem('commentsData', JSON.stringify(commentsData));
+
+      // Update comment count on the post stats
+      const newCount = commentsData[postId].count;
+      document.getElementById('commentTotal').textContent = fmtCount(newCount);
+      document.getElementById('commentCount').textContent = fmtCount(newCount);
+
+      loadComments();
+      input.value = '';
+
+      const scroll = document.getElementById('commentsScroll');
+      scroll.scrollTop = scroll.scrollHeight;
+    }
+
+    // ── Like / Follow / Comment Like ──────────────────────────────────
     let liked = false;
     function toggleLike(btn) {
       liked = !liked;
-      btn.querySelector('.action-icon').textContent = liked ? '\u2764\uFE0F' : '\u1F90D';
-      // Use innerHTML for heart emoji
       btn.querySelector('.action-icon').innerHTML = liked ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
       btn.classList.toggle('liked', liked);
     }
@@ -412,45 +310,7 @@
       input.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function submitComment(e) {
-      e.preventDefault();
-      const input = document.getElementById('commentInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      const list = document.getElementById('commentsList');
-      const li = document.createElement('li');
-      li.className = 'comment-item new-comment';
-      li.innerHTML = `
-        <div class="comment-avatar">Y</div>
-        <div class="comment-body">
-          <div class="comment-meta">
-            <span class="comment-user">You</span>
-            <span class="comment-handle">@jordanlee</span>
-            <span class="comment-time">just now</span>
-          </div>
-          <p class="comment-text">${escapeHtml(text)}</p>
-          <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-            <span class="heart-icon">&#x1F90D;</span>
-            <span class="clc">0</span>
-          </button>
-        </div>
-      `;
-      list.appendChild(li);
-      input.value = '';
-
-      const scroll = document.getElementById('commentsScroll');
-      scroll.scrollTop = scroll.scrollHeight;
-
-      // Update count display
-      const totalEl = document.getElementById('commentTotal');
-      const countEl = document.getElementById('commentCount');
-      [totalEl, countEl].forEach(el => {
-        const n = parseFloat(el.textContent.replace(/,/g, '')) || 0;
-        el.textContent = (n + 1).toLocaleString();
-      });
-    }
-
+    // ── Share modal ───────────────────────────────────────────────────
     function openShareModal() {
       document.getElementById('shareModal').classList.add('active');
       document.getElementById('copyFeedback').textContent = '';
@@ -467,7 +327,7 @@
     function copyPostLink() {
       const url = window.location.href;
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(showCopied).catch(fallbackCopy.bind(null, url));
+        navigator.clipboard.writeText(url).then(showCopied).catch(() => fallbackCopy(url));
       } else {
         fallbackCopy(url);
       }
@@ -484,25 +344,12 @@
     }
 
     function showCopied() {
-      document.getElementById('copyFeedback').textContent = '&#x2713; Link copied to clipboard!';
       document.getElementById('copyFeedback').innerHTML = '&#x2713; Link copied to clipboard!';
     }
 
     function shareToMessages() {
-      const shareData = {
-        postId,
-        author,
-        image: post.image,
-        caption
-      };
-      const encoded = encodeURIComponent(JSON.stringify(shareData));
-      window.location.href = 'messages.html?sharedPost=' + encoded;
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(text));
-      return div.innerHTML;
+      const shareData = { postId, author, caption };
+      window.location.href = 'messages.html?sharedPost=' + encodeURIComponent(JSON.stringify(shareData));
     }
   </script>
 
