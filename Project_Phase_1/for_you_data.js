@@ -593,25 +593,21 @@ function handleLikeClick(e) {
 
   const btn = e.currentTarget;
   const postId = btn.dataset.postId;
-
   if (!postId) return;
 
-  const liked = togglePostLike(postId);
+  // Only handle built-in posts — user posts are handled by attachLikeButtons
+  const post = getData().posts.find(p => p.id === postId);
+  if (!post) return;
 
-  // Update UI
+  const liked = togglePostLike(postId);
   btn.classList.toggle('liked', liked);
 
   const img = btn.querySelector('img');
-  img.style.filter = liked
-    ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)'
-    : '';
+  if (img) img.style.filter = liked ? 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)' : '';
 
   const countEl = btn.querySelector('[data-like-count]');
-  const data = getData();
-  const post = data.posts.find(p => p.id === postId);
-  if (post) {
-    countEl.textContent = formatCount(post.likes);
-  }
+  const updated = getData().posts.find(p => p.id === postId);
+  if (countEl && updated) countEl.textContent = formatCount(updated.likes);
 }
 
 // Handle follow button click
@@ -1010,6 +1006,11 @@ function attachVideoControls() {
     if (videoPost && !video.hasAttribute('data-controls-attached')) {
       video.setAttribute('data-controls-attached', 'true');
       addVideoControls(video, videoPost);
+      if (soundOn) {
+        video.muted = false;
+      } else {
+        addUnmuteButton(video);
+      }
     }
   });
 }
@@ -1082,9 +1083,7 @@ function addUnmuteButton(video) {
 
   unmuteBtn.onclick = (e) => {
     e.stopPropagation();
-    video.muted = false;
-    video.play();
-    unmuteBtn.remove();
+    unmuteAll();
   };
 
   wrapper.appendChild(unmuteBtn);
@@ -1105,6 +1104,17 @@ window.switchTab = function (tab, el) {
 };
 
 let currentAudio = null;
+let soundOn = sessionStorage.getItem('soundOn') === 'true';
+
+function unmuteAll() {
+  soundOn = true;
+  sessionStorage.setItem('soundOn', 'true');
+  // Only unmute the video currently on screen
+  if (videoController && videoController.currentVideo) {
+    videoController.currentVideo.muted = false;
+  }
+  document.querySelectorAll('.unmute-btn').forEach(b => b.remove());
+}
 
 function handleVideoSound(video, audioPath) {
   if (!audioPath) return;
