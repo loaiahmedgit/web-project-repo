@@ -128,7 +128,7 @@ async function main() {
   }
   console.log(`  ✓ ${FOLLOWS.length} follows ready`);
 
-  // Use upsert instead of createMany to support SQLite
+
   console.log('Creating likes...');
   for (const l of LIKES) {
     await prisma.like.upsert({
@@ -166,7 +166,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    console.error('Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {
