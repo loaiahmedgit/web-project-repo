@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="styles/profile.css">
+    <script src="media-store.js"></script>
+</head>
+
+<body>
+
+    <div class="profile-card">
+
+        <div class="top-bar">
+            <div class="menu-icon" onclick="toggleMenu()">☰</div>
+            <div class="site-logo">
+                <img src="media/images/Orange Flash Logo.png">
+            </div>
+        </div>
+
+        <div class="side-menu" id="sideMenu">
+            <a href="profile.html">Profile</a>
+            <a href="create.html">Create Post</a>
+            <a href="for_you_page.html">For You</a>
+            <a href="#" onclick="logoutUser()">Logout</a>
+        </div>
+
+        <div class="cover"></div>
+
+        <div class="profile-info">
+
+            <div class="avatar" id="avatarLetter">A</div>
+
+            <h2 id="profileName"></h2>
+            <p class="username" id="profileUsername"></p>
+            <p class="bio" id="profileBio">No bio yet</p>
+
+            <div class="buttons" id="profileButtons">
+                <button class="edit-btn" onclick="openEditModal()">Edit Profile</button>
+                <button class="message" onclick="window.location.href='messages.html'">Message</button>
+            </div>
+
+            <div class="stats">
+                <div>
+                    <h3 id="statFollowers">0</h3>
+                    <p>Followers</p>
+                </div>
+                <div>
+                    <h3 id="statFollowing">0</h3>
+                    <p>Following</p>
+                </div>
+                <div>
+                    <h3 id="postCountStat">0</h3>
+                    <p>Posts</p>
+                </div>
+            </div>
+
+            <div class="posts-section">
+                <h2>User Posts</h2>
+                <div class="posts-grid" id="postsGrid"></div>
+            </div>
+
+            <footer class="footer">© 2026 Maseera</footer>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editModal" class="edit-modal" onclick="handleModalBackdropClick(event)">
+        <div class="edit-box">
+
+            <div class="edit-modal-header">
+                <h3>Edit Profile</h3>
+                <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+
+            <div class="edit-modal-body">
+                <div class="edit-field">
+                    <label>First Name</label>
+                    <input type="text" id="editFirstName" placeholder="First name">
+                </div>
+                <div class="edit-field">
+                    <label>Last Name</label>
+                    <input type="text" id="editLastName" placeholder="Last name">
+                </div>
+                <div class="edit-field">
+                    <label>Username</label>
+                    <input type="text" id="editUsername" placeholder="Username">
+                    <span class="edit-field-note">Changing your username updates all your posts.</span>
+                </div>
+                <div class="edit-field">
+                    <label>Bio</label>
+                    <textarea id="editBio" placeholder="Tell people about yourself..." rows="3"></textarea>
+                </div>
+            </div>
+
+            <div id="editModalError" class="edit-modal-error" style="display:none;"></div>
+
+            <div class="edit-modal-footer">
+                <button class="edit-cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="edit-save-btn" onclick="saveProfile()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // ── Auth ──────────────────────────────────────────────────────────
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+        if (!currentUser) { window.location.href = 'login.html'; }
+
+        // ── URL params ────────────────────────────────────────────────────
+        const params        = new URLSearchParams(window.location.search);
+        const userIdFromURL = params.get('userId') || params.get('user');
+
+        const isOwnProfile  = !userIdFromURL
+            || userIdFromURL === currentUser?.id
+            || userIdFromURL === currentUser?.username;
+
+        // Use id if available, username as fallback (handles stale sessionStorage)
+        const lookupKey = isOwnProfile
+            ? (currentUser?.id || currentUser?.username)
+            : userIdFromURL;
+
+        // Resolved to real DB id after init()
+        let profileUserId = lookupKey;
+        let _resolvedUser = null;
+
+        // ── Init: fetch user from API ─────────────────────────────────────
+        async function init() {
+            if (!lookupKey) { window.location.href = 'login.html'; return; }
+
+            const res  = await fetch('/api/users/' + encodeURIComponent(lookupKey));
+            if (!res.ok) {
+                document.getElementById('profileName').textContent = 'User not found';
+                return;
+            }
+            _resolvedUser = await res.json();
+            profileUserId = _resolvedUser.id;
+
+            // Patch stale sessionStorage that was saved without an id field
+            if (isOwnProfile && currentUser && !currentUser.id && _resolvedUser.id) {
+                const patched = {
+                    ...currentUser,
+                    id:          _resolvedUser.id,
+                    username:    _resolvedUser.username,
+                    displayName: _resolvedUser.displayName,
+                    avatar:      _resolvedUser.avatar,
+                    bio:         _resolvedUser.bio,
+                };
+                sessionStorage.setItem('currentUser', JSON.stringify(patched));
+            }
+
+            document.getElementById('profileName').textContent     = _resolvedUser.displayName || _resolvedUser.username;
+            document.getElementById('profileUsername').textContent  = '@' + _resolvedUser.username;
+            document.getElementById('avatarLetter').textContent    = _resolvedUser.avatar || (_resolvedUser.displayName || _resolvedUser.username || 'U').charAt(0).toUpperCase();
+            document.getElementById('profileBio').textContent      = _resolvedUser.bio || 'No bio yet';
+            document.getElementById('statFollowers').textContent   = (_resolvedUser._count?.followers ?? 0).toLocaleString();
+            document.getElementById('statFollowing').textContent   = (_resolvedUser._count?.following ?? 0).toLocaleString();
+
+            if (!isOwnProfile && currentUser) {
+                const loggedId = JSON.parse(sessionStorage.getItem('currentUser') || '{}').id;
+                if (loggedId) {
+                    const fRes = await fetch('/api/follows?followerId=' + encodeURIComponent(loggedId)
+                        + '&followingId=' + encodeURIComponent(profileUserId));
+                    const already = fRes.ok ? (await fRes.json()).following : false;
+
+                    document.getElementById('profileButtons').innerHTML = `
+                        <button class="edit-btn follow-profile-btn" id="followProfileBtn"
+                            onclick="toggleFollowProfile(this)"
+                            data-following="${already ? '1' : '0'}"
+                            style="${already ? 'background:linear-gradient(135deg,#8A1538,#F5A623);color:#fff;border-color:transparent;' : ''}">
+                            ${already ? 'Following' : '+ Follow'}
+                        </button>
+                        <button class="message" onclick="window.location.href='messages.html'">Message</button>
+                    `;
+                }
+            }
+
+            loadPosts();
+        }
+
+        // ── Load posts from API ───────────────────────────────────────────
+        async function loadPosts() {
+            const grid = document.getElementById('postsGrid');
+            grid.innerHTML = '<p style="color:#808080;padding:20px;">Loading…</p>';
+
+            const res   = await fetch('/api/users/' + encodeURIComponent(profileUserId) + '/posts');
+            const posts = res.ok ? await res.json() : [];
+
+            document.getElementById('postCountStat').textContent = posts.length;
+
+            if (!posts.length) {
+                grid.innerHTML = '<p style="color:#808080;padding:20px;">No posts yet</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            posts.forEach(post => {
+                const div       = document.createElement('div');
+                div.className   = 'post';
+                div.style.cursor = 'pointer';
+                div.dataset.postId = post.id;
+
+                const isVideo = post.mediaType === 'video';
+
+                div.innerHTML = `
+                    ${isVideo
+                        ? `<video class="post-media" autoplay muted loop playsinline></video>`
+                        : `<img class="post-media" alt="post">`}
+                    ${isOwnProfile
+                        ? `<button class="delete-post-btn" onclick="event.stopPropagation(); openDeleteModal('${post.id}')">✕</button>`
+                        : ''}
+                    <div class="post-overlay">
+                        <div class="overlay-item">
+                            <img src="media/icons/heart.svg">
+                            <span>${post._count?.likes ?? 0}</span>
+                        </div>
+                        <div class="overlay-item">
+                            <img src="media/icons/comments.svg">
+                            <span>${post._count?.comments ?? 0}</span>
+                        </div>
+                    </div>
+                `;
+
+                div.addEventListener('click', function () {
+                    window.location.href = 'post.html?post=' + encodeURIComponent(post.id)
+                        + '&author=' + encodeURIComponent(post.authorId)
+                        + '&caption=' + encodeURIComponent(post.caption || '');
+                });
+
+                grid.appendChild(div);
+
+                if (post.mediaPath) {
+                    const mediaEl = div.querySelector('.post-media');
+                    if (mediaEl) mediaEl.src = post.mediaPath;
+                }
+            });
+        }
+
+        // ── Follow toggle ─────────────────────────────────────────────────
+        async function toggleFollowProfile(btn) {
+            const loggedId = JSON.parse(sessionStorage.getItem('currentUser') || '{}').id;
+            if (!loggedId) return;
+            const res = await fetch('/api/follows', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ followerId: loggedId, followingId: profileUserId }),
+            });
+            if (!res.ok) return;
+            const { following } = await res.json();
+            btn.textContent       = following ? 'Following' : '+ Follow';
+            btn.dataset.following = following ? '1' : '0';
+            btn.style.background  = following ? 'linear-gradient(135deg,#8A1538,#F5A623)' : 'transparent';
+            btn.style.color       = following ? '#fff' : '';
+            btn.style.borderColor = following ? 'transparent' : '';
+        }
+
+        // ── Edit profile ──────────────────────────────────────────────────
+        function openEditModal() {
+            const u     = _resolvedUser || JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+            const parts = (u.displayName || '').split(' ');
+            document.getElementById('editFirstName').value = parts[0] || '';
+            document.getElementById('editLastName').value  = parts.slice(1).join(' ') || '';
+            document.getElementById('editUsername').value  = u.username || '';
+            document.getElementById('editBio').value       = u.bio || '';
+            document.getElementById('editModalError').style.display = 'none';
+            document.getElementById('editModal').style.display      = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function handleModalBackdropClick(e) {
+            if (e.target === document.getElementById('editModal')) closeEditModal();
+        }
+
+        async function saveProfile() {
+            const firstName   = document.getElementById('editFirstName').value.trim();
+            const lastName    = document.getElementById('editLastName').value.trim();
+            const bio         = document.getElementById('editBio').value.trim();
+            const displayName = (firstName + ' ' + lastName).trim();
+            const errorEl     = document.getElementById('editModalError');
+
+            if (!displayName) {
+                errorEl.textContent    = 'Name cannot be empty.';
+                errorEl.style.display  = 'block';
+                return;
+            }
+
+            const res = await fetch('/api/users/' + encodeURIComponent(profileUserId), {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ displayName, bio }),
+            });
+
+            if (!res.ok) {
+                errorEl.textContent   = 'Failed to save. Try again.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            const updated = await res.json();
+
+            // Update sessionStorage and in-memory user
+            const stored = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+            stored.displayName = updated.displayName;
+            stored.bio         = updated.bio;
+            sessionStorage.setItem('currentUser', JSON.stringify(stored));
+            if (_resolvedUser) { _resolvedUser.displayName = updated.displayName; _resolvedUser.bio = updated.bio; }
+
+            document.getElementById('profileName').textContent  = updated.displayName;
+            document.getElementById('profileBio').textContent   = updated.bio || 'No bio yet';
+            document.getElementById('avatarLetter').textContent = updated.avatar || (updated.displayName || '').charAt(0).toUpperCase() || '?';
+
+            closeEditModal();
+        }
+
+        // ── Delete post ───────────────────────────────────────────────────
+        let _pendingDeleteId = null;
+
+        function openDeleteModal(postId) {
+            _pendingDeleteId = postId;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            _pendingDeleteId = null;
+        }
+
+        function handleDeleteBackdrop(e) {
+            if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
+                if (!_pendingDeleteId) return;
+                const cu = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                try {
+                    await fetch('/api/posts/' + encodeURIComponent(_pendingDeleteId), {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: cu.id })
+                    });
+                } catch (_) {}
+                const el = document.querySelector('[data-post-id="' + _pendingDeleteId + '"]');
+                if (el) el.remove();
+                const remaining = document.querySelectorAll('#postsGrid .post').length;
+                document.getElementById('postCountStat').textContent = remaining;
+                closeDeleteModal();
+            });
+        });
+
+        // ── Menu / Logout ─────────────────────────────────────────────────
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            menu.style.left = menu.style.left === '0px' ? '-220px' : '0px';
+        }
+
+        function logoutUser() {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        // ── Start ─────────────────────────────────────────────────────────
+        if (currentUser) init();
+
+    </script>
+
+    <!-- DELETE MODAL -->
+    <div id="deleteModal" class="delete-modal" onclick="handleDeleteBackdrop(event)">
+        <div class="delete-box">
+
+            <h3>Delete Post?</h3>
+
+            <div class="delete-actions">
+                <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+                <button class="delete-btn" id="confirmDeleteBtn">Delete</button>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>

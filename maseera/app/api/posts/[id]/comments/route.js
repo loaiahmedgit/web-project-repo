@@ -55,7 +55,8 @@ import {
 // ---------------------------------------------------------------------------
 export async function GET(request, { params }) {
   try {
-    const comments = await getCommentsByPost(params.id);
+    const { id } = await params;
+    const comments = await getCommentsByPost(id);
     return NextResponse.json(comments, { status: 200 });
   } catch (error) {
     console.error('[GET /api/posts/:id/comments]', error);
@@ -68,6 +69,7 @@ export async function GET(request, { params }) {
 // ---------------------------------------------------------------------------
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { authorId, content, parentId } = body;
 
@@ -81,7 +83,7 @@ export async function POST(request, { params }) {
 
     // parentId is optional — if omitted, createComment defaults it to null
     // which makes this a top-level comment instead of a reply
-    const comment = await createComment(params.id, authorId, content, parentId);
+    const comment = await createComment(id, authorId, content, parentId);
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {

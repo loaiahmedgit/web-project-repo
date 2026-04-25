@@ -30,16 +30,17 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getUserById, updateUser } from 'maseera/lib/repository/userRepository.js';
+import { getUserById, getUserByUsername, updateUser } from 'maseera/lib/repository/userRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/users/:id
 // ---------------------------------------------------------------------------
 export async function GET(request, { params }) {
   try {
-    const user = await getUserById(params.id);
+    const { id } = await params;
+    // Try by DB id first, fall back to username so both formats work
+    const user = await getUserById(id) ?? await getUserByUsername(id);
 
-    // getUserById returns null when no record matches — send 404
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -56,6 +57,7 @@ export async function GET(request, { params }) {
 // ---------------------------------------------------------------------------
 export async function PATCH(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     // Only pick the fields that are allowed to be updated.
@@ -76,7 +78,7 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const updated = await updateUser(params.id, data);
+    const updated = await updateUser(id, data);
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     // Prisma P2025 = record not found for update

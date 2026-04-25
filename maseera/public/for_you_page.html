@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - For You</title>
+  <link rel="stylesheet" href="./styles/for_you_page.css">
+  <style>
+    .like-btn .action-icon { transition: filter 0.15s; }
+  </style>
+  <script src="./media-store.js"></script>
+  <script src="./for_you_data.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      await initializeApp();
+
+      const me = getCurrentUser();
+      if (me) {
+        const myInit = me.avatar || me.displayName?.charAt(0) || '?';
+        document.getElementById('sidebarAvatar').textContent      = myInit;
+        document.getElementById('sidebarName').textContent        = me.displayName;
+        document.getElementById('sidebarHandle').textContent      = '@' + me.username;
+        document.getElementById('commentUserAvatar').textContent  = myInit;
+      }
+
+      await renderFeedWithMedia('postsContainer', 'for-you');
+    });
+
+    async function renderFeedWithMedia(containerId, type) {
+      const container = document.getElementById(containerId);
+      const data = getData();
+
+      let posts;
+
+      if (type === 'for-you') {
+        posts = getForYouPosts();
+
+      } else if (type === 'following') {
+        posts = getFollowingPosts();
+
+      } else if (type === 'trending') {
+        posts = getForYouPosts();
+
+        posts.sort((a, b) => {
+          const scoreA = (a.likes || 0) + (a.comments || 0);
+          const scoreB = (b.likes || 0) + (b.comments || 0);
+          return scoreB - scoreA;
+        });
+      }
+
+      if (type === 'trending') {
+        container.classList.add('trending-grid');
+      } else {
+        container.classList.remove('trending-grid');
+      }
+      container.innerHTML = '';
+
+      for (const post of posts) {
+        const author = data.users.find(u => u.id === post.author) ||
+          { id: post.author, username: post.author };
+
+        let mediaURL = post.mediaPath;
+        if (post.mediaKey) {
+          const url = await MediaStore.getURL(post.mediaKey);
+          if (url) mediaURL = url;
+        }
+
+        const isLiked = isPostLiked(post.id);
+        const commentCount = commentsData[post.id]
+          ? commentsData[post.id].count
+          : (post.comments ?? 0);
+
+        if (!commentsData[post.id]) {
+          commentsData[post.id] = {
+            label: `@${author.username}'s post`,
+            count: commentCount,
+            items: []
+          };
+        }
+
+        const element = createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL);
+
+        container.appendChild(element);
+      }
+      attachLikeButtons();
+
+      setTimeout(() => {
+        if (videoController) videoController.destroy();
+        videoController = new VideoController();
+        attachVideoControls();
+      }, 100);
+    }
+
+    function createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL) {
+      const article = document.createElement('article');
+      article.className = 'video-post';
+      article.dataset.videoId = post.id;
+      article.dataset.author = author.id;
+
+      const loggedUser = getCurrentUser();
+      const isOwnPost  = loggedUser ? (post.author === loggedUser.id) : false;
+
+      const mediaHTML = post.type === 'video'
+        ? `<video src="${mediaURL}" class="video-player" autoplay loop ${soundOn ? '' : 'muted'} playsinline></video>`
+        : `<img src="${mediaURL}" class="post-image">`;
+
+      article.innerHTML = `
+      <div class="video-wrapper">
+        ${mediaHTML}
+
+        <div class="video-overlay">
+          <div class="video-actions">
+            <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
+              <img src="./media/icons/heart.svg" alt="Like" class="action-icon" ${isLiked ? 'style="filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)"' : ''}>
+              <span data-like-count>${post.likes}</span>
+            </button>
+
+            <button class="action-btn comment-btn" onclick="openComments('${post.id}')">
+              <img src="./media/icons/comments.svg" alt="Comment" class="action-icon">
+              <span id="cc-${post.id}">${commentCount}</span>
+            </button>
+
+            <button class="action-btn" onclick="openShareModal('${post.id}', '${author.username}', '')">
+              <img src="./media/icons/share.svg" alt="Share" class="action-icon">
+            </button>
+
+            ${isOwnPost ? `<button class="action-btn" onclick="deletePostFromFeed('${post.id}', this)" title="Delete post">
+              <img src="./media/icons/trash.svg" alt="Delete" class="action-icon">
+            </button>` : ''}
+          </div>
+
+          <div class="video-info">
+            <a href="profile.html?userId=${author.id}" class="poster-name">
+              @${author.username}
+            </a>
+
+            <p>${post.caption}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+      return article;
+    }
+
+    window.switchTab = async function (tab, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      document.getElementById('feedEmptyState').style.display = 'none';
+
+      await renderFeedWithMedia('postsContainer', tab);
+    };
+  </script>
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <aside class="sidebar sidebar-left" data-component="sidebar">
+
+      <div class="brand" data-section="brand">
+        <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="brand-logo">
+        <h1 class="brand-name">MASEERA</h1>
+      </div>
+
+      <nav class="nav-primary" data-section="primary-nav">
+        <ul class="nav-list">
+          <li class="nav-item active" data-nav="for-you">
+            <img src="./media/icons/for-you.png" alt="" class="nav-icon">
+            <span class="nav-text">For You</span>
+          </li>
+          <li class="nav-item" data-nav="create" onclick="window.location.href='create.html'" style="cursor:pointer">
+            <img src="./media/icons/create.png" alt="" class="nav-icon">
+            <span class="nav-text">Create</span>
+          </li>
+          <li class="nav-item" data-nav="profile" onclick="window.location.href='profile.html'" style="cursor:pointer">
+            <img src="./media/icons/profile.png" alt="" class="nav-icon">
+            <span class="nav-text">Profile</span>
+          </li>
+          <li class="nav-item" data-nav="messages" onclick="window.location.href='messages.html'"
+            style="cursor:pointer">
+            <img src="./media/icons/message-circle.png" alt="" class="nav-icon">
+            <span class="nav-text">Messages</span>
+          </li>
+        </ul>
+      </nav>
+
+      <hr class="divider">
+
+      <section class="following-section" data-section="following">
+        <h2 class="section-title">Following</h2>
+        <ul class="following-list">
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">A</div>
+            <div class="user-info"><span class="display-name">Alex Dancer</span><span class="handle">@alexdancer</span>
+            </div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">M</div>
+            <div class="user-info"><span class="display-name">Mike Runner</span><span class="handle">@mike_runner</span>
+            </div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">S</div>
+            <div class="user-info"><span class="display-name">Sarah Travels</span><span
+                class="handle">@sarah_travels</span></div>
+          </li>
+          <li class="following-item">
+            <div class="avatar-letter avatar-small">T</div>
+            <div class="user-info"><span class="display-name">Tech Guru Dan</span><span
+                class="handle">@techguru_dan</span></div>
+          </li>
+        </ul>
+      </section>
+
+      <hr class="divider">
+
+      <section class="hashtags-section" data-section="hashtags">
+        <h2 class="section-title">Categories</h2>
+        <ul class="hashtags-list">
+          <li class="hashtag-item">#comedy</li>
+          <li class="hashtag-item">#trending</li>
+          <li class="hashtag-item">#dance</li>
+          <li class="hashtag-item">#food</li>
+          <li class="hashtag-item">#travel</li>
+          <li class="hashtag-item">#viral</li>
+          <li class="hashtag-item">#music</li>
+          <li class="hashtag-item">#fitness</li>
+          <li class="hashtag-item">#art</li>
+        </ul>
+      </section>
+
+      <hr class="divider">
+
+      <div class="current-user" onclick="window.location.href='profile.html'" style="cursor:pointer">
+        <div class="avatar-letter avatar-medium" id="sidebarAvatar">J</div>
+        <div class="user-info">
+          <span class="display-name" id="sidebarName">Jordan Lee</span>
+          <span class="handle" id="sidebarHandle">@jordanlee</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN FEED ========== -->
+    <main class="feed" data-component="video-feed">
+
+      <div class="feed-tabs" data-feed-tabs>
+        <button class="tab-btn" data-tab="following" onclick="switchTab('following',this)">Following</button>
+        <button class="tab-btn active" data-tab="for-you" onclick="switchTab('for-you',this)">For You</button>
+        <button class="tab-btn" data-tab="trending" onclick="switchTab('trending',this)">Trending</button>
+      </div>
+
+      <!-- Empty state (Following / LIVE) -->
+      <div class="feed-empty-state" id="feedEmptyState">
+        <div class="empty-icon">&#x1F50D;</div>
+        <h3 id="emptyStateTitle">No posts yet</h3>
+        <p id="emptyStateText">Follow users to see their posts here.</p>
+        <a href="for_you_page.html"
+          onclick="switchTab('for-you', document.querySelector('[data-tab=\'for-you\']')); return false;">Back to For
+          You &#x2192;</a>
+      </div>
+
+      <!-- Posts container -->
+      <div class="videos-container" data-videos-container id="postsContainer">
+
+        <!-- For-You empty state (shown when no posts exist) -->
+        <div id="forYouEmptyState"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 56px);gap:16px;text-align:center;padding:24px;">
+          <div style="font-size:64px;opacity:.4;">&#x1F4F8;</div>
+          <h3 style="font-size:22px;font-weight:700;color:#B0B0B0;">No posts yet</h3>
+          <p style="font-size:15px;color:#808080;">You haven't created any posts yet.</p>
+          <a href="create.html"
+            style="color:#F5A623;text-decoration:none;font-weight:600;border:1px solid #F5A623;padding:10px 24px;border-radius:30px;transition:all .2s;">Create
+            your first post &#x2192;</a>
+        </div>
+
+      </div><!-- /postsContainer -->
+    </main>
+
+    <!-- ========== RIGHT SIDEBAR – Comments ========== -->
+    <aside class="sidebar sidebar-right" data-component="comments-sidebar">
+
+      <!-- State A: nothing selected yet -->
+      <div class="comments-empty-state" id="commentsEmptyState">
+        <div class="comments-empty-icon">&#x1F4AC;</div>
+        <p class="comments-empty-title">No post selected</p>
+        <p class="comments-empty-text">Tap the &#x1F4AC; comment icon on any post to read and leave comments.</p>
+      </div>
+
+      <!-- State B: post selected -->
+      <div class="comments-active" id="commentsActive">
+
+        <header class="comments-header">
+          <div style="display:flex;flex-direction:column;gap:2px;overflow:hidden;">
+            <h2 class="comments-title">Comments</h2>
+            <span class="comments-post-label" id="commentsPostLabel">@alexdancer's post</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="comment-count" id="dynamicCommentTotal">0</span>
+            <button class="close-comments-btn" onclick="closeComments()" title="Close comments">&#x2715;</button>
+          </div>
+        </header>
+
+        <div class="comments-container" id="dynamicCommentsContainer">
+          <ul class="comments-list" id="dynamicCommentsList"></ul>
+        </div>
+
+        <div class="comment-input-area">
+          <div class="current-user-mini">
+            <div class="avatar-letter avatar-tiny" id="commentUserAvatar">J</div>
+          </div>
+          <form class="comment-form" onsubmit="submitComment(event)">
+            <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment..."
+              aria-label="Write a comment">
+            <button type="submit" class="post-btn">Post</button>
+          </form>
+        </div>
+
+      </div>
+    </aside>
+
+  </div><!-- /app-container -->
+
+  <!-- ========== SHARE MODAL ========== -->
+  <div class="fyp-share-overlay" id="shareModal" onclick="handleShareOverlayClick(event)">
+    <div class="fyp-share-box">
+
+      <!-- Step 1: options -->
+      <div id="shareStep1">
+        <div class="fyp-share-header">
+          <h3>Share Post</h3>
+          <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
+        </div>
+        <div class="fyp-share-options">
+          <button class="fyp-share-btn" onclick="copyShareLink()">
+            <span>&#x1F517;</span><span>Copy Link</span>
+          </button>
+          <button class="fyp-share-btn" onclick="showContactPicker()">
+            <span>&#x2709;&#xFE0F;</span><span>Send to Messages</span>
+          </button>
+        </div>
+        <p class="fyp-share-feedback" id="shareFeedback"></p>
+      </div>
+
+      <!-- Step 2: contact picker -->
+      <div id="shareStep2" style="display:none">
+        <div class="fyp-share-header">
+          <h3>Send to…</h3>
+          <button class="fyp-close-btn" onclick="closeShareModal()">&#x2715;</button>
+        </div>
+        <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
+        <p class="share-step-label">Choose who you want to share this post with:</p>
+        <div class="contact-pick-list">
+          <div class="contact-pick-item" onclick="sendToContact('ahmed')">
+            <div class="contact-pick-avatar">A</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Ahmed Yasser</span>
+              <span class="contact-pick-handle">@ahmed</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
+          <div class="contact-pick-item" onclick="sendToContact('lina')">
+            <div class="contact-pick-avatar">L</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Lina Omar</span>
+              <span class="contact-pick-handle">@lina</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
+          <div class="contact-pick-item" onclick="sendToContact('youssef')">
+            <div class="contact-pick-avatar">Y</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">Youssef</span>
+              <span class="contact-pick-handle">@youssef</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Per-post comment data ─────────────────────────────────────────
+    let commentsData = {};
+
+    // ── Load user info ────────────────────────────────────────────────
+    const _storedUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const myName   = _storedUser ? _storedUser.displayName : 'Guest';
+    const myHandle = '@' + (_storedUser ? _storedUser.username : 'guest');
+    const myInit   = _storedUser?.avatar || myName.charAt(0).toUpperCase();
+    if (_storedUser) {
+      document.getElementById('sidebarAvatar').textContent     = myInit;
+      document.getElementById('sidebarName').textContent       = myName;
+      document.getElementById('sidebarHandle').textContent     = myHandle;
+      document.getElementById('commentUserAvatar').textContent = myInit;
+    }
+
+    // ── Comments system ───────────────────────────────────────────────
+    let activePostId = null;
+
+    async function openComments(postId) {
+      activePostId = postId;
+      document.getElementById('commentsEmptyState').style.display = 'none';
+      document.getElementById('commentsActive').style.display = 'flex';
+      document.getElementById('commentInput').focus();
+
+      const res = await fetch(`/api/posts/${postId}/comments`);
+      const apiComments = res.ok ? await res.json() : [];
+      const items = apiComments.map(c => ({
+        i:      c.author?.avatar || c.author?.displayName?.charAt(0) || 'U',
+        name:   c.author?.displayName || 'User',
+        handle: '@' + (c.author?.username || 'user'),
+        time:   c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'now',
+        text:   c.content,
+        likes:  c.likes || 0,
+      }));
+
+      commentsData[postId] = {
+        label: commentsData[postId]?.label || 'this post',
+        count: items.length,
+        items,
+      };
+
+      document.getElementById('commentsPostLabel').textContent = commentsData[postId].label;
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(items.length);
+      renderCommentList(items);
+    }
+
+    function closeComments() {
+      activePostId = null;
+      document.getElementById('commentsEmptyState').style.display = 'flex';
+      document.getElementById('commentsActive').style.display = 'none';
+    }
+
+    function renderCommentList(items) {
+      const list = document.getElementById('dynamicCommentsList');
+      if (!items.length) {
+        list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
+        return;
+      }
+      list.innerHTML = items.map(c => `
+    <li class="comment-item ${c.pinned ? 'pinned' : ''}">
+      <div class="avatar-letter avatar-small">${esc(c.i)}</div>
+      <div class="comment-content">
+        <div class="comment-header">
+          <span class="comment-username">${esc(c.name)}</span>
+          <span class="comment-handle">${esc(c.handle)}</span>
+          ${c.pinned
+          ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
+          : `<span class="comment-timestamp">${esc(c.time || '')}</span>`}
+        </div>
+        <p class="comment-text">${esc(c.text)}</p>
+        <div class="comment-footer">
+          <button class="comment-like-btn" onclick="toggleCommentLike(this, ${items.indexOf(c)})">
+            <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
+            <span class="like-count">${fmtCount(c.likes || 0)}</span>
+          </button>
+        </div>
+      </div>
+    </li>`).join('');
+    }
+
+    function toggleCommentLike(btn, idx) {
+      if (!activePostId) return;
+      const liked = btn.classList.toggle('comment-liked');
+      const countEl = btn.querySelector('.like-count');
+      const img = btn.querySelector('.heart-icon-small');
+      const n = parseCount(countEl.textContent);
+      const d = liked ? 1 : -1;
+      commentsData[activePostId].items[idx].likes = n + d;
+      countEl.textContent = fmtCount(n + d);
+      img.style.filter = liked
+        ? 'invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1)' : '';
+    }
+
+    async function submitComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+      if (!text || !activePostId) return;
+
+      const comment = await addComment(activePostId, text);
+      if (!comment) return;
+
+      const data = commentsData[activePostId];
+      if (!data) return;
+
+      data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
+      data.count++;
+
+      renderCommentList(data.items);
+      document.getElementById('dynamicCommentTotal').textContent = fmtCount(data.count);
+
+      const ccEl = document.getElementById('cc-' + activePostId);
+      if (ccEl) ccEl.textContent = fmtCount(data.count);
+
+      input.value = '';
+
+      const container = document.getElementById('dynamicCommentsContainer');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ── Like buttons on feed posts ────────────────────────────────────
+    function attachLikeButtons() {
+      document.querySelectorAll('.like-btn').forEach(btn => {
+        if (btn._attached) return;
+        btn._attached = true;
+
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          const postId  = this.dataset.postId;
+          const countEl = this.querySelector('[data-like-count]');
+          const likeBtn = this;
+
+          togglePostLike(postId).then(liked => {
+            likeBtn.classList.toggle('liked', liked);
+            const img = likeBtn.querySelector('img');
+            if (img) img.style.filter = liked
+              ? 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)'
+              : '';
+            const post = getData().posts.find(p => p.id === postId);
+            if (countEl && post) countEl.textContent = fmtCount(post.likes);
+          });
+        });
+      });
+    }
+    attachLikeButtons();
+
+    // Follow buttons
+    document.querySelectorAll('[data-follow-btn]').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation(); e.preventDefault();
+        const isFollowing = this.classList.contains('following');
+        this.textContent = isFollowing ? '+ Follow' : 'Following';
+        this.classList.toggle('following', !isFollowing);
+        this.style.background = isFollowing ? 'transparent' : 'linear-gradient(135deg,#8A1538,#F5A623)';
+        this.style.borderColor = isFollowing ? '#F5A623' : 'transparent';
+        this.style.color = isFollowing ? '#F5A623' : '#fff';
+      });
+    });
+
+    // ── Share modal ───────────────────────────────────────────────────
+    let shareState = { postId: null, author: null, postImg: null, caption: null };
+
+    function openShareModal(postId, author) {
+      let caption = '';
+      const maseeraPost = getData().posts.find(p => String(p.id) === String(postId));
+      if (maseeraPost) caption = maseeraPost.caption;
+      shareState = { postId, author, caption };
+      document.getElementById('shareFeedback').textContent = '';
+      document.getElementById('shareStep1').style.display = '';
+      document.getElementById('shareStep2').style.display = 'none';
+      document.getElementById('shareModal').classList.add('active');
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.remove('active');
+    }
+
+    function handleShareOverlayClick(e) {
+      if (e.target.id === 'shareModal') closeShareModal();
+    }
+
+    function copyShareLink() {
+      const url = window.location.href.split('?')[0]
+        + '?post=' + encodeURIComponent(shareState.postId || '')
+        + '&author=' + encodeURIComponent(shareState.author || '');
+      const write = () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(ok).catch(() => fb(url));
+        } else fb(url);
+      };
+      const fb = u => {
+        const el = document.createElement('textarea');
+        el.value = u; document.body.appendChild(el); el.select();
+        document.execCommand('copy'); document.body.removeChild(el); ok();
+      };
+      const ok = () => {
+        document.getElementById('shareFeedback').innerHTML = '&#x2713; Link copied!';
+      };
+      write();
+    }
+
+    function showContactPicker() {
+      document.getElementById('shareStep1').style.display = 'none';
+      document.getElementById('shareStep2').style.display = '';
+    }
+
+    function backToShareOptions() {
+      document.getElementById('shareStep1').style.display = '';
+      document.getElementById('shareStep2').style.display = 'none';
+    }
+
+    function sendToContact(contactKey) {
+      const payload = JSON.stringify({
+        postId: shareState.postId,
+        author: shareState.author,
+        image: shareState.postImg,
+        caption: shareState.caption
+      });
+      window.location.href = 'messages.html?to=' + contactKey + '&sharedPost=' + encodeURIComponent(payload);
+    }
+
+    // ── Delete post from feed ─────────────────────────────────────────
+    async function deletePostFromFeed(postId, btn) {
+      if (!confirm('Delete this post?')) return;
+      const cu = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+      try {
+        await fetch('/api/posts/' + encodeURIComponent(postId), {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: cu.id })
+        });
+      } catch (_) {}
+      const article = btn.closest('.video-post');
+      if (article) article.remove();
+
+      const container = document.getElementById('postsContainer');
+      if (!container.querySelectorAll('.video-post').length) {
+        document.getElementById('forYouEmptyState').style.display = 'flex';
+      }
+
+      if (activePostId === postId) closeComments();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────
+    function fmtCount(n) {
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(n);
+    }
+    function parseCount(str) {
+      const s = String(str).trim();
+      if (s.includes('K')) return Math.round(parseFloat(s) * 1000);
+      return parseInt(s, 10) || 0;
+    }
+    function esc(t) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(t || '')));
+      return d.innerHTML;
+    }
+  </script>
+</body>
+
+</html>

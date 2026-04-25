@@ -26,7 +26,8 @@ import { likeComment } from 'maseera/lib/repository/commentRepository.js';
 
 export async function POST(request, { params }) {
   try {
-    const updated = await likeComment(params.id);
+    const { id } = await params;
+    const updated = await likeComment(id);
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     // Prisma P2025 = record not found

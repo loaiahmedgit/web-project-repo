@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - Messages</title>
+  <link rel="stylesheet" href="styles/messages.css">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="top-nav">
+    <div class="nav-title">MASEERA</div>
+    <div class="nav-links">
+      <a href="for_you_page.html">For You</a>
+      <a href="profile.html">Profile</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="messages-layout">
+
+    <!-- LEFT SIDE -->
+    <div class="conversations-panel">
+
+      <div class="conversation-item active" onclick="openChat('ahmed', this)"> Mido </div>
+
+      <div class="conversation-item" onclick="openChat('lina', this)">
+        lina Omar
+      </div>
+
+      <div class="conversation-item" onclick="openChat('youssef', this)">
+        يوسف
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="chat-panel">
+
+      <!-- HEADER -->
+      <div class="chat-header">
+        <h3 id="chatName">أحمد حسن</h3>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="messages-area" id="messagesArea">
+
+        <!-- Ahmed -->
+        <div class="chat-box" id="chat-ahmed">
+          <div class="message received">
+            <div class="msg-bubble">Hey bro, did you see my last post?</div>
+          </div>
+
+          <div class="message sent">
+            <div class="msg-bubble">Yeah, it was amazing 🔥</div>
+          </div>
+        </div>
+
+        <!-- Lina -->
+        <div class="chat-box hidden" id="chat-lina">
+          <div class="message received">
+            <div class="msg-bubble">Your photo looks so good 😍</div>
+          </div>
+        </div>
+
+        <!-- Youssef -->
+        <div class="chat-box hidden" id="chat-youssef">
+          <div class="message received">
+            <div class="msg-bubble">Are we traveling this weekend?</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INPUT -->
+      <div class="message-input-area">
+        <form class="message-form" onsubmit="sendMessage(event)">
+          <input type="text" id="messageInput" class="message-text-input" placeholder="Type a message...">
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+
+    let currentChat = "ahmed";
+
+    const chatNames = {
+      ahmed: "Ahmed Yasser",
+      lina: "Lina Omar",
+      youssef: "يوسف خالد"
+    };
+
+    function openChat(user, element) {
+      currentChat = user;
+      document.getElementById("chatName").textContent = chatNames[user];
+      document.querySelectorAll(".chat-box").forEach(c => c.classList.add("hidden"));
+      document.getElementById("chat-" + user).classList.remove("hidden");
+      document.querySelectorAll(".conversation-item").forEach(c => c.classList.remove("active"));
+      element.classList.add("active");
+    }
+
+    function sendMessage(e) {
+      e.preventDefault();
+      let input = document.getElementById("messageInput");
+      let text = input.value.trim();
+      if (!text) return;
+      let msg = document.createElement("div");
+      msg.className = "message sent";
+      msg.innerHTML = `<div class="msg-bubble">${text}</div>`;
+      document.getElementById("chat-" + currentChat).appendChild(msg);
+      input.value = "";
+      let area = document.getElementById("messagesArea");
+      area.scrollTop = area.scrollHeight;
+    }
+
+    // Handle shared post from For You page
+    const params = new URLSearchParams(window.location.search);
+    const toChat = params.get('to');
+    const sharedPostRaw = params.get('sharedPost');
+
+    if (toChat && chatNames[toChat]) {
+      document.querySelectorAll('.conversation-item').forEach(item => {
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + toChat + "'")) {
+          openChat(toChat, item);
+        }
+      });
+    }
+
+    if (sharedPostRaw && toChat) {
+      try {
+        const shared = JSON.parse(decodeURIComponent(sharedPostRaw));
+        const caption = shared.caption || 'Check out this post!';
+        const author = shared.author ? '@' + shared.author : '';
+        const msg = document.createElement("div");
+        msg.className = "message sent";
+        msg.innerHTML = `<div class="msg-bubble">📤 <strong>Shared a post</strong>${author ? ' by ' + author : ''}: ${caption}</div>`;
+        const chatBox = document.getElementById("chat-" + toChat);
+        if (chatBox) {
+          chatBox.appendChild(msg);
+          document.getElementById("messagesArea").scrollTop = document.getElementById("messagesArea").scrollHeight;
+        }
+      } catch(e) {}
+    }
+
+  </script>
+
+</body>
+
+</html>

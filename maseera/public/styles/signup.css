@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+
+    background: linear-gradient(orange, rgb(111, 29, 29));
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 100vh;
+}
+
+.form-box {
+    width: 380px;
+    background: silver;
+    padding: 40px;
+    border-radius: 15px;
+
+}
+
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+
+.form-box h1 {
+    color: black;
+}
+
+
+.form-box h1.create-title {
+    color: yellow;
+}
+
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    color: black;
+}
+
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: white;
+    box-sizing: border-box;
+}
+
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 25px;
+    border: none;
+    border-radius: 6px;
+    background: brown;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: darkorange;
+}
+
+
+.link-text {
+    text-align: center;
+    margin-top: 15px;
+    color: white;
+}
+
+.link-text a {
+    color: brown;
+    text-decoration: none;
+
+}
+
+.link-text a:hover {
+    text-decoration: underline;
+}
+
+/* Social login buttons */
+.social-login {
+    margin-top: 20px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.social-login-outside {
+    width: 380px;
+    margin-top: 20px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.social-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.google {
+    background: white;
+    color: black;
+}
+
+.apple {
+    background: white;
+    color: black;
+}
+
+.social-btn:hover {
+    opacity: 0.85;
+}

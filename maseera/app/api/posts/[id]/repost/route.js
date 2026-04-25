@@ -39,6 +39,7 @@ import {
 // ---------------------------------------------------------------------------
 export async function GET(request, { params }) {
   try {
+    const { id } = await params;
     const userId = request.nextUrl.searchParams.get('userId');
 
     if (!userId) {
@@ -50,8 +51,8 @@ export async function GET(request, { params }) {
 
     // Run both DB queries in parallel — no need to wait for one before the other
     const [existing, count] = await Promise.all([
-      getRepost(params.id, userId),
-      getRepostCount(params.id)
+      getRepost(id, userId),
+      getRepostCount(id)
     ]);
 
     return NextResponse.json({ reposted: !!existing, count }, { status: 200 });
@@ -66,6 +67,7 @@ export async function GET(request, { params }) {
 // ---------------------------------------------------------------------------
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -73,7 +75,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const result = await toggleRepost(params.id, userId);
+    const result = await toggleRepost(id, userId);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

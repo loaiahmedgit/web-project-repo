@@ -23,7 +23,8 @@ import { getPostsByUser } from 'maseera/lib/repository/postRepository.js';
 
 export async function GET(request, { params }) {
   try {
-    const posts = await getPostsByUser(params.id);
+    const { id } = await params;
+    const posts = await getPostsByUser(id);
     return NextResponse.json(posts, { status: 200 });
   } catch (error) {
     console.error('[GET /api/users/:id/posts]', error);

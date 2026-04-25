@@ -1,0 +1,476 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background-color: lightgray;
+}
+
+.profile-card {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(orange, rgb(111, 29, 29));
+    overflow-x: hidden;
+}
+
+.top-bar {
+    width: 100%;
+    height: 70px;
+    background-color: rgb(111, 29, 29);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 20px;
+}
+
+.menu-icon {
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+}
+
+.site-logo img {
+    height: 40px;
+    max-width: 100%;
+}
+
+.side-menu {
+    position: fixed;
+    top: 70px;
+    left: -220px;
+    width: 220px;
+    height: 100%;
+    background-color: rgb(111, 29, 29);
+    padding-top: 20px;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+.side-menu a {
+    display: block;
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+}
+
+.side-menu a:hover {
+    background-color: orange;
+}
+
+.cover {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(rgb(111, 29, 29), orange);
+}
+
+.profile-info {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.avatar {
+    width: 90px;
+    height: 90px;
+    background-color: orange;
+    border-radius: 50%;
+    line-height: 90px;
+    font-size: 34px;
+    margin: -75px auto 10px auto;
+    color: white;
+    font-weight: bold;
+}
+
+#profileName {
+    color: white;
+}
+
+.username {
+    color: black;
+    font-weight: bold;
+
+}
+
+.bio {
+    color: whitesmoke;
+    font-size: 15px;
+    margin: 10px auto 0;
+    max-width: 400px;
+}
+
+.buttons {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.edit-btn {
+    background: orange;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.edit-btn:hover {
+    background: rgb(111, 29, 29);
+}
+
+.message {
+    background-color: rgb(111, 29, 29);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+    
+
+}
+
+.stats h3 {
+    color: white;
+}
+
+.stats p {
+    color: white;
+
+}
+
+.posts-section {
+    margin-top: 40px;
+    padding: 30px 20px;
+}
+
+.posts-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.post {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+
+    aspect-ratio: 1 / 1;
+}
+
+.post-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.delete-post-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+    opacity: 1;
+    z-index: 10;
+    transition: 0.3s;
+}
+
+.delete-post-btn:hover {
+    background: rgba(180, 0, 0, 0.85);
+}
+
+.delete-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.4);
+
+    z-index: 9999;
+}
+
+.delete-box {
+    background: #1e1e1e;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    width: 300px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.delete-box h3 {
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.delete-box p {
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.delete-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cancel-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #444;
+    color: #fff;
+    cursor: pointer;
+}
+
+.delete-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #ff3b30;
+    color: #fff;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #ff1f1f;
+}
+
+.post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.post:hover .post-overlay {
+    opacity: 1;
+}
+
+.overlay-item {
+    color: white;
+    text-align: center;
+}
+
+.overlay-item img {
+    width: 25px;
+    filter: invert(1);
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    margin-top: 30px;
+}
+
+/* ── Edit Profile Modal ── */
+.edit-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.edit-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    animation: modalSlideIn 0.22s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.edit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #8A1538, #c0392b);
+}
+
+.edit-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.edit-modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.edit-modal-close:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.edit-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.edit-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+}
+
+.edit-field input,
+.edit-field textarea {
+    padding: 10px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    color: #222;
+}
+
+.edit-field input:focus,
+.edit-field textarea:focus {
+    border-color: #8A1538;
+}
+
+.edit-field-note {
+    font-size: 11px;
+    color: #999;
+}
+
+.edit-modal-error {
+    margin: 0 20px;
+    padding: 10px 14px;
+    background: #fde8e8;
+    border: 1px solid #e74c3c;
+    border-radius: 8px;
+    color: #c0392b;
+    font-size: 13px;
+}
+
+.edit-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #eee;
+}
+
+.edit-cancel-btn {
+    padding: 9px 20px;
+    border: 1.5px solid #ccc;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #555;
+    transition: background 0.2s;
+}
+
+.edit-cancel-btn:hover {
+    background: #f5f5f5;
+}
+
+.edit-save-btn {
+    padding: 9px 24px;
+    background: linear-gradient(135deg, #8A1538, #F5A623);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.edit-save-btn:hover {
+    opacity: 0.88;
+}

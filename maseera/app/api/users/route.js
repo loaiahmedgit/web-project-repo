@@ -31,6 +31,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAllUsers, createUser } from 'maseera/lib/repository/userRepository.js';
+import bcrypt from 'bcryptjs';
 
 // ---------------------------------------------------------------------------
 // GET /api/users
@@ -66,10 +67,8 @@ export async function POST(request) {
       );
     }
 
-    // NOTE: In a real app you would hash the password here before saving.
-    // e.g.: const hashed = await bcrypt.hash(password, 10);
-    // For this project, we pass it as-is per the professor's scope.
-    const user = await createUser({ username, displayName, email, password, avatar, bio });
+    const hashed = await bcrypt.hash(password, 10);
+    const user   = await createUser({ username, displayName, email, password: hashed, avatar, bio });
 
     // 201 Created — a new resource was successfully created
     return NextResponse.json(user, { status: 201 });

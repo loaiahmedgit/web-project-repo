@@ -35,6 +35,7 @@ import { toggleLike, getLike, getLikeCount } from 'maseera/lib/repository/likeRe
 // ---------------------------------------------------------------------------
 export async function GET(request, { params }) {
   try {
+    const { id } = await params;
     const userId = request.nextUrl.searchParams.get('userId');
 
     if (!userId) {
@@ -43,8 +44,8 @@ export async function GET(request, { params }) {
 
     // Run both DB queries in parallel using Promise.all — faster than sequential
     const [existing, count] = await Promise.all([
-      getLike(params.id, userId),
-      getLikeCount(params.id)
+      getLike(id, userId),
+      getLikeCount(id)
     ]);
 
     return NextResponse.json({ liked: !!existing, count }, { status: 200 });
@@ -59,6 +60,7 @@ export async function GET(request, { params }) {
 // ---------------------------------------------------------------------------
 export async function POST(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -66,7 +68,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const result = await toggleLike(params.id, userId);
+    const result = await toggleLike(id, userId);
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

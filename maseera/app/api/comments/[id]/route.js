@@ -20,6 +20,7 @@ import { deleteComment } from 'maseera/lib/repository/commentRepository.js';
 
 export async function DELETE(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -27,7 +28,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const result = await deleteComment(params.id, userId);
+    const result = await deleteComment(id, userId);
 
     return NextResponse.json({ success: true, deleted: result.count }, { status: 200 });
   } catch (error) {
