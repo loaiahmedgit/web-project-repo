@@ -210,7 +210,9 @@ function saveData(data) {
 // Get current user
 function getCurrentUser() {
   const data = getData();
-  return data.users.find(u => u.id === data.currentUser);
+  const loggedIn = JSON.parse(localStorage.getItem('user'));
+  if (!loggedIn) return null;
+  return data.users.find(u => u.id === loggedIn.username || u.username === loggedIn.username);
 }
 
 // Get posts for For You feed (all posts)

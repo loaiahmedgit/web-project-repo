@@ -199,6 +199,7 @@
                 btn.style.borderColor = 'transparent';
                 const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
                 if (target) target.followers = (target.followers || 0) + 1;
+                document.getElementById("statFollowers").textContent = (target.followers).toLocaleString();
             } else {
                 me.following.splice(idx, 1);
                 btn.textContent = '+ Follow';
@@ -208,6 +209,7 @@
                 btn.style.borderColor = '';
                 const target = data.users.find(u => u.id === profileUserId || u.username === profileUserId);
                 if (target) target.followers = Math.max(0, (target.followers || 0) - 1);
+                document.getElementById("statFollowers").textContent = (target.followers).toLocaleString();
             }
 
             const meIdx = data.users.findIndex(u => u.id === loggedInId || u.username === loggedInId);
@@ -390,7 +392,7 @@
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("user");
+            localStorage.removeItem("loggedIn");
             window.location.href = "login.html";
         }
         function closeDeleteModal() {
