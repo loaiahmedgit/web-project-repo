@@ -93,6 +93,13 @@
                     <label>Bio</label>
                     <textarea id="editBio" placeholder="Tell people about yourself..." rows="3"></textarea>
                 </div>
+                <div class="edit-field">
+                    <label>Profile Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <img id="editPhotoPreview"
+                        style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-top:8px;display:none;">
+                </div>
+
             </div>
 
             <div id="editModalError" class="edit-modal-error" style="display:none;"></div>
@@ -163,6 +170,13 @@
             document.getElementById("profileUsername").textContent = "@" + currentUser.username;
             document.getElementById("avatarLetter").textContent = (currentUser.username || 'U').charAt(0).toUpperCase();
             document.getElementById("profileBio").textContent = currentUser.bio || "No bio yet";
+
+            if (currentUser.photo) {
+                const av = document.getElementById('avatarLetter');
+                av.style.backgroundImage = `url(${currentUser.photo})`;
+                av.style.backgroundSize = 'cover';
+                av.textContent = '';
+            }
 
             const maseeraData = JSON.parse(localStorage.getItem("maseera_data") || "null");
             if (maseeraData && maseeraData.users) {
@@ -311,6 +325,9 @@
             document.getElementById('editBio').value = u.bio || '';
             document.getElementById('editModalError').style.display = 'none';
             document.getElementById('editModal').style.display = 'flex';
+            const preview = document.getElementById('editPhotoPreview');
+            if (u.photo) { preview.src = u.photo; preview.style.display = 'block'; }
+            else { preview.style.display = 'none'; }
         }
 
         function closeEditModal() {
@@ -327,6 +344,7 @@
             const username = document.getElementById('editUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
             const bio = document.getElementById('editBio').value.trim();
             const errorEl = document.getElementById('editModalError');
+            const photoFile = document.getElementById('editPhoto').files[0];
 
             if (!username) {
                 errorEl.textContent = 'Username cannot be empty.';
@@ -367,12 +385,27 @@
             u.bio = bio;
             localStorage.setItem('user', JSON.stringify(u));
 
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    u.photo = e.target.result;
+                    localStorage.setItem('user', JSON.stringify(u));
+                    document.getElementById('avatarLetter').style.backgroundImage = `url(${u.photo})`;
+                    document.getElementById('avatarLetter').style.backgroundSize = 'cover';
+                    document.getElementById('avatarLetter').textContent = '';
+                };
+                reader.readAsDataURL(photoFile);
+            }
+
             // Update page immediately
             const fullName = (firstName + ' ' + lastName).trim() || username;
             document.getElementById('profileName').textContent = fullName;
             document.getElementById('profileUsername').textContent = '@' + username;
-            document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
             document.getElementById('profileBio').textContent = bio || 'No bio yet';
+            if (!photoFile) {
+                document.getElementById('avatarLetter').textContent = username.charAt(0).toUpperCase();
+            }
 
             // Keep in-memory state in sync
             currentUser = u;

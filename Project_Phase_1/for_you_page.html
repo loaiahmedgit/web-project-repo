@@ -7,7 +7,9 @@
   <title>Maseera - For You</title>
   <link rel="stylesheet" href="./styles/for_you_page.css">
   <style>
-    .like-btn .action-icon { transition: filter 0.15s; }
+    .like-btn .action-icon {
+      transition: filter 0.15s;
+    }
   </style>
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
@@ -151,6 +153,10 @@
             </a>
 
             <p>${post.caption}</p>
+
+            ${post.timestamp ? `<p style="color:#aaa;font-size:12px;margin-top:4px;">
+            ${new Date(post.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </p>` : ''}
           </div>
         </div>
       </div>
@@ -413,6 +419,16 @@
     document.getElementById('sidebarHandle').textContent = myHandle;
     document.getElementById('commentUserAvatar').textContent = myInit;
 
+    if (userData && userData.photo) {
+      const av = document.getElementById('sidebarAvatar');
+      av.style.backgroundImage = `url(${userData.photo})`;
+      av.style.backgroundSize = 'cover';
+      av.textContent = '';
+    }
+
+
+
+
     // ── Comments system ───────────────────────────────────────────────
     let activePostId = null;
 
@@ -519,6 +535,18 @@
         if (btn._attached) return;
         btn._attached = true;
 
+        // Restore visual state on load
+        const postId = btn.dataset.postId;
+        const likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
+        if (likesData[postId] && likesData[postId].liked) {
+          btn.classList.add('liked');
+          const img = btn.querySelector('img');
+          if (img) img.style.filter = 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)';
+        }
+
+         const isDemoPost = getData().posts.find(p => String(p.id) === String(postId));
+          if (isDemoPost) return;
+
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
           e.preventDefault();
@@ -559,6 +587,31 @@
         this.style.color = isFollowing ? '#F5A623' : '#fff';
       });
     });
+
+    // ── Following System ───────────────────────────────────────────────
+
+    function updateFollowingList() {
+      const data = getData();
+      const currentUser = getCurrentUser();
+      if (!currentUser || !currentUser.following) return;
+
+      const list = document.querySelector('.following-list');
+      if (!list) return;
+
+      list.innerHTML = currentUser.following.map(id => {
+        const user = data.users.find(u => u.id === id || u.username === id);
+        if (!user) return '';
+        const initial = (user.username || '?').charAt(0).toUpperCase();
+        return `<li class="following-item">
+            <div class="avatar-letter avatar-small">${initial}</div>
+            <div class="user-info">
+                <span class="display-name">${user.displayName || user.username}</span>
+                <span class="handle">@${user.username}</span>
+            </div>
+        </li>`;
+      }).join('');
+    }
+
 
     // ── Share modal ───────────────────────────────────────────────────
     let shareState = { postId: null, author: null, postImg: null, caption: null };

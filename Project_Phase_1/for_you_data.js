@@ -610,6 +610,12 @@ function handleLikeClick(e) {
   const countEl = btn.querySelector('[data-like-count]');
   const updated = getData().posts.find(p => p.id === postId);
   if (countEl && updated) countEl.textContent = formatCount(updated.likes);
+
+  let likesData = JSON.parse(localStorage.getItem("likesData") || "{}");
+  const updatedPost = getData().posts.find(p => p.id === postId);
+  likesData[postId] = { liked: liked, count: updatedPost ? updatedPost.likes : 0 };
+  localStorage.setItem("likesData", JSON.stringify(likesData));
+
 }
 
 // Handle follow button click
@@ -805,16 +811,16 @@ class VideoController {
     }
   }
 
-pauseVideo(video) {
-  if (video && !video.paused) {
-    video.pause();
-  }
+  pauseVideo(video) {
+    if (video && !video.paused) {
+      video.pause();
+    }
 
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
   }
-}
 
   togglePlayPause(video, videoPost) {
     if (video.paused) {
