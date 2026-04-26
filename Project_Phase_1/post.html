@@ -121,7 +121,7 @@
   </div>
 
   <script>
-    
+
     //======= Checking if logged in =======
     if (!localStorage.getItem('currentUser')) {
       window.location.href = 'login.html';
@@ -150,8 +150,23 @@
 
     // ── Set author info ───────────────────────────────────────────────
     document.getElementById('postAuthorName').textContent = '@' + author;
+    document.getElementById('postAuthorName').href = `profile.html?user=${author}`;
     document.getElementById('postAuthorAvatar').textContent = author.charAt(0).toUpperCase();
     document.getElementById('postCaption').textContent = caption;
+
+    const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const loggedInUsername = localStorage.getItem('currentUser');
+    if (loggedInUsername === author && loggedInUser.photo) {
+      const av = document.getElementById('postAuthorAvatar');
+      av.textContent = '';
+      av.style.backgroundImage = `url(${loggedInUser.photo})`;
+      av.style.backgroundSize = 'cover';
+      av.style.backgroundPosition = 'center';
+    }
+
+    if (loggedInUsername === author) {
+      document.getElementById('followBtn').style.display = 'none';
+    }
 
     // ── Load post media & stats ───────────────────────────────────────
     const maseeraData = JSON.parse(localStorage.getItem('maseera_data') || '{}');
@@ -221,6 +236,9 @@
           text: c.text || '',
           likes: c.likes || 0,
           pinned: c.pinned || false
+
+
+
         }));
         document.getElementById('commentTotal').textContent = fmtCount(items.length);
         document.getElementById('commentCount').textContent = fmtCount(items.length);
@@ -233,8 +251,9 @@
 
       list.innerHTML = items.map(c => `
         <li class="comment-item ${c.pinned ? 'pinned-comment' : ''}">
-          <div class="comment-avatar">${escapeHtml(c.i || 'U')}</div>
-          <div class="comment-body">
+            ${c.photo ? `<img src="${c.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
+          : `<div class="comment-avatar">${escapeHtml(c.i || 'U')}</div>`}          
+            <div class="comment-body">
             <div class="comment-meta">
               <span class="comment-user">${escapeHtml(c.name || '')}</span>
               <span class="comment-handle">${escapeHtml(c.handle || '')}</span>
@@ -244,9 +263,9 @@
             </div>
             <p class="comment-text">${escapeHtml(c.text || '')}</p>
             <button class="comment-like-btn" onclick="toggleCommentLike(this)">
-              <span class="heart-icon">&#x1F90D;</span>
+              <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
               <span class="clc">${fmtCount(c.likes || 0)}</span>
-            </button>
+             </button>
           </div>
         </li>
       `).join('');
@@ -259,12 +278,15 @@
       e.preventDefault();
       const input = document.getElementById('commentInput');
       const text = input.value.trim();
+
+
       if (!text) return;
 
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
       const myName = ((userData.firstName || '') + ' ' + (userData.lastName || '')).trim() || 'You';
       const myHandle = '@' + (userData.username || 'you');
       const myInit = myName.charAt(0).toUpperCase();
+      const myPhoto = userData.photo || null;
 
       // Save to commentsData in localStorage
       let commentsData = JSON.parse(localStorage.getItem('commentsData') || '{}');
@@ -272,7 +294,7 @@
         commentsData[postId] = { label: `@${author}'s post`, count: 0, items: [] };
       }
       commentsData[postId].items.push({
-        i: myInit, name: myName, handle: myHandle,
+        i: myInit, photo: myPhoto, name: myName, handle: myHandle,
         time: 'just now', text, likes: 0, pinned: false
       });
       commentsData[postId].count++;
@@ -305,10 +327,17 @@
     }
 
     function toggleCommentLike(btn) {
-      btn.classList.toggle('liked');
-      btn.querySelector('.heart-icon').innerHTML =
-        btn.classList.contains('liked') ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+      const liked = btn.classList.toggle('liked');
+      const img = btn.querySelector('.heart-icon-small');
+      img.style.filter = liked
+        ? 'invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1)'
+        : '';
+      const countEl = btn.querySelector('.clc');
+      let count = parseInt(countEl.textContent) || 0;
+      countEl.textContent = liked ? count + 1 : Math.max(0, count - 1);
     }
+
+
 
     function focusCommentInput() {
       const input = document.getElementById('commentInput');
