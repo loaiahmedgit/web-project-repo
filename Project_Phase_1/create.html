@@ -8,6 +8,11 @@
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
 <script>
+  //======= Checking if logged in =======
+    if (!localStorage.getItem('currentUser')) {
+      window.location.href = 'login.html';
+    }
+
   // Override or enhance existing functions with data-persistent versions
   
   // Initialize data on page load

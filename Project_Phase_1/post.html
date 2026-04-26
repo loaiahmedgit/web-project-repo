@@ -121,6 +121,12 @@
   </div>
 
   <script>
+    
+    //======= Checking if logged in =======
+    if (!localStorage.getItem('currentUser')) {
+      window.location.href = 'login.html';
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────
     function escapeHtml(text) {
       const div = document.createElement('div');

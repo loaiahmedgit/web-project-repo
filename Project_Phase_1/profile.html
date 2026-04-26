@@ -113,6 +113,11 @@
 
     <script>
 
+        //======= Checking if logged in =======
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'login.html';
+        }
+
         // ================= USER =================
 
         const params = new URLSearchParams(window.location.search);
@@ -425,7 +430,7 @@
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("loggedIn");
+            localStorage.removeItem("currentUser");  
             window.location.href = "login.html";
         }
         function closeDeleteModal() {

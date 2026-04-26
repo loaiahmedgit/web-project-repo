@@ -89,6 +89,11 @@
 
   <!-- JAVASCRIPT -->
   <script>
+    
+    //======= Checking if logged in =======
+    if (!localStorage.getItem('currentUser')) {
+      window.location.href = 'login.html';
+    }
 
     let currentChat = "ahmed";
 
@@ -147,7 +152,7 @@
           chatBox.appendChild(msg);
           document.getElementById("messagesArea").scrollTop = document.getElementById("messagesArea").scrollHeight;
         }
-      } catch(e) {}
+      } catch (e) { }
     }
 
   </script>
