@@ -414,10 +414,20 @@
     const myName = userData ? (userData.firstName + ' ' + userData.lastName) : 'Jordan Lee';
     const myHandle = '@' + (userData ? userData.username : 'jordanlee');
     const myInit = myName.charAt(0).toUpperCase();
+    const myPhoto = userData ? userData.photo : null;
     document.getElementById('sidebarAvatar').textContent = myInit;
     document.getElementById('sidebarName').textContent = myName;
     document.getElementById('sidebarHandle').textContent = myHandle;
     document.getElementById('commentUserAvatar').textContent = myInit;
+
+    document.getElementById('commentUserAvatar').textContent = myInit;
+    if (myPhoto) {
+      const av = document.getElementById('commentUserAvatar');
+      av.textContent = '';
+      av.style.backgroundImage = `url(${myPhoto})`;
+      av.style.backgroundSize = 'cover';
+      av.style.backgroundPosition = 'center';
+    }
 
     if (userData && userData.photo) {
       const av = document.getElementById('sidebarAvatar');
@@ -459,8 +469,10 @@
       }
       list.innerHTML = items.map(c => `
     <li class="comment-item ${c.pinned ? 'pinned' : ''}">
-      <div class="avatar-letter avatar-small">${esc(c.i)}</div>
-      <div class="comment-content">
+        ${c.photo
+          ? `<img src="${c.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
+          : `<div class="avatar-letter avatar-small">${esc(c.i)}</div>`
+        }      <div class="comment-content">
         <div class="comment-header">
           <span class="comment-username">${esc(c.name)}</span>
           <span class="comment-handle">${esc(c.handle)}</span>
@@ -501,8 +513,7 @@
       const data = commentsData[activePostId];
       if (!data) return;
 
-      data.items.push({ i: myInit, name: myName, handle: myHandle, time: 'just now', text, likes: 0 });
-      data.count++;
+      data.items.push({ i: myInit, photo: myPhoto, name: myName, handle: myHandle, time: 'just now', text, likes: 0 }); data.count++;
 
       let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
       posts = posts.map(p => {
@@ -544,8 +555,8 @@
           if (img) img.style.filter = 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)';
         }
 
-         const isDemoPost = getData().posts.find(p => String(p.id) === String(postId));
-          if (isDemoPost) return;
+        const isDemoPost = getData().posts.find(p => String(p.id) === String(postId));
+        if (isDemoPost) return;
 
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
