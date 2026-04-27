@@ -52,7 +52,7 @@
             let username = document.getElementById("loginUsername").value.trim();
             let password = document.getElementById("loginPassword").value.trim();
 
-            let storedUser = JSON.parse(localStorage.getItem("user"));
+            let storedUser = JSON.parse(localStorage.getItem("registeredUser_" + username));
 
             if (!storedUser) {
                 document.getElementById("loginMessage").textContent = "No account found.";
@@ -61,7 +61,7 @@
 
             if (username === storedUser.username && password === storedUser.password) {
                 localStorage.setItem("currentUser", username);
-
+                localStorage.setItem("user", JSON.stringify(storedUser));
                 window.location.href = "for_you_page.html";
             } else {
                 document.getElementById("loginMessage").textContent =

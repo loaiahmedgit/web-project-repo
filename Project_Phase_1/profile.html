@@ -150,6 +150,16 @@
             document.getElementById("avatarLetter").textContent = handle.charAt(0).toUpperCase();
             document.getElementById("profileBio").textContent = "No bio yet";
 
+            //incase of the profile picture is not a ltter
+            const savedProfile = JSON.parse(localStorage.getItem('userProfile_' + userIdFromURL) || 'null');
+            if (savedProfile && savedProfile.photo) {
+                const av = document.getElementById('avatarLetter');
+                av.textContent = '';
+                av.style.backgroundImage = `url(${savedProfile.photo})`;
+                av.style.backgroundSize = 'cover';
+                av.style.backgroundPosition = 'center';
+            }
+
             // Replace buttons with Follow / Message
             const maseeraDataFresh = JSON.parse(localStorage.getItem("maseera_data") || "{}");
             const myEntry = maseeraDataFresh.users &&
@@ -389,13 +399,16 @@
             u.username = username;
             u.bio = bio;
             localStorage.setItem('user', JSON.stringify(u));
-
+            localStorage.setItem('userProfile_' + u.username, JSON.stringify(u));
+            localStorage.setItem('registeredUser_' + u.username, JSON.stringify(u));
 
             if (photoFile) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     u.photo = e.target.result;
                     localStorage.setItem('user', JSON.stringify(u));
+                    localStorage.setItem('userProfile_' + u.username, JSON.stringify(u));
+                    localStorage.setItem('registeredUser_' + u.username, JSON.stringify(u));
                     document.getElementById('avatarLetter').style.backgroundImage = `url(${u.photo})`;
                     document.getElementById('avatarLetter').style.backgroundSize = 'cover';
                     document.getElementById('avatarLetter').textContent = '';
@@ -430,7 +443,7 @@
         // ================= LOGOUT =================
 
         function logoutUser() {
-            localStorage.removeItem("currentUser");  
+            localStorage.removeItem("currentUser");
             window.location.href = "login.html";
         }
         function closeDeleteModal() {

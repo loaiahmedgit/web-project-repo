@@ -190,6 +190,18 @@
       document.getElementById('commentCount').textContent = fmtCount(foundPost.comments || 0);
       document.getElementById('commentTotal').textContent = fmtCount(foundPost.comments || 0);
 
+      const likesData = JSON.parse(localStorage.getItem('likesData') || '{}');
+      const likeInfo = likesData[postId];
+      if (likeInfo) {
+        liked = likeInfo.liked;
+        document.getElementById('likeCount').textContent = fmtCount(likeInfo.count);
+        if (liked) {
+          const btn = document.getElementById('likeBtn');
+          btn.querySelector('.action-icon').innerHTML = '&#x2764;&#xFE0F;';
+          btn.classList.add('liked');
+        }
+      }
+
       // Hashtags
       if (foundPost.hashtags && foundPost.hashtags.length) {
         document.getElementById('postHashtags').innerHTML =
@@ -249,9 +261,13 @@
         return;
       }
 
+      const currentUserData = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUsername = localStorage.getItem('currentUser');
+
       list.innerHTML = items.map(c => `
         <li class="comment-item ${c.pinned ? 'pinned-comment' : ''}">
-            ${c.photo ? `<img src="${c.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
+            ${(c.handle === '@' + currentUsername ? (currentUserData.photo || c.photo) : c.photo) ? `<img src="${c.handle === '@' + currentUsername ? (currentUserData.photo || c.photo) : c.photo}
+            "style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
           : `<div class="comment-avatar">${escapeHtml(c.i || 'U')}</div>`}          
             <div class="comment-body">
             <div class="comment-meta">

@@ -95,6 +95,7 @@
             }
 
             localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("registeredUser_" + user.username, JSON.stringify(user));
 
             document.getElementById("createMessage").textContent =
                 "Account created successfully!";

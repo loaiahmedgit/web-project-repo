@@ -586,6 +586,37 @@ function attachPostEventListeners() {
     tag.removeEventListener('click', handleHashtagClick);
     tag.addEventListener('click', handleHashtagClick);
   });
+
+  // liking posts with double click
+  document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+    wrapper.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Only like, do not unlike
+      const likeBtn = wrapper.querySelector('.like-btn');
+      if (likeBtn && !likeBtn.classList.contains('liked')) {
+        likeBtn.click();
+      }
+
+      // Show flying heart 
+      const heartAnimation = document.createElement('div');
+      heartAnimation.innerHTML = '<img src="./media/icons/heart.svg" style="width:80px;height:80px;filter:invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1);">';
+      heartAnimation.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        animation: heartPop 0.6s ease-out forwards;
+        pointer-events: none;
+        z-index: 25;
+      `;
+      wrapper.appendChild(heartAnimation);
+      setTimeout(() => heartAnimation.remove(), 600);
+    });
+  });
+
 }
 
 // Handle like button click
@@ -934,36 +965,7 @@ function addVideoControls(videoElement, videoPost) {
 
   wrapper.appendChild(controlOverlay);
 
-  // Also add double-tap to like functionality (bonus)
-  let lastTap = 0;
-  wrapper.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Find the like button for this post
-    const likeBtn = wrapper.querySelector('.like-btn');
-    if (likeBtn) {
-      likeBtn.click();
-
-      // Show heart animation
-      const heartAnimation = document.createElement('div');
-      heartAnimation.innerHTML = '❤️';
-      heartAnimation.style.cssText = `
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 80px;
-          color: var(--orange);
-          opacity: 0;
-          animation: heartPop 0.6s ease-out forwards;
-          pointer-events: none;
-          z-index: 25;
-        `;
-      wrapper.appendChild(heartAnimation);
-      setTimeout(() => heartAnimation.remove(), 600);
-    }
-  });
+ 
 }
 
 // Add keyframe animation for double-tap like

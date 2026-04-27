@@ -468,14 +468,16 @@
 
     function renderCommentList(items) {
       const list = document.getElementById('dynamicCommentsList');
+      const currentUserData = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUsername = localStorage.getItem('currentUser');
       if (!items.length) {
         list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
         return;
       }
       list.innerHTML = items.map(c => `
     <li class="comment-item ${c.pinned ? 'pinned' : ''}">
-        ${c.photo
-          ? `<img src="${c.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
+        ${(c.handle === '@' + currentUsername ? (currentUserData.photo || c.photo) : c.photo)
+          ? `<img src="${c.handle === '@' + currentUsername ? (currentUserData.photo || c.photo) : c.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
           : `<div class="avatar-letter avatar-small">${esc(c.i)}</div>`
         }      <div class="comment-content">
         <div class="comment-header">
