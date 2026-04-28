@@ -98,6 +98,10 @@
                     <input type="file" id="editPhoto" accept="image/*">
                     <img id="editPhotoPreview"
                         style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-top:8px;display:none;">
+
+                    <button type="button" id="removePhotoBtn" onclick="removePhoto()"
+                        style="display:none;margin-top:6px;background:none;border:1px solid #ff4444;color:#ff4444;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Remove
+                        Photo</button>
                 </div>
 
             </div>
@@ -343,6 +347,31 @@
             const preview = document.getElementById('editPhotoPreview');
             if (u.photo) { preview.src = u.photo; preview.style.display = 'block'; }
             else { preview.style.display = 'none'; }
+
+            if (u.photo) {
+                preview.src = u.photo;
+                preview.style.display = 'block';
+                document.getElementById('removePhotoBtn').style.display = 'inline-block';
+            }
+            else {
+                preview.style.display = 'none';
+                document.getElementById('removePhotoBtn').style.display = 'none';
+            }
+
+        }
+
+        function removePhoto() {
+          const u = JSON.parse(localStorage.getItem('user') || '{}');
+          delete u.photo;
+          localStorage.setItem('user', JSON.stringify(u));
+          localStorage.setItem('userProfile_' + u.username, JSON.stringify(u));
+          localStorage.setItem('registeredUser_' + u.username, JSON.stringify(u));
+          const av = document.getElementById('avatarLetter');
+          av.style.backgroundImage = '';
+          av.textContent = (u.username || 'U').charAt(0).toUpperCase();
+          currentUser = u;
+          document.getElementById('editPhotoPreview').style.display = 'none';
+          document.getElementById('removePhotoBtn').style.display = 'none';
         }
 
         function closeEditModal() {
@@ -411,7 +440,9 @@
                     localStorage.setItem('registeredUser_' + u.username, JSON.stringify(u));
                     document.getElementById('avatarLetter').style.backgroundImage = `url(${u.photo})`;
                     document.getElementById('avatarLetter').style.backgroundSize = 'cover';
+                    document.getElementById('avatarLetter').style.backgroundPosition = 'center';
                     document.getElementById('avatarLetter').textContent = '';
+                    currentUser = u;
                 };
                 reader.readAsDataURL(photoFile);
             }

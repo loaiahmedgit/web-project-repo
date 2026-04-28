@@ -367,6 +367,14 @@
     document.getElementById('previewAvatar').textContent   = initial;
     document.getElementById('previewUsername').textContent = '@' + author;
 
+     if (user && user.photo) {
+      const av = document.getElementById('previewAvatar');
+      av.textContent = '';
+      av.style.backgroundImage = `url(${user.photo})`;
+      av.style.backgroundSize = 'cover';
+      av.style.backgroundPosition = 'center';
+    }
+
     // ── File upload ───────────────────────────────────────────────────
     function handleFileSelect(input) {
       const file = input.files[0];
