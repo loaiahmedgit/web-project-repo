@@ -230,7 +230,9 @@ body {
 }
 
 .delete-box {
-    background: #1e1e1e;
+background: #1a1a1a;
+border: 1px solid rgba(245, 166, 35, 0.3);
+
     padding: 25px;
     border-radius: 15px;
     text-align: center;
@@ -271,13 +273,14 @@ body {
     padding: 10px;
     border-radius: 8px;
     border: none;
-    background: #ff3b30;
+    
+background: linear-gradient(135deg, #8A1538, #F5A623);
     color: #fff;
     cursor: pointer;
 }
 
 .delete-btn:hover {
-    background: #ff1f1f;
+background: linear-gradient(135deg, #F5A623, #8A1538);
 }
 
 .post-overlay {
