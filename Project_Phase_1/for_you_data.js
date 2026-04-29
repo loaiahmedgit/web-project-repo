@@ -601,7 +601,7 @@ function attachPostEventListeners() {
 
       // Show flying heart 
       const heartAnimation = document.createElement('div');
-      heartAnimation.innerHTML = '<img src="./media/icons/heart.svg" style="width:80px;height:80px;filter:invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1);">';
+      heartAnimation.innerHTML = '<img src="./media/icons/filledheart.svg" style="width:80px;height:80px;filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg);">';
       heartAnimation.style.cssText = `
         position: absolute;
         top: 50%;

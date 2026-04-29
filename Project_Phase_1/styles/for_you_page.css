@@ -1406,9 +1406,8 @@ body {
   transition: 0.2s;
 }
 
-.like-btn.liked {
-  color: red;
-  transform: scale(1.1);
+.like-btn.liked img {
+    filter: brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg) drop-shadow(0 0 0 #ff6b6b);
 }
 .comment-liked .heart-icon-small {
   filter: invert(40%) sepia(90%) saturate(500%) hue-rotate(330deg) brightness(1.1);

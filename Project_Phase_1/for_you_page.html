@@ -129,7 +129,7 @@
         <div class="video-overlay">
           <div class="video-actions">
             <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
-              <img src="./media/icons/heart.svg" alt="Like" class="action-icon" ${isLiked ? 'style="filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)"' : ''}>
+              <img src="./media/icons/filledheart.svg" alt="Like" class="action-icon" ${isLiked ? 'style="filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)"' : ''}>
               <span data-like-count>${post.likes}</span>
             </button>
 
@@ -620,13 +620,13 @@
         const user = data.users.find(u => u.id === id || u.username === id);
         if (!user) return '';
         const initial = (user.username || '?').charAt(0).toUpperCase();
-        return `<li class="following-item">
-            <div class="avatar-letter avatar-small">${initial}</div>
-            <div class="user-info">
-                <span class="display-name">${user.displayName || user.username}</span>
-                <span class="handle">@${user.username}</span>
-            </div>
-        </li>`;
+        return `<li class="following-item" style="cursor:pointer" onclick="window.location.href='profile.html?user=${id}'">
+          <div class="avatar-letter avatar-small">${initial}</div>
+          <div class="user-info">
+          <span class="display-name">${user.displayName || user.username}</span>
+          <span class="handle">@${user.username}</span>
+          </div>
+          </li>`;
       }).join('');
     }
 
