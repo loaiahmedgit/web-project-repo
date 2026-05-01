@@ -37,7 +37,8 @@ import { getPostById, deletePost } from 'maseera/lib/repository/postRepository.j
 // ---------------------------------------------------------------------------
 export async function GET(request, { params }) {
   try {
-    const post = await getPostById(params.id);
+    const { id } = await params;
+    const post = await getPostById(id);
 
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -55,6 +56,7 @@ export async function GET(request, { params }) {
 // ---------------------------------------------------------------------------
 export async function DELETE(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -64,7 +66,7 @@ export async function DELETE(request, { params }) {
 
     // deletePost uses deleteMany with authorId check — if the user is not
     // the author, 0 rows are deleted and no error is thrown.
-    const result = await deletePost(params.id, userId);
+    const result = await deletePost(id, userId);
 
     return NextResponse.json({ success: true, deleted: result.count }, { status: 200 });
   } catch (error) {

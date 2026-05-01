@@ -24,7 +24,8 @@ import { getFollowing } from 'maseera/lib/repository/followRepository.js';
 
 export async function GET(request, { params }) {
   try {
-    const following = await getFollowing(params.id);
+    const { id } = await params;
+    const following = await getFollowing(id);
     return NextResponse.json(following, { status: 200 });
   } catch (error) {
     console.error('[GET /api/users/:id/following]', error);
