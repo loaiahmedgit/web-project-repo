@@ -1,0 +1,6 @@
+.claude/
+graphify-out/
+*.pdf
+maseera/public/media/uploads/
+maseera/.env
+maseera/.env.*
