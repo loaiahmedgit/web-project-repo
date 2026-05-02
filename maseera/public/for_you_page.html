@@ -3,58 +3,149 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>if(!sessionStorage.getItem('currentUser'))location.replace('login.html');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - For You</title>
   <link rel="stylesheet" href="./styles/for_you_page.css">
   <style>
     .like-btn .action-icon { transition: filter 0.15s; }
+    [data-lucide] { pointer-events: none; }
   </style>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function () {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
       await initializeApp();
 
       const me = getCurrentUser();
       if (me) {
-        const myInit = me.avatar || me.displayName?.charAt(0) || '?';
-        document.getElementById('sidebarAvatar').textContent      = myInit;
+        setSidebarAvatar(me.avatar, me.displayName || me.username);
         document.getElementById('sidebarName').textContent        = me.displayName;
         document.getElementById('sidebarHandle').textContent      = '@' + me.username;
-        document.getElementById('commentUserAvatar').textContent  = myInit;
       }
 
       await renderFeedWithMedia('postsContainer', 'for-you');
+      if (me && me.id) loadFollowingList(me.id);
     });
+
+    async function loadFollowingList(userId) {
+      const list = document.querySelector('.following-list');
+      if (list) list.innerHTML = '';
+      try {
+        const res = await fetch('/api/users/' + encodeURIComponent(userId) + '/following');
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (!list || !rows.length) return;
+        list.innerHTML = rows.slice(0, 6).map(row => {
+          const u = row.following;
+          if (!u) return '';
+          const init = (u.displayName || u.username || 'U').charAt(0).toUpperCase();
+          return `
+            <li class="following-item" onclick="window.location.href='profile.html?userId=${encodeURIComponent(u.id)}'">
+              <div class="avatar-letter avatar-small">${init}</div>
+              <div class="user-info">
+                <span class="display-name">${u.displayName || u.username}</span>
+                <span class="handle">@${u.username}</span>
+              </div>
+            </li>`;
+        }).join('');
+      } catch(_) {}
+    }
+
+    function fmtCount(n) {
+      n = parseInt(n) || 0;
+      if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+      if (n >= 1000)    return (n/1000).toFixed(1)+'K';
+      return String(n);
+    }
 
     async function renderFeedWithMedia(containerId, type) {
       const container = document.getElementById(containerId);
       const data = getData();
+      container.innerHTML = '';
+
+      /* ── Trending: 2-col grid, filtered, video-aware ── */
+      if (type === 'trending') {
+        container.classList.remove('no-snap');
+        container.classList.add('trending-feed-container');
+
+        let posts = getForYouPosts()
+          .filter(p => (p.likes || 0) + (p.comments || 0) > 0)
+          .sort((a,b) => ((b.likes||0)+(b.comments||0)) - ((a.likes||0)+(a.comments||0)));
+
+        const trendObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const vid = entry.target.querySelector('video.trend-video');
+            if (!vid) return;
+            if (entry.isIntersecting) vid.play().catch(()=>{});
+            else { vid.pause(); vid.currentTime = 0; }
+          });
+        }, { threshold: 0.5 });
+
+        for (let i = 0; i < posts.length; i++) {
+          const post   = posts[i];
+          const author = data.users.find(u => u.id === post.author) || { id: post.author, username: post.author };
+          let mediaURL = post.mediaPath;
+          if (post.mediaKey) {
+            const url = await MediaStore.getURL(post.mediaKey);
+            if (url) mediaURL = url;
+          }
+          const init    = (author.displayName || author.username || 'U').charAt(0).toUpperCase();
+          const caption = post.caption || '';
+          const likes   = fmtCount(post.likes   || 0);
+          const comts   = fmtCount(post.comments || 0);
+
+          const isVideo  = post.type === 'video';
+          const rank     = i + 1;
+          const rankClass = rank === 1 ? 'trend-rank-1' : rank === 2 ? 'trend-rank-2' : rank === 3 ? 'trend-rank-3' : 'trend-rank-rest';
+          const mediaHTML = !mediaURL
+            ? `<div class="trend-img-placeholder"></div>`
+            : isVideo
+              ? `<video class="trend-video" src="${mediaURL}" muted loop playsinline></video>`
+              : `<img class="trend-img" src="${mediaURL}" alt="" loading="lazy">`;
+
+          const card = document.createElement('div');
+          card.className = 'trend-card';
+          card.dataset.rank = rank <= 3 ? String(rank) : '';
+          card.style.animationDelay = (i * 35) + 'ms';
+          card.innerHTML = `
+            <div class="trend-thumb" data-caption="${caption.replace(/"/g,'&quot;').slice(0,80)}">
+              ${mediaHTML}
+              <span class="trend-rank ${rankClass}">#${rank}</span>
+              ${isVideo ? `<span class="trend-play-badge">▶ video</span>` : ''}
+            </div>
+            <div class="trend-meta">
+              <div class="trend-author-row">
+                <div class="trend-avatar">${init}</div>
+                <span class="trend-username">@${author.username}</span>
+                <div class="trend-stats">
+                  <span class="trend-stat"><i data-lucide="heart"></i>${likes}</span>
+                  <span class="trend-stat"><i data-lucide="message-circle"></i>${comts}</span>
+                </div>
+              </div>
+            </div>`;
+
+          card.addEventListener('click', () => {
+            window.location.href = 'post.html?post=' + encodeURIComponent(post.id)
+              + '&caption=' + encodeURIComponent(caption);
+          });
+
+          container.appendChild(card);
+          if (isVideo) trendObserver.observe(card);
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+      }
+
+      /* ── For-You / Following: snap-scroll feed ── */
+      container.classList.remove('trending-feed-container');
+      container.classList.remove('no-snap');
 
       let posts;
-
-      if (type === 'for-you') {
-        posts = getForYouPosts();
-
-      } else if (type === 'following') {
-        posts = getFollowingPosts();
-
-      } else if (type === 'trending') {
-        posts = getForYouPosts();
-
-        posts.sort((a, b) => {
-          const scoreA = (a.likes || 0) + (a.comments || 0);
-          const scoreB = (b.likes || 0) + (b.comments || 0);
-          return scoreB - scoreA;
-        });
-      }
-
-      if (type === 'trending') {
-        container.classList.add('trending-grid');
-      } else {
-        container.classList.remove('trending-grid');
-      }
-      container.innerHTML = '';
+      if (type === 'for-you')   posts = getForYouPosts();
+      else                       posts = getFollowingPosts();
 
       for (const post of posts) {
         const author = data.users.find(u => u.id === post.author) ||
@@ -66,24 +157,18 @@
           if (url) mediaURL = url;
         }
 
-        const isLiked = isPostLiked(post.id);
+        const isLiked      = isPostLiked(post.id);
         const commentCount = commentsData[post.id]
-          ? commentsData[post.id].count
-          : (post.comments ?? 0);
+          ? commentsData[post.id].count : (post.comments ?? 0);
 
         if (!commentsData[post.id]) {
-          commentsData[post.id] = {
-            label: `@${author.username}'s post`,
-            count: commentCount,
-            items: []
-          };
+          commentsData[post.id] = { label: `@${author.username}'s post`, count: commentCount, items: [] };
         }
 
-        const element = createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL);
-
-        container.appendChild(element);
+        container.appendChild(createPostElementWithMedia(post, author, isLiked, commentCount, mediaURL));
       }
       attachLikeButtons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
 
       setTimeout(() => {
         if (videoController) videoController.destroy();
@@ -112,21 +197,21 @@
         <div class="video-overlay">
           <div class="video-actions">
             <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
-              <img src="./media/icons/heart.svg" alt="Like" class="action-icon" ${isLiked ? 'style="filter:brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)"' : ''}>
+              <i data-lucide="heart" class="action-icon" style="${isLiked ? 'color:#FF3040;fill:#FF3040' : ''}"></i>
               <span data-like-count>${post.likes}</span>
             </button>
 
             <button class="action-btn comment-btn" onclick="openComments('${post.id}')">
-              <img src="./media/icons/comments.svg" alt="Comment" class="action-icon">
+              <i data-lucide="message-circle" class="action-icon"></i>
               <span id="cc-${post.id}">${commentCount}</span>
             </button>
 
-            <button class="action-btn" onclick="openShareModal('${post.id}', '${author.username}', '')">
-              <img src="./media/icons/share.svg" alt="Share" class="action-icon">
+            <button class="action-btn post-share-btn">
+              <i data-lucide="send" class="action-icon"></i>
             </button>
 
-            ${isOwnPost ? `<button class="action-btn" onclick="deletePostFromFeed('${post.id}', this)" title="Delete post">
-              <img src="./media/icons/trash.svg" alt="Delete" class="action-icon">
+            ${isOwnPost ? `<button class="action-btn delete-btn" onclick="deletePostFromFeed('${post.id}', this)" title="Delete post">
+              <i data-lucide="trash-2" class="action-icon"></i>
             </button>` : ''}
           </div>
 
@@ -136,12 +221,34 @@
             </a>
 
             <p>${post.caption}</p>
+
+            ${(post.createdAt || post.timestamp) ? `<p style="color:#aaa;font-size:12px;margin-top:4px;">
+            ${new Date(post.createdAt || post.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </p>` : ''}
           </div>
         </div>
       </div>
     `;
 
+      article.querySelector('.post-share-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openShareModal(post.id, author.username, mediaURL || post.mediaPath || '');
+      });
+
+      article.addEventListener('click', function(e) {
+        if (article.closest('.videos-container.no-snap') &&
+            !e.target.closest('.action-btn')) {
+          window.location.href = 'post.html?post=' + encodeURIComponent(post.id)
+            + '&caption=' + encodeURIComponent(post.caption || '');
+        }
+      });
+
       return article;
+    }
+
+    function logOut() {
+      sessionStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
     }
 
     window.switchTab = async function (tab, el) {
@@ -151,6 +258,9 @@
       document.getElementById('feedEmptyState').style.display = 'none';
 
       await renderFeedWithMedia('postsContainer', tab);
+
+      const container = document.getElementById('postsContainer');
+      if (container) container.scrollTop = 0;
     };
   </script>
 </head>
@@ -162,27 +272,27 @@
     <aside class="sidebar sidebar-left" data-component="sidebar">
 
       <div class="brand" data-section="brand">
-        <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="brand-logo">
-        <h1 class="brand-name">MASEERA</h1>
+        <div class="brand-diamond"></div>
+        <span class="brand-wordmark">Maseera</span>
       </div>
 
       <nav class="nav-primary" data-section="primary-nav">
         <ul class="nav-list">
           <li class="nav-item active" data-nav="for-you">
-            <img src="./media/icons/for-you.png" alt="" class="nav-icon">
+            <i data-lucide="compass" class="nav-icon"></i>
             <span class="nav-text">For You</span>
           </li>
           <li class="nav-item" data-nav="create" onclick="window.location.href='create.html'" style="cursor:pointer">
-            <img src="./media/icons/create.png" alt="" class="nav-icon">
+            <i data-lucide="plus-square" class="nav-icon"></i>
             <span class="nav-text">Create</span>
           </li>
           <li class="nav-item" data-nav="profile" onclick="window.location.href='profile.html'" style="cursor:pointer">
-            <img src="./media/icons/profile.png" alt="" class="nav-icon">
+            <i data-lucide="user-round" class="nav-icon"></i>
             <span class="nav-text">Profile</span>
           </li>
           <li class="nav-item" data-nav="messages" onclick="window.location.href='messages.html'"
             style="cursor:pointer">
-            <img src="./media/icons/message-circle.png" alt="" class="nav-icon">
+            <i data-lucide="message-circle" class="nav-icon"></i>
             <span class="nav-text">Messages</span>
           </li>
         </ul>
@@ -236,11 +346,14 @@
       <hr class="divider">
 
       <div class="current-user" onclick="window.location.href='profile.html'" style="cursor:pointer">
-        <div class="avatar-letter avatar-medium" id="sidebarAvatar">J</div>
+        <div class="avatar-letter avatar-medium" id="sidebarAvatar"></div>
         <div class="user-info">
-          <span class="display-name" id="sidebarName">Jordan Lee</span>
-          <span class="handle" id="sidebarHandle">@jordanlee</span>
+          <span class="display-name" id="sidebarName"></span>
+          <span class="handle" id="sidebarHandle"></span>
         </div>
+        <button class="logout-btn" onclick="event.stopPropagation();logOut()" title="Log out">
+          <i data-lucide="log-out"></i>
+        </button>
       </div>
     </aside>
 
@@ -389,15 +502,35 @@
     let commentsData = {};
 
     // ── Load user info ────────────────────────────────────────────────
+    function setSidebarAvatar(avatarPath, displayName) {
+      const letter = (displayName || 'U').charAt(0).toUpperCase();
+      const setEl = (el) => {
+        if (!el) return;
+        if (avatarPath && (avatarPath.startsWith('/') || avatarPath.startsWith('http'))) {
+          el.innerHTML = '';
+          el.style.background = 'transparent';
+          const img = document.createElement('img');
+          img.src = avatarPath;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+          img.onerror = function() { el.removeChild(img); el.textContent = letter; el.style.background = ''; };
+          el.appendChild(img);
+        } else {
+          el.innerHTML = '';
+          el.textContent = letter;
+          el.style.background = '';
+        }
+      };
+      setEl(document.getElementById('sidebarAvatar'));
+      setEl(document.getElementById('commentUserAvatar'));
+    }
+
     const _storedUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
     const myName   = _storedUser ? _storedUser.displayName : 'Guest';
     const myHandle = '@' + (_storedUser ? _storedUser.username : 'guest');
-    const myInit   = _storedUser?.avatar || myName.charAt(0).toUpperCase();
     if (_storedUser) {
-      document.getElementById('sidebarAvatar').textContent     = myInit;
+      setSidebarAvatar(_storedUser.avatar, myName);
       document.getElementById('sidebarName').textContent       = myName;
       document.getElementById('sidebarHandle').textContent     = myHandle;
-      document.getElementById('commentUserAvatar').textContent = myInit;
     }
 
     // ── Comments system ───────────────────────────────────────────────
@@ -521,10 +654,8 @@
 
           togglePostLike(postId).then(liked => {
             likeBtn.classList.toggle('liked', liked);
-            const img = likeBtn.querySelector('img');
-            if (img) img.style.filter = liked
-              ? 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1946%) hue-rotate(336deg)'
-              : '';
+            const icon = likeBtn.querySelector('[data-lucide], svg');
+            if (icon) { icon.style.color = liked ? '#FF3040' : ''; icon.style.fill = liked ? '#FF3040' : ''; }
             const post = getData().posts.find(p => p.id === postId);
             if (countEl && post) countEl.textContent = fmtCount(post.likes);
           });
@@ -549,11 +680,11 @@
     // ── Share modal ───────────────────────────────────────────────────
     let shareState = { postId: null, author: null, postImg: null, caption: null };
 
-    function openShareModal(postId, author) {
+    function openShareModal(postId, author, mediaURL) {
       let caption = '';
       const maseeraPost = getData().posts.find(p => String(p.id) === String(postId));
       if (maseeraPost) caption = maseeraPost.caption;
-      shareState = { postId, author, caption };
+      shareState = { postId, author, caption, postImg: mediaURL || '' };
       document.getElementById('shareFeedback').textContent = '';
       document.getElementById('shareStep1').style.display = '';
       document.getElementById('shareStep2').style.display = 'none';

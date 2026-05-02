@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>if(!sessionStorage.getItem('currentUser'))location.replace('login.html');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - Create Post</title>
   <link rel="stylesheet" href="./styles/create.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
 <script>
@@ -215,14 +217,14 @@
   };
 </script>
 </head>
-<body>
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
 
   <!-- Top Navigation -->
   <nav class="top-nav">
     <button class="back-btn" onclick="window.history.back()">&#8592; Back</button>
     <div class="nav-brand">
-      <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="nav-logo">
-      <span class="nav-title">MASEERA</span>
+      <div class="brand-diamond"></div>
+      <span class="nav-title">Maseera</span>
     </div>
     <div class="nav-links">
       <a href="for_you_page.html" class="nav-link">For You</a>
@@ -329,15 +331,15 @@
         <!-- Preview Actions (decorative) -->
         <div class="preview-actions">
           <div class="preview-action-item">
-            <img src="./media/icons/heart.png" alt="Like" class="preview-icon">
+            <i data-lucide="heart" class="preview-icon"></i>
             <span>0</span>
           </div>
           <div class="preview-action-item">
-            <img src="./media/icons/comments.svg" alt="Comment" class="preview-icon">
+            <i data-lucide="message-circle" class="preview-icon"></i>
             <span>0</span>
           </div>
           <div class="preview-action-item">
-            <img src="./media/icons/share.png" alt="Share" class="preview-icon">
+            <i data-lucide="send" class="preview-icon"></i>
           </div>
         </div>
       </div>

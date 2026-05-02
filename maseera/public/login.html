@@ -4,44 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login — Maseera</title>
     <link rel="stylesheet" href="styles/signup.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
-<body>
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
 
-    <div class="form-box">
-        <h1>Login</h1>
+    <div class="auth-wrapper">
 
-        <form id="loginForm">
-            <label>Username</label>
-            <input type="text" id="loginUsername" required>
+        <div class="auth-brand">
+            <div class="auth-brand-mark">
+                <div class="auth-brand-diamond">M</div>
+                <span class="auth-brand-name">Maseera</span>
+            </div>
+            <span class="auth-brand-tagline">share your story</span>
+        </div>
 
-            <label>Password</label>
-            <input type="password" id="loginPassword" required>
+        <div class="auth-card">
+            <h2 class="auth-card-title">Welcome back</h2>
+            <p class="auth-card-subtitle">Sign in to your account to continue</p>
 
-            <button type="submit">Login</button>
-        </form>
+            <div class="auth-error-banner" id="errorBanner"></div>
 
-        <p id="loginMessage"></p>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="loginUsername">Username</label>
+                    <input class="form-input" type="text" id="loginUsername" placeholder="Enter your username" required>
+                </div>
 
-        <p class="link-text">
-            Don't have an account?
-            <a href="register.html">Create one</a>
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <input class="form-input" type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="auth-submit-btn" id="submitBtn">Sign In</button>
+            </form>
+        </div>
+
+        <p class="auth-footer">
+            Don't have an account? <a href="register.html">Create one</a>
         </p>
-    </div>
-
-    <div class="social-login-outside">
-
-        <div class="social-btn google" onclick="loginWithGoogle()">
-            <img src="media/icons/google.png" alt="Google">
-            <span>Continue with Google</span>
-        </div>
-
-        <div class="social-btn apple" onclick="loginWithApple()">
-            <img src="media/icons/apple.png" alt="Apple">
-            <span>Continue with Apple</span>
-        </div>
 
     </div>
 
@@ -49,14 +52,17 @@
         document.getElementById("loginForm").addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const username = document.getElementById("loginUsername").value.trim();
-            const password = document.getElementById("loginPassword").value.trim();
-            const msgEl    = document.getElementById("loginMessage");
+            const username  = document.getElementById("loginUsername").value.trim();
+            const password  = document.getElementById("loginPassword").value.trim();
+            const errorEl   = document.getElementById("errorBanner");
+            const submitBtn = document.getElementById("submitBtn");
 
-            msgEl.textContent = "Logging in…";
+            errorEl.classList.remove("visible");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Signing in…";
 
             try {
-                const res  = await fetch("/api/auth/login", {
+                const res = await fetch("/api/auth/login", {
                     method:  "POST",
                     headers: { "Content-Type": "application/json" },
                     body:    JSON.stringify({ username, password }),
@@ -68,22 +74,18 @@
                     window.location.href = "for_you_page.html";
                 } else {
                     const err = await res.json();
-                    msgEl.textContent = err.error || "Incorrect username or password.";
+                    errorEl.textContent = err.error || "Incorrect username or password.";
+                    errorEl.classList.add("visible");
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Sign In";
                 }
             } catch {
-                msgEl.textContent = "Connection error. Is the server running?";
+                errorEl.textContent = "Connection error. Is the server running?";
+                errorEl.classList.add("visible");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Sign In";
             }
         });
-
-        function loginWithGoogle() {
-            // Dev stub — social login not connected to DB
-            alert("Social login not available. Use username/password.");
-        }
-
-        function loginWithApple() {
-            // Dev stub — social login not connected to DB
-            alert("Social login not available. Use username/password.");
-        }
     </script>
 
 </body>
