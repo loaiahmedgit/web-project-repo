@@ -393,7 +393,7 @@ export async function markMessagesAsRead(senderId, receiverId) {
 // Stat 1 — Average number of followers per user
 export async function getAvgFollowersPerUser() {
   const result = await prisma.$queryRaw`
-    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_followers
+    SELECT ROUND(CAST(COUNT(*) AS numeric) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_followers
     FROM "Follow"
   `;
   return Number(result[0]?.avg_followers ?? 0);
@@ -402,7 +402,7 @@ export async function getAvgFollowersPerUser() {
 // Stat 2 — Average number of posts per user
 export async function getAvgPostsPerUser() {
   const result = await prisma.$queryRaw`
-    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_posts
+    SELECT ROUND(CAST(COUNT(*) AS numeric) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_posts
     FROM "Post"
   `;
   return Number(result[0]?.avg_posts ?? 0);
@@ -411,7 +411,7 @@ export async function getAvgPostsPerUser() {
 // Stat 3 — Average number of messages sent per user
 export async function getAvgMessagesPerUser() {
   const result = await prisma.$queryRaw`
-    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_messages
+    SELECT ROUND(CAST(COUNT(*) AS numeric) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_messages
     FROM "Message"
   `;
   return Number(result[0]?.avg_messages ?? 0);
