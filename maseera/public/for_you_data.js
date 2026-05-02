@@ -485,7 +485,7 @@ function addVideoControls(videoElement, videoPost) {
 
   const controlOverlay = document.createElement('div');
   controlOverlay.className = 'video-control-overlay';
-  controlOverlay.innerHTML = `<div class="play-pause-icon">⏸</div>`;
+  controlOverlay.innerHTML = `<div class="play-pause-icon">⏸︎</div>`;
   controlOverlay.style.cssText = `
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     width:60px;height:60px;background:rgba(0,0,0,0.6);border-radius:50%;
@@ -503,7 +503,7 @@ function addVideoControls(videoElement, videoPost) {
     if (e.target.closest('.action-btn') || e.target.closest('.follow-btn')) return;
     e.stopPropagation();
     videoController.togglePlayPause(videoElement, videoPost);
-    icon.textContent  = videoElement.paused ? '▶' : '⏸';
+    icon.textContent  = videoElement.paused ? '▶︎' : '⏸︎';
     icon.style.fontSize = videoElement.paused ? '28px' : '30px';
     controlOverlay.style.opacity = '1';
     clearTimeout(hideTimeout);

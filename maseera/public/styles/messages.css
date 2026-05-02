@@ -237,7 +237,7 @@ body { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
   .messages-layout { grid-template-columns: 1fr; }
   .chat-panel {
     position: fixed;
-    inset: 56px 0 0 0;
+    inset: 56px 0 56px 0;
     z-index: 100;
     transform: translateX(100%);
     transition: transform .25s ease;
