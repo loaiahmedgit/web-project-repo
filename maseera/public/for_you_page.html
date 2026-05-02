@@ -5,6 +5,11 @@
   <meta charset="UTF-8">
   <script>if(!sessionStorage.getItem('currentUser'))location.replace('login.html');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    function _setVH() { document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
+    _setVH();
+    window.addEventListener('resize', _setVH);
+  </script>
   <title>Maseera - For You</title>
   <link rel="stylesheet" href="./styles/for_you_page.css">
   <style>
@@ -187,7 +192,7 @@
       const isOwnPost  = loggedUser ? (post.author === loggedUser.id) : false;
 
       const mediaHTML = post.type === 'video'
-        ? `<video src="${mediaURL}" class="video-player" autoplay loop ${soundOn ? '' : 'muted'} playsinline></video>`
+        ? `<video src="${mediaURL}" class="video-player" autoplay loop ${soundOn ? '' : 'muted'} playsinline preload="none"></video>`
         : `<img src="${mediaURL}" class="post-image">`;
 
       article.innerHTML = `
@@ -435,6 +440,7 @@
       </div>
     </aside>
 
+  <div class="comments-backdrop" onclick="closeComments()"></div>
   </div><!-- /app-container -->
 
   <!-- ========== MOBILE BOTTOM NAV ========== -->
@@ -557,6 +563,7 @@
     let activePostId = null;
 
     async function openComments(postId) {
+      document.body.classList.add('comments-open');
       activePostId = postId;
       document.getElementById('commentsEmptyState').style.display = 'none';
       document.getElementById('commentsActive').style.display = 'flex';
@@ -585,6 +592,7 @@
     }
 
     function closeComments() {
+      document.body.classList.remove('comments-open');
       activePostId = null;
       document.getElementById('commentsEmptyState').style.display = 'flex';
       document.getElementById('commentsActive').style.display = 'none';

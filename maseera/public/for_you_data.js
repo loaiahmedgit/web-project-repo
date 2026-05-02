@@ -378,16 +378,7 @@ class VideoController {
   }
 
   setupScrollListener() {
-    let scrollTimeout;
-    const feed = document.querySelector('.feed');
-    if (feed) {
-      feed.addEventListener('scroll', () => {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          this.findAndPlayMostVisibleVideo();
-        }, 100);
-      });
-    }
+    // IntersectionObserver handles play/pause — no redundant scroll listener needed
   }
 
   findAndPlayMostVisibleVideo() {
@@ -480,12 +471,15 @@ class VideoController {
 let videoController;
 
 function addVideoControls(videoElement, videoPost) {
+  const PAUSE_SVG = `<svg viewBox="0 0 24 24" width="26" height="26" fill="white" style="display:block"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+  const PLAY_SVG  = `<svg viewBox="0 0 24 24" width="26" height="26" fill="white" style="display:block"><polygon points="5,3 19,12 5,21"/></svg>`;
+
   const wrapper = videoElement.closest('.video-wrapper');
   if (!wrapper || wrapper.querySelector('.video-control-overlay')) return;
 
   const controlOverlay = document.createElement('div');
   controlOverlay.className = 'video-control-overlay';
-  controlOverlay.innerHTML = `<div class="play-pause-icon">⏸︎</div>`;
+  controlOverlay.innerHTML = `<div class="play-pause-icon">${PAUSE_SVG}</div>`;
   controlOverlay.style.cssText = `
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     width:60px;height:60px;background:rgba(0,0,0,0.6);border-radius:50%;
@@ -493,7 +487,6 @@ function addVideoControls(videoElement, videoPost) {
     opacity:0;transition:opacity 0.3s ease;z-index:20;pointer-events:auto;`;
 
   const icon = controlOverlay.querySelector('.play-pause-icon');
-  icon.style.cssText = 'font-size:30px;color:white;';
 
   wrapper.addEventListener('mouseenter', () => { controlOverlay.style.opacity = '1'; });
   wrapper.addEventListener('mouseleave', () => { controlOverlay.style.opacity = '0'; });
@@ -503,8 +496,7 @@ function addVideoControls(videoElement, videoPost) {
     if (e.target.closest('.action-btn') || e.target.closest('.follow-btn')) return;
     e.stopPropagation();
     videoController.togglePlayPause(videoElement, videoPost);
-    icon.textContent  = videoElement.paused ? '▶︎' : '⏸︎';
-    icon.style.fontSize = videoElement.paused ? '28px' : '30px';
+    icon.innerHTML = videoElement.paused ? PLAY_SVG : PAUSE_SVG;
     controlOverlay.style.opacity = '1';
     clearTimeout(hideTimeout);
     hideTimeout = setTimeout(() => { controlOverlay.style.opacity = '0'; }, 1000);
@@ -559,18 +551,7 @@ function attachVideoControls() {
 
 function setupScrollVideoManagement() {
   const feed = document.querySelector('.feed');
-  let scrollTimeout;
   if (!feed) return;
-
-  feed.addEventListener('scroll', () => {
-    clearTimeout(scrollTimeout);
-    if (videoController && videoController.currentVideo) {
-      videoController.pauseVideo(videoController.currentVideo);
-    }
-    scrollTimeout = setTimeout(() => {
-      if (videoController) videoController.findAndPlayMostVisibleVideo();
-    }, 150);
-  });
 
   feed.addEventListener('wheel', () => {
     if (videoController && videoController.currentVideo && !videoController.currentVideo.paused) {
