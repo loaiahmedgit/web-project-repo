@@ -9,19 +9,35 @@
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "next": "16.2.4",
     "next-auth": "^4.24.14",
     "prisma": "^5.22.0",
+=======
+    "bcryptjs": "^3.0.3",
+    "lucide-react": "^1.9.0",
+    "next": "16.2.4",
+    "next-auth": "^4.24.14",
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "eslint": "^9",
     "eslint-config-next": "16.2.4"
   },
     "prisma": {
+=======
+    "@prisma/client": "^5.22.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "prisma": "^5.22.0"
+  },
+  "prisma": {
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
     "seed": "node prisma/seed.js"
   }
 }

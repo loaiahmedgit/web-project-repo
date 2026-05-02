@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — Maseera</title>
+    <link rel="stylesheet" href="styles/signup.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
+
+    <div class="auth-wrapper">
+
+        <div class="auth-brand">
+            <div class="auth-brand-mark">
+                <div class="auth-brand-diamond">M</div>
+                <span class="auth-brand-name">Maseera</span>
+            </div>
+            <span class="auth-brand-tagline">share your story</span>
+        </div>
+
+        <div class="auth-card">
+            <h2 class="auth-card-title">Create account</h2>
+            <p class="auth-card-subtitle">Join Maseera and share your story</p>
+
+            <div class="auth-error-banner" id="errorBanner"></div>
+
+            <form class="auth-form" id="createForm">
+                <div class="form-group">
+                    <label class="form-label" for="firstName">First Name</label>
+                    <input class="form-input" type="text" id="firstName" placeholder="First name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="lastName">Last Name</label>
+                    <input class="form-input" type="text" id="lastName" placeholder="Last name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-input" type="email" id="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="newUsername">Username</label>
+                    <input class="form-input" type="text" id="newUsername" placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">Password</label>
+                    <input class="form-input" type="password" id="newPassword" placeholder="Min 6 chars, A, a, 1" required>
+                    <p class="form-error" id="passwordHint"></p>
+                </div>
+
+                <button type="submit" class="auth-submit-btn" id="submitBtn">Create Account</button>
+            </form>
+        </div>
+
+        <p class="auth-footer">
+            Already have an account? <a href="login.html">Sign in</a>
+        </p>
+
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById("newPassword");
+        const hint          = document.getElementById("passwordHint");
+
+        passwordInput.addEventListener("input", function () {
+            const value     = passwordInput.value;
+            const hasUpper  = /[A-Z]/.test(value);
+            const hasLower  = /[a-z]/.test(value);
+            const hasNumber = /\d/.test(value);
+            const isLong    = value.length >= 6;
+
+            if (value.length === 0) { hint.textContent = ""; return; }
+
+            if (hasUpper && hasLower && hasNumber && isLong) {
+                hint.textContent = "Strong password ✓";
+                hint.style.color = "#4ade80";
+            } else {
+                hint.textContent = "Use uppercase, lowercase, a number, and 6+ chars";
+                hint.style.color = "#FF5555";
+            }
+        });
+
+        document.getElementById("createForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const firstName = document.getElementById("firstName").value.trim();
+            const lastName  = document.getElementById("lastName").value.trim();
+            const email     = document.getElementById("email").value.trim();
+            const username  = document.getElementById("newUsername").value.trim();
+            const password  = passwordInput.value.trim();
+            const errorEl   = document.getElementById("errorBanner");
+            const submitBtn = document.getElementById("submitBtn");
+
+            const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/;
+
+            if (!strongPassword.test(password)) {
+                errorEl.textContent = "Password is not strong enough.";
+                errorEl.classList.add("visible");
+                return;
+            }
+
+            if (!firstName || !lastName || !email || !username || !password) {
+                errorEl.textContent = "Please fill in all fields.";
+                errorEl.classList.add("visible");
+                return;
+            }
+
+            errorEl.classList.remove("visible");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating account…";
+
+            try {
+                const res = await fetch("/api/users", {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body:    JSON.stringify({
+                        username,
+                        displayName: firstName + " " + lastName,
+                        email,
+                        password,
+                    }),
+                });
+
+                if (res.ok || res.status === 201) {
+                    submitBtn.textContent = "Account created! Redirecting…";
+                    submitBtn.style.background = "#4ade80";
+                    document.getElementById("createForm").reset();
+                    hint.textContent = "";
+                    setTimeout(() => { window.location.href = "login.html"; }, 1500);
+                } else {
+                    const err = await res.json();
+                    errorEl.textContent = err.error || "Registration failed.";
+                    errorEl.classList.add("visible");
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Create Account";
+                }
+            } catch {
+                errorEl.textContent = "Connection error. Is the server running?";
+                errorEl.classList.add("visible");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Create Account";
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script>if(!sessionStorage.getItem('currentUser'))location.replace('login.html');</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Maseera</title>
+    <link rel="stylesheet" href="styles/profile.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="media-store.js"></script>
+</head>
+
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
+
+    <!-- Top nav -->
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <div class="brand-diamond"></div>
+            <span class="nav-title">Maseera</span>
+        </div>
+        <div class="nav-links">
+            <a href="for_you_page.html" class="nav-link">For You</a>
+            <a href="messages.html" class="nav-link">Messages</a>
+            <a href="profile.html" class="nav-link active">Profile</a>
+        </div>
+    </nav>
+
+    <div class="profile-layout">
+
+        <!-- Cover -->
+        <div class="profile-cover">
+            <div class="profile-cover-default">
+                <div class="cover-pattern"></div>
+            </div>
+        </div>
+
+        <!-- Profile header -->
+        <div class="profile-header">
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar" id="avatarLetter">A</div>
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name" id="profileName"></h1>
+                <p class="profile-handle" id="profileUsername"></p>
+                <p class="profile-bio" id="profileBio">No bio yet</p>
+
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="profile-stat-value" id="statFollowers">0</span>
+                        <span class="profile-stat-label">Followers</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-value" id="statFollowing">0</span>
+                        <span class="profile-stat-label">Following</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-value" id="postCountStat">0</span>
+                        <span class="profile-stat-label">Posts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions" id="profileButtons">
+                <button class="edit-profile-btn" onclick="openEditModal()">Edit Profile</button>
+                <button class="follow-btn" onclick="window.location.href='messages.html'">Message</button>
+            </div>
+        </div>
+
+        <!-- Posts section -->
+        <div class="posts-section-header">
+            <span class="posts-section-title">Posts</span>
+            <span class="posts-count" id="postsCountBadge">0 posts</span>
+        </div>
+
+        <div class="posts-grid" id="postsGrid"></div>
+
+    </div>
+
+    <!-- Edit profile modal -->
+    <div class="modal-overlay" id="editModal" onclick="handleModalBackdropClick(event)">
+        <div class="modal-box">
+            <h3 class="modal-title">Edit Profile</h3>
+
+            <div class="edit-form">
+                <div>
+                    <label class="edit-label" for="editFirstName">First Name</label>
+                    <input class="edit-input" type="text" id="editFirstName" placeholder="First name">
+                </div>
+                <div>
+                    <label class="edit-label" for="editLastName">Last Name</label>
+                    <input class="edit-input" type="text" id="editLastName" placeholder="Last name">
+                </div>
+                <div>
+                    <label class="edit-label" for="editBio">Bio</label>
+                    <textarea class="edit-textarea" id="editBio" placeholder="Tell people about yourself..." rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="edit-label" for="editPhoto">Profile Photo</label>
+                    <input class="edit-input" type="file" id="editPhoto" accept="image/*">
+                </div>
+                <div id="editModalError" style="font-size:13px;color:#FF5555;min-height:16px;"></div>
+                <button class="edit-save-btn" onclick="saveProfile()">Save Changes</button>
+            </div>
+
+            <div class="modal-actions" style="margin-top:12px;">
+                <button class="modal-cancel-btn" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete post modal -->
+    <div class="modal-overlay" id="deleteModal" onclick="handleDeleteBackdrop(event)">
+        <div class="modal-box">
+            <h3 class="modal-title">Delete Post?</h3>
+            <p class="modal-body">This action cannot be undone. The post will be permanently removed.</p>
+            <div class="modal-actions">
+                <button class="modal-cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+                <button class="modal-confirm-btn" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Auth ──────────────────────────────────────────────────────────
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+        if (!currentUser) { window.location.href = 'login.html'; }
+
+        // ── URL params ────────────────────────────────────────────────────
+        const params        = new URLSearchParams(window.location.search);
+        const userIdFromURL = params.get('userId') || params.get('user');
+
+        const isOwnProfile  = !userIdFromURL
+            || userIdFromURL === currentUser?.id
+            || userIdFromURL === currentUser?.username;
+
+        const lookupKey = isOwnProfile
+            ? (currentUser?.id || currentUser?.username)
+            : userIdFromURL;
+
+        let profileUserId = lookupKey;
+        let _resolvedUser = null;
+
+        // ── Init: fetch user from API ─────────────────────────────────────
+        async function init() {
+            if (!lookupKey) { window.location.href = 'login.html'; return; }
+
+            const res  = await fetch('/api/users/' + encodeURIComponent(lookupKey));
+            if (!res.ok) {
+                document.getElementById('profileName').textContent = 'User not found';
+                return;
+            }
+            _resolvedUser = await res.json();
+            profileUserId = _resolvedUser.id;
+
+            if (isOwnProfile && currentUser && !currentUser.id && _resolvedUser.id) {
+                const patched = { ...currentUser, id: _resolvedUser.id, username: _resolvedUser.username,
+                    displayName: _resolvedUser.displayName, avatar: _resolvedUser.avatar, bio: _resolvedUser.bio };
+                sessionStorage.setItem('currentUser', JSON.stringify(patched));
+            }
+
+            document.getElementById('profileName').textContent     = _resolvedUser.displayName || _resolvedUser.username;
+            document.getElementById('profileUsername').textContent  = '@' + _resolvedUser.username;
+            setAvatar(document.getElementById('avatarLetter'), _resolvedUser.avatar, _resolvedUser.displayName || _resolvedUser.username);
+            document.getElementById('profileBio').textContent      = _resolvedUser.bio || 'No bio yet';
+            document.getElementById('statFollowers').textContent   = (_resolvedUser._count?.followers ?? 0).toLocaleString();
+            document.getElementById('statFollowing').textContent   = (_resolvedUser._count?.following ?? 0).toLocaleString();
+
+            if (!isOwnProfile && currentUser) {
+                const loggedId = JSON.parse(sessionStorage.getItem('currentUser') || '{}').id;
+                if (loggedId) {
+                    const fRes = await fetch('/api/follows?followerId=' + encodeURIComponent(loggedId)
+                        + '&followingId=' + encodeURIComponent(profileUserId));
+                    const already = fRes.ok ? (await fRes.json()).following : false;
+
+                    document.getElementById('profileButtons').innerHTML = `
+                        <button class="follow-btn ${already ? 'following' : ''}" id="followProfileBtn"
+                            onclick="toggleFollowProfile(this)"
+                            data-following="${already ? '1' : '0'}">
+                            ${already ? 'Following' : '+ Follow'}
+                        </button>
+                        <button class="edit-profile-btn" onclick="window.location.href='messages.html?to='+encodeURIComponent(_resolvedUser?.username||'')">Message</button>
+                    `;
+                }
+            }
+
+            loadPosts();
+        }
+
+        // ── Load posts from API ───────────────────────────────────────────
+        async function loadPosts() {
+            const grid = document.getElementById('postsGrid');
+            grid.innerHTML = '<p class="no-posts" style="color:var(--c-text-3);padding:40px 0;">Loading…</p>';
+
+            const res   = await fetch('/api/users/' + encodeURIComponent(profileUserId) + '/posts');
+            const posts = res.ok ? await res.json() : [];
+
+            document.getElementById('postCountStat').textContent  = posts.length;
+            document.getElementById('postsCountBadge').textContent = posts.length + ' posts';
+
+            if (!posts.length) {
+                grid.innerHTML = '<p class="no-posts">No posts yet</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            posts.forEach(post => {
+                const div       = document.createElement('div');
+                div.className   = 'post-grid-item';
+                div.dataset.postId = post.id;
+
+                const isVideo = post.mediaType === 'video';
+
+                div.innerHTML = `
+                    ${isVideo
+                        ? `<video class="post-grid-img" autoplay muted loop playsinline></video>`
+                        : `<img class="post-grid-img" alt="post">`}
+                    <div class="post-grid-overlay">
+                        <span class="post-grid-stat">
+                            <i data-lucide="heart"></i>
+                            <span>${post._count?.likes ?? 0}</span>
+                        </span>
+                        <span class="post-grid-stat">
+                            <i data-lucide="message-circle"></i>
+                            <span>${post._count?.comments ?? 0}</span>
+                        </span>
+                    </div>
+                    ${isOwnProfile
+                        ? `<button class="post-grid-delete" onclick="event.stopPropagation(); openDeleteModal('${post.id}')">
+                            <i data-lucide="x"></i>
+                           </button>`
+                        : ''}
+                `;
+
+                div.addEventListener('click', function () {
+                    window.location.href = 'post.html?post=' + encodeURIComponent(post.id)
+                        + '&caption=' + encodeURIComponent(post.caption || '');
+                });
+
+                grid.appendChild(div);
+
+                if (post.mediaPath) {
+                    const mediaEl = div.querySelector('.post-grid-img');
+                    if (mediaEl) mediaEl.src = post.mediaPath;
+                }
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // ── Follow toggle ─────────────────────────────────────────────────
+        async function toggleFollowProfile(btn) {
+            const loggedId = JSON.parse(sessionStorage.getItem('currentUser') || '{}').id;
+            if (!loggedId) return;
+            const res = await fetch('/api/follows', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ followerId: loggedId, followingId: profileUserId }),
+            });
+            if (!res.ok) return;
+            const { following } = await res.json();
+            btn.textContent       = following ? 'Following' : '+ Follow';
+            btn.dataset.following = following ? '1' : '0';
+            btn.classList.toggle('following', following);
+            const el = document.getElementById('statFollowers');
+            const n  = parseInt((el.textContent || '0').replace(/[^0-9]/g, '')) || 0;
+            el.textContent = (following ? n + 1 : Math.max(0, n - 1)).toLocaleString();
+        }
+
+        // ── Edit profile ──────────────────────────────────────────────────
+        function openEditModal() {
+            const u     = _resolvedUser || JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+            const parts = (u.displayName || '').split(' ');
+            document.getElementById('editFirstName').value = parts[0] || '';
+            document.getElementById('editLastName').value  = parts.slice(1).join(' ') || '';
+            document.getElementById('editBio').value       = u.bio || '';
+            document.getElementById('editModalError').textContent = '';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function handleModalBackdropClick(e) {
+            if (e.target === document.getElementById('editModal')) closeEditModal();
+        }
+
+        async function saveProfile() {
+            const firstName   = document.getElementById('editFirstName').value.trim();
+            const lastName    = document.getElementById('editLastName').value.trim();
+            const bio         = document.getElementById('editBio').value.trim();
+            const displayName = (firstName + ' ' + lastName).trim();
+            const errorEl     = document.getElementById('editModalError');
+
+            if (!displayName) { errorEl.textContent = 'Name cannot be empty.'; return; }
+
+            let avatar = null;
+            const photoFile = document.getElementById('editPhoto').files[0];
+            if (photoFile) {
+                const fd = new FormData();
+                fd.append('file', photoFile);
+                const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
+                if (uploadRes.ok) { const { mediaPath } = await uploadRes.json(); avatar = mediaPath; }
+            }
+
+            const payload = { displayName, bio };
+            if (avatar) payload.avatar = avatar;
+
+            const res = await fetch('/api/users/' + encodeURIComponent(profileUserId), {
+                method:  'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            });
+
+            if (!res.ok) { errorEl.textContent = 'Failed to save. Try again.'; return; }
+
+            const updated = await res.json();
+            const stored  = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+            stored.displayName = updated.displayName;
+            stored.bio = updated.bio;
+            if (avatar) stored.avatar = avatar;
+            sessionStorage.setItem('currentUser', JSON.stringify(stored));
+            if (_resolvedUser) { _resolvedUser.displayName = updated.displayName; _resolvedUser.bio = updated.bio; if (avatar) _resolvedUser.avatar = avatar; }
+
+            document.getElementById('profileName').textContent = updated.displayName;
+            document.getElementById('profileBio').textContent  = updated.bio || 'No bio yet';
+            setAvatar(document.getElementById('avatarLetter'), avatar || _resolvedUser?.avatar, updated.displayName);
+            closeEditModal();
+        }
+
+        // ── Delete post ───────────────────────────────────────────────────
+        let _pendingDeleteId = null;
+
+        function openDeleteModal(postId) {
+            _pendingDeleteId = postId;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            _pendingDeleteId = null;
+        }
+
+        function handleDeleteBackdrop(e) {
+            if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
+                if (!_pendingDeleteId) return;
+                const cu = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                try {
+                    await fetch('/api/posts/' + encodeURIComponent(_pendingDeleteId), {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: cu.id })
+                    });
+                } catch (_) {}
+                const el = document.querySelector('[data-post-id="' + _pendingDeleteId + '"]');
+                if (el) el.remove();
+                const remaining = document.querySelectorAll('#postsGrid .post-grid-item').length;
+                document.getElementById('postCountStat').textContent = remaining;
+                document.getElementById('postsCountBadge').textContent = remaining + ' posts';
+                closeDeleteModal();
+            });
+        });
+
+        // ── Avatar helper ─────────────────────────────────────────────────
+        function setAvatar(el, avatarPath, displayName) {
+            const letter = (displayName || 'U').charAt(0).toUpperCase();
+            if (avatarPath && (avatarPath.startsWith('/') || avatarPath.startsWith('http'))) {
+                el.innerHTML = '';
+                el.style.background = 'transparent';
+                const img = document.createElement('img');
+                img.src = avatarPath;
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                img.onerror = function() {
+                    el.removeChild(img);
+                    el.textContent = letter;
+                    el.style.background = '';
+                };
+                el.appendChild(img);
+            } else {
+                el.innerHTML = '';
+                el.textContent = letter;
+                el.style.background = '';
+            }
+        }
+
+        // ── Start ─────────────────────────────────────────────────────────
+        if (currentUser) init();
+    </script>
+
+</body>
+
+</html>

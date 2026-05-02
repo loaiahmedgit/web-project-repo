@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>if(!sessionStorage.getItem('currentUser'))location.replace('login.html');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - Create Post</title>
+  <link rel="stylesheet" href="./styles/create.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="./media-store.js"></script>
+  <script src="./for_you_data.js"></script>
+<script>
+  // Override or enhance existing functions with data-persistent versions
+  
+  // Initialize data on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ensure data store is initialized
+    getData();
+    
+    // Render initial feed
+    renderFeed('postsContainer', 'for-you');
+    
+    // Update following list in sidebar
+    updateFollowingList();
+  });
+  
+  // Override switchTab to use data layer
+  window.switchTab = function(tab, el) {
+    // Update active tab UI
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    
+    // Hide empty states
+    document.getElementById('feedEmptyState').style.display = 'none';
+    
+    // Render appropriate feed
+    renderFeed('postsContainer', tab);
+  };
+  
+  // Update following list in sidebar
+  function updateFollowingList() {
+    const currentUser = getCurrentUser();
+    const data = getData();
+    const followingList = document.querySelector('.following-list');
+    
+    if (!followingList || !currentUser || !currentUser.following) return;
+    
+    // Clear existing items (keep only the first few as static examples or regenerate)
+    // This is simplified - in a real app you'd regenerate the entire list
+    const followingUsers = currentUser.following
+      .map(userId => data.users.find(u => u.id === userId))
+      .filter(Boolean);
+    
+    // You could update the following list here
+  }
+  
+  // Override openComments to use data layer
+  window.openComments = function(postId) {
+    activePostId = postId;
+    const comments = getCommentsForPost(postId);
+    const post = getData().posts.find(p => p.id === postId);
+    const author = post ? post.author : 'unknown';
+    
+    document.getElementById('commentsEmptyState').style.display = 'none';
+    document.getElementById('commentsActive').style.display = 'flex';
+    document.getElementById('commentsPostLabel').textContent = `@${author}'s post`;
+    document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
+    
+    renderCommentList(comments, postId);
+    document.getElementById('commentInput').focus();
+  };
+  function createPost() {
+    const fileInput = document.getElementById("postFile");
+    const caption = document.getElementById("caption").value;
+
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        let posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+
+        const newPost = {
+            id: Date.now(),   // ✅ IMPORTANT
+            mediaURL: e.target.result, // ✅ FIX IMAGE
+            caption: caption,
+            likes: 0,
+            comments: 0
+        };
+
+        posts.push(newPost);
+        localStorage.setItem("userPosts", JSON.stringify(posts));
+
+        window.location.href = "profile.html";
+    };
+
+    reader.readAsDataURL(file); // 🔥 REQUIRED
+}
+  // Override renderCommentList to use data
+  function renderCommentList(comments, postId) {
+    const list = document.getElementById('dynamicCommentsList');
+    const currentUser = getCurrentUser();
+    const data = getData();
+    
+    if (!comments || comments.length === 0) {
+      list.innerHTML = `<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>`;
+      return;
+    }
+    
+    list.innerHTML = comments.map(c => {
+      const commentUser = data.users.find(u => u.id === c.userId) || { displayName: c.userId, avatar: c.userId.charAt(0).toUpperCase() };
+      
+      return `
+        <li class="comment-item ${c.pinned ? 'pinned' : ''}" data-comment-id="${c.id}">
+          <div class="avatar-letter avatar-small">${escapeHtml(commentUser.avatar)}</div>
+          <div class="comment-content">
+            <div class="comment-header">
+              <span class="comment-username">${escapeHtml(commentUser.displayName)}</span>
+              <span class="comment-handle">@${escapeHtml(c.userId)}</span>
+              ${c.pinned
+                ? `<span class="pinned-badge">&#x1F4CC; Pinned</span>`
+                : `<span class="comment-timestamp">${formatTimeAgo(c.timestamp)}</span>`}
+            </div>
+            <p class="comment-text">${escapeHtml(c.text)}</p>
+            <div class="comment-footer">
+              <button class="comment-like-btn" onclick="handleCommentLikeClick('${postId}', '${c.id}', this)">
+                <img src="./media/icons/heart.svg" alt="" class="heart-icon-small">
+                <span class="like-count">${formatCount(c.likes || 0)}</span>
+              </button>
+            </div>
+          </div>
+        </li>
+      `;
+    }).join('');
+  }
+  
+  // Format timestamp as time ago
+  function formatTimeAgo(timestamp) {
+    if (!timestamp) return 'unknown';
+    
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now - past;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    
+    if (diffSec < 60) return 'just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHour < 24) return diffHour + 'h ago';
+    return diffDay + 'd ago';
+  }
+  
+  // Handle comment like click
+  window.handleCommentLikeClick = function(postId, commentId, btn) {
+    const liked = toggleCommentLike(postId, commentId);
+    
+    btn.classList.toggle('comment-liked', liked);
+    const img = btn.querySelector('.heart-icon-small');
+    img.style.filter = liked 
+      ? 'invert(67%) sepia(80%) saturate(400%) hue-rotate(355deg) brightness(1.1)' 
+      : '';
+    
+    const countEl = btn.querySelector('.like-count');
+    const data = getData();
+    const comment = data.comments[postId]?.find(c => c.id === commentId);
+    if (comment) {
+      countEl.textContent = formatCount(comment.likes);
+    }
+  };
+  
+  // Override submitComment to use data layer
+  window.submitComment = function(e) {
+    e.preventDefault();
+    const input = document.getElementById('commentInput');
+    const text = input.value.trim();
+    
+    if (!text || !activePostId) return;
+    
+    const newComment = addComment(activePostId, text);
+    
+    if (newComment) {
+      // Re-render comments
+      const comments = getCommentsForPost(activePostId);
+      renderCommentList(comments, activePostId);
+      
+      // Update comment count
+      document.getElementById('dynamicCommentTotal').textContent = formatCount(comments.length);
+      
+      // Update count on post button
+      const ccEl = document.getElementById('cc-' + activePostId);
+      if (ccEl) {
+        const post = getData().posts.find(p => p.id === activePostId);
+        if (post) ccEl.textContent = formatCount(post.comments);
+      }
+      
+      input.value = '';
+      
+      // Scroll comments to bottom
+      const container = document.getElementById('dynamicCommentsContainer');
+      container.scrollTop = container.scrollHeight;
+    }
+  };
+  
+  // Make sure share modal functions use the data
+  window.openShareModal = function(postId, author, mediaPath) {
+    // ... existing share modal code ...
+    // But you might want to store the postId for later use
+    window.currentSharePostId = postId;
+    // ... rest of the function ...
+  };
+</script>
+</head>
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">&#8592; Back</button>
+    <div class="nav-brand">
+      <div class="brand-diamond"></div>
+      <span class="nav-title">Maseera</span>
+    </div>
+    <div class="nav-links">
+      <a href="for_you_page.html" class="nav-link">For You</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+      <a href="messages.html" class="nav-link">Messages</a>
+    </div>
+  </nav>
+
+  <div class="create-layout">
+
+    <!-- LEFT: Form -->
+    <div class="create-form-panel">
+      <div class="create-header">
+        <h1 class="create-title">Create Post</h1>
+        <p class="create-subtitle">Share a moment with your followers</p>
+      </div>
+
+      <form class="create-form" id="createPostForm" onsubmit="submitPost(event)">
+
+        <!-- File Upload -->
+        <div class="form-section">
+          <label class="form-label">Upload Photo or Video</label>
+          <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="handleFileSelect(this)">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <span class="upload-zone-icon">&#x1F4F7;</span>
+            <p class="upload-zone-text">Click to choose a photo or video</p>
+            <p class="upload-zone-sub">JPG, PNG, GIF, MP4, MOV</p>
+          </div>
+          <div class="file-preview-area" id="filePreviewArea" style="display:none">
+            <div id="filePreviewContent"></div>
+            <button type="button" class="change-file-btn" onclick="document.getElementById('fileInput').click()">&#x1F504; Change file</button>
+          </div>
+          <p class="picker-hint" id="pickerHint"></p>
+        </div>
+
+        <!-- Caption -->
+        <div class="form-section">
+          <label class="form-label" for="captionInput">Caption</label>
+          <textarea
+            id="captionInput"
+            class="form-textarea"
+            placeholder="Write a caption..."
+            maxlength="300"
+            oninput="updateCharCount(this)"
+          ></textarea>
+          <div class="char-counter"><span id="charCount">0</span> / 300</div>
+        </div>
+
+        <!-- Hashtags -->
+        <div class="form-section">
+          <label class="form-label" for="hashtagInput">Hashtags</label>
+          <input
+            type="text"
+            id="hashtagInput"
+            class="form-input"
+            placeholder="#dance #viral #trending"
+          >
+          <p class="field-hint">Separate tags with spaces</p>
+        </div>
+
+        <!-- Error message -->
+        <p class="form-error" id="formError"></p>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="window.location.href='for_you_page.html'">Cancel</button>
+          <button type="submit" class="publish-btn" id="publishBtn">
+            <span id="publishBtnText">Publish Post</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RIGHT: Live Preview -->
+    <div class="preview-panel">
+      <h2 class="preview-title">Preview</h2>
+
+      <div class="post-preview-card">
+        <!-- Preview Header -->
+        <div class="preview-header">
+          <div class="preview-avatar" id="previewAvatar">J</div>
+          <div class="preview-user-info">
+            <span class="preview-username" id="previewUsername">@jordanlee</span>
+            <span class="preview-time">just now</span>
+          </div>
+        </div>
+
+        <!-- Preview Image/Video -->
+        <div class="preview-image-wrap" id="previewImageWrap">
+          <div class="preview-image-placeholder" id="previewPlaceholder">
+            <span>&#x1F4F7;</span>
+            <p>Upload a file to preview</p>
+          </div>
+          <div id="previewMediaContainer" style="display:none;width:100%;height:100%;"></div>
+        </div>
+
+        <!-- Preview Caption -->
+        <div class="preview-caption">
+          <p id="previewCaption" class="preview-caption-text">Your caption will appear here...</p>
+          <div class="preview-hashtags" id="previewHashtags"></div>
+        </div>
+
+        <!-- Preview Actions (decorative) -->
+        <div class="preview-actions">
+          <div class="preview-action-item">
+            <i data-lucide="heart" class="preview-icon"></i>
+            <span>0</span>
+          </div>
+          <div class="preview-action-item">
+            <i data-lucide="message-circle" class="preview-icon"></i>
+            <span>0</span>
+          </div>
+          <div class="preview-action-item">
+            <i data-lucide="send" class="preview-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Success Toast -->
+  <div class="success-toast" id="successToast">
+    <span>&#x2713;</span> Post published! Redirecting...
+  </div>
+
+  <script>
+    let selectedFile     = null;  // raw File object
+    let selectedFileType = null;  // 'image' or 'video'
+    let previewObjectURL = null;  // temporary URL for preview
+
+    // ── Load user info ────────────────────────────────────────────────
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    if (!currentUser) { window.location.href = 'login.html'; }
+    const author  = currentUser ? (currentUser.username || currentUser.displayName || 'me') : 'me';
+    const initial = author.charAt(0).toUpperCase();
+    document.getElementById('previewAvatar').textContent   = initial;
+    document.getElementById('previewUsername').textContent = '@' + author;
+
+    // ── File upload ───────────────────────────────────────────────────
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      document.getElementById('pickerHint').textContent = '';
+      selectedFile     = file;
+      selectedFileType = file.type.startsWith('video/') ? 'video' : 'image';
+
+      // Revoke previous object URL to free memory
+      if (previewObjectURL) URL.revokeObjectURL(previewObjectURL);
+      previewObjectURL = URL.createObjectURL(file);
+
+      // Show preview area
+      document.getElementById('uploadZone').style.display      = 'none';
+      document.getElementById('filePreviewArea').style.display = 'block';
+
+      const content = document.getElementById('filePreviewContent');
+      if (selectedFileType === 'video') {
+        content.innerHTML = `<video src="${previewObjectURL}" controls class="file-preview-media"></video>`;
+      } else {
+        content.innerHTML = `<img src="${previewObjectURL}" alt="Preview" class="file-preview-media">`;
+      }
+
+      // Live preview panel
+      const placeholder    = document.getElementById('previewPlaceholder');
+      const mediaContainer = document.getElementById('previewMediaContainer');
+      placeholder.style.display    = 'none';
+      mediaContainer.style.display = 'block';
+      if (selectedFileType === 'video') {
+        mediaContainer.innerHTML = `<video src="${previewObjectURL}" style="width:100%;height:100%;object-fit:cover;" muted autoplay loop playsinline></video>`;
+      } else {
+        mediaContainer.innerHTML = `<img src="${previewObjectURL}" style="width:100%;height:100%;object-fit:cover;" alt="Preview">`;
+      }
+    }
+
+    // ── Caption live preview ──────────────────────────────────────────
+    document.getElementById('captionInput').addEventListener('input', function() {
+      const val = this.value.trim();
+      const el  = document.getElementById('previewCaption');
+      el.textContent = val || 'Your caption will appear here...';
+      el.style.color = val ? '#fff' : '#808080';
+    });
+
+
+    function updateCharCount(el) {
+      document.getElementById('charCount').textContent = el.value.length;
+    }
+
+    // ── Hashtag live preview ──────────────────────────────────────────
+    document.getElementById('hashtagInput').addEventListener('input', function() {
+      const container = document.getElementById('previewHashtags');
+      const tags = this.value.split(/\s+/).filter(t => t.length > 0);
+      container.innerHTML = tags.map(t => {
+        const tag = t.startsWith('#') ? t : '#' + t;
+        return `<span class="preview-tag">${escapeHtml(tag)}</span>`;
+      }).join('');
+    });
+
+    // ── Submit post ───────────────────────────────────────────────────
+    async function submitPost(e) {
+      e.preventDefault();
+
+      if (!selectedFile) {
+        document.getElementById('pickerHint').textContent = 'Please upload a photo or video.';
+        document.getElementById('pickerHint').style.color = '#ff4444';
+        return;
+      }
+      const caption = document.getElementById('captionInput').value.trim();
+      if (!caption) {
+        showError('Please add a caption.');
+        document.getElementById('captionInput').focus();
+        return;
+      }
+      showError('');
+
+      const btn = document.getElementById('publishBtn');
+      btn.disabled = true;
+      document.getElementById('publishBtnText').textContent = 'Publishing...';
+
+      try {
+        // 1. Upload the file
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!uploadRes.ok) throw new Error('Upload failed');
+        const { mediaPath } = await uploadRes.json();
+
+        // 2. Create the post
+        const rawTags  = document.getElementById('hashtagInput').value.split(/\s+/).filter(t => t.length > 0);
+        const hashtags = rawTags.map(t => t.replace(/^#/, '')).join(',');
+
+        const postRes = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            authorId:  currentUser.id,
+            caption:   caption,
+            mediaPath: mediaPath,
+            mediaType: selectedFileType,
+            hashtags:  hashtags
+          })
+        });
+        if (!postRes.ok) throw new Error('Post creation failed');
+
+        document.getElementById('successToast').classList.add('visible');
+        setTimeout(() => { window.location.href = 'for_you_page.html'; }, 1800);
+      } catch (err) {
+        showError('Failed to publish post. Please try again.');
+        btn.disabled = false;
+        document.getElementById('publishBtnText').textContent = 'Publish Post';
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('formError').textContent = msg;
+    }
+
+    function escapeHtml(t) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(t || '')));
+      return d.innerHTML;
+    }
+  </script>
+
+</body>
+</html>

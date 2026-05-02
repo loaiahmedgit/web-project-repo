@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maseera - Post</title>
+  <link rel="stylesheet" href="./styles/post.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="./media-store.js"></script>
+  <script src="./for_you_data.js"></script>
+</head>
+
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">&#8592; Back</button>
+    <div class="nav-brand">
+      <div class="brand-diamond"></div>
+      <span class="nav-title">Maseera</span>
+    </div>
+    <div class="nav-links">
+      <a href="for_you_page.html" class="nav-link">For You</a>
+      <a href="messages.html" class="nav-link">Messages</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+    </div>
+  </nav>
+
+  <!-- Two-column layout: Post + Comments -->
+  <div class="post-layout">
+
+    <!-- LEFT: Post content -->
+    <div class="post-main">
+
+      <!-- Post Header -->
+      <div class="post-header">
+        <div class="post-author-info">
+          <div class="author-avatar" id="postAuthorAvatar">A</div>
+          <div class="author-details">
+            <a href="profile.html" class="author-name" id="postAuthorName">@alexdancer</a>
+            <span class="post-time" id="postTime">3 hours ago</span>
+          </div>
+        </div>
+        <button class="follow-btn-post" id="followBtn" onclick="toggleFollow(this)">+ Follow</button>
+      </div>
+
+      <!-- Post Media (image or video) -->
+      <div class="post-image-container" id="postMediaContainer">
+        <img src="./media/images/Post_1.png" alt="Post" class="post-image" id="postImage">
+      </div>
+
+      <!-- Caption & Hashtags -->
+      <div class="post-caption">
+        <p id="postCaption">Check out this amazing moment! ✨</p>
+        <div class="post-hashtags" id="postHashtags"></div>
+      </div>
+
+      <!-- Like / Comment / Share Actions -->
+      <div class="post-actions-bar">
+        <button class="post-action-btn like-post-btn" id="likeBtn" onclick="toggleLike(this)">
+          <span class="action-icon">&#x1F90D;</span>
+          <span class="action-label" id="likeCount">0</span>
+          <span class="action-text">Likes</span>
+        </button>
+        <button class="post-action-btn comment-post-btn" onclick="focusCommentInput()">
+          <span class="action-icon">&#x1F4AC;</span>
+          <span class="action-label" id="commentCount">0</span>
+          <span class="action-text">Comments</span>
+        </button>
+        <button class="post-action-btn share-post-btn" onclick="openShareModal()">
+          <span class="action-icon">&#x2197;</span>
+          <span class="action-label">Share</span>
+          <span class="action-text">Share</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Comments panel -->
+    <div class="post-comments-panel">
+
+      <div class="comments-panel-header">
+        <h2>Comments</h2>
+        <span class="comment-total" id="commentTotal">0</span>
+      </div>
+
+      <div class="comments-scroll" id="commentsScroll">
+        <ul class="comments-list" id="commentsList"></ul>
+      </div>
+
+      <div class="comment-input-section">
+        <form class="comment-submit-form" onsubmit="submitComment(event)">
+          <input type="text" id="commentInput" class="comment-text-input" placeholder="Add a comment..."
+            aria-label="Write a comment">
+          <button type="submit" class="submit-comment-btn">Post</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="share-modal-overlay" id="shareModal" onclick="handleModalOverlayClick(event)">
+    <div class="share-modal-box">
+      <div class="share-modal-header">
+        <h3>Share Post</h3>
+        <button class="close-modal-btn" onclick="closeShareModal()">&#x2715;</button>
+      </div>
+      <div class="share-options">
+        <button class="share-option-btn copy-link-btn" onclick="copyPostLink()">
+          <span class="share-option-icon">&#x1F517;</span>
+          <span>Copy Link</span>
+        </button>
+        <button class="share-option-btn send-message-btn" onclick="shareToMessages()">
+          <span class="share-option-icon">&#x2709;&#xFE0F;</span>
+          <span>Send to Messages</span>
+        </button>
+      </div>
+      <p class="copy-feedback" id="copyFeedback"></p>
+    </div>
+  </div>
+
+  <script>
+    // ── Helpers ───────────────────────────────────────────────────────
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(text || '')));
+      return div.innerHTML;
+    }
+
+    function fmtCount(n) {
+      n = parseInt(n) || 0;
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    }
+
+    // ── Auth ──────────────────────────────────────────────────────────
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    if (!currentUser) window.location.href = 'login.html';
+
+    // ── URL params ────────────────────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId    = urlParams.get('post') || '';
+    const rawCap    = urlParams.get('caption');
+    document.getElementById('postCaption').textContent = rawCap ? decodeURIComponent(rawCap) : '';
+
+    // ── Media helper ──────────────────────────────────────────────────
+    function setMedia(url, isVideo) {
+      const c = document.getElementById('postMediaContainer');
+      c.innerHTML = isVideo
+        ? `<video src="${url}" class="post-image" controls autoplay loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<img src="${url}" alt="Post" class="post-image">`;
+    }
+
+    // ── Init: load post from API ──────────────────────────────────────
+    let _post = null;
+    async function initPost() {
+      if (!postId) return;
+      const res = await fetch('/api/posts/' + encodeURIComponent(postId));
+      if (!res.ok) return;
+      _post = await res.json();
+
+      const a        = _post.author || {};
+      const name     = a.displayName || a.username || 'User';
+      const initial  = (a.avatar || name.charAt(0) || 'U').toUpperCase();
+      const authorEl = document.getElementById('postAuthorName');
+      authorEl.textContent = '@' + (a.username || '');
+      authorEl.href        = 'profile.html?userId=' + encodeURIComponent(a.id || '');
+      document.getElementById('postAuthorAvatar').textContent = initial;
+      document.getElementById('postCaption').textContent      = _post.caption || '';
+
+      document.getElementById('likeCount').textContent    = fmtCount(_post._count?.likes ?? 0);
+      document.getElementById('commentCount').textContent = fmtCount(_post._count?.comments ?? 0);
+      document.getElementById('commentTotal').textContent = fmtCount(_post._count?.comments ?? 0);
+
+      if (_post.hashtags) {
+        const tags = Array.isArray(_post.hashtags)
+          ? _post.hashtags
+          : String(_post.hashtags).split(',').map(t => t.trim()).filter(Boolean);
+        if (tags.length) {
+          document.getElementById('postHashtags').innerHTML =
+            tags.map(t => `<span class="hashtag">#${escapeHtml(t)}</span>`).join('');
+        }
+      }
+
+      if (_post.mediaPath) setMedia(_post.mediaPath, _post.mediaType === 'video');
+
+      // Follow button: hide for own posts, check follow state otherwise
+      const followBtn = document.getElementById('followBtn');
+      if (!a.id || a.id === currentUser?.id) {
+        followBtn.style.display = 'none';
+      } else {
+        const fRes = await fetch('/api/follows?followerId=' + encodeURIComponent(currentUser.id)
+          + '&followingId=' + encodeURIComponent(a.id));
+        if (fRes.ok) {
+          const { following } = await fRes.json();
+          if (following) { followBtn.textContent = 'Following'; followBtn.classList.add('following'); }
+        }
+      }
+
+      await loadComments();
+    }
+
+    // ── Load comments from API ────────────────────────────────────────
+    async function loadComments() {
+      const list = document.getElementById('commentsList');
+      const res  = await fetch('/api/posts/' + encodeURIComponent(postId) + '/comments');
+      const items = res.ok ? await res.json() : [];
+
+      document.getElementById('commentTotal').textContent = fmtCount(items.length);
+      document.getElementById('commentCount').textContent = fmtCount(items.length);
+
+      if (!items.length) {
+        list.innerHTML = '<li style="text-align:center;color:#808080;padding:24px 0;font-size:14px;">No comments yet. Be the first!</li>';
+        return;
+      }
+
+      list.innerHTML = items.map(c => {
+        const uname = c.author?.displayName || c.author?.username || 'User';
+        const init  = (uname.charAt(0) || 'U').toUpperCase();
+        const when  = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '';
+        return `
+          <li class="comment-item">
+            <div class="comment-avatar">${escapeHtml(init)}</div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-user">${escapeHtml(uname)}</span>
+                <span class="comment-handle">@${escapeHtml(c.author?.username || 'user')}</span>
+                <span class="comment-time">${escapeHtml(when)}</span>
+              </div>
+              <p class="comment-text">${escapeHtml(c.content || '')}</p>
+              <button class="comment-like-btn" onclick="toggleCommentLike(this)">
+                <span class="heart-icon">&#x1F90D;</span>
+                <span class="clc">${fmtCount(c.likes || 0)}</span>
+              </button>
+            </div>
+          </li>`;
+      }).join('');
+    }
+
+    // ── Submit comment ────────────────────────────────────────────────
+    async function submitComment(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      const input = document.getElementById('commentInput');
+      const text  = input.value.trim();
+      if (!text) return;
+
+      const res = await fetch('/api/posts/' + encodeURIComponent(postId) + '/comments', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ authorId: currentUser.id, content: text }),
+      });
+      if (!res.ok) return;
+      input.value = '';
+      await loadComments();
+      const scroll = document.getElementById('commentsScroll');
+      scroll.scrollTop = scroll.scrollHeight;
+    }
+
+    // ── Like ──────────────────────────────────────────────────────────
+    async function toggleLike(btn) {
+      if (!currentUser || !postId) return;
+      const res = await fetch('/api/posts/' + encodeURIComponent(postId) + '/like', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ userId: currentUser.id }),
+      });
+      if (!res.ok) return;
+      const { liked } = await res.json();
+      btn.querySelector('.action-icon').innerHTML = liked ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+      btn.classList.toggle('liked', liked);
+      const countEl = document.getElementById('likeCount');
+      const prev    = parseInt(countEl.textContent) || 0;
+      countEl.textContent = fmtCount(liked ? prev + 1 : Math.max(0, prev - 1));
+    }
+
+    // ── Follow ────────────────────────────────────────────────────────
+    async function toggleFollow(btn) {
+      if (!currentUser || !_post) return;
+      const authorId = _post.authorId || _post.author?.id;
+      if (!authorId || authorId === currentUser.id) return;
+      const res = await fetch('/api/follows', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ followerId: currentUser.id, followingId: authorId }),
+      });
+      if (!res.ok) return;
+      const { following } = await res.json();
+      btn.textContent = following ? 'Following' : '+ Follow';
+      btn.classList.toggle('following', following);
+    }
+
+    function toggleCommentLike(btn) {
+      btn.classList.toggle('liked');
+      btn.querySelector('.heart-icon').innerHTML =
+        btn.classList.contains('liked') ? '&#x2764;&#xFE0F;' : '&#x1F90D;';
+    }
+
+    function focusCommentInput() {
+      const input = document.getElementById('commentInput');
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ── Share modal ───────────────────────────────────────────────────
+    function openShareModal() {
+      document.getElementById('shareModal').classList.add('active');
+      document.getElementById('copyFeedback').textContent = '';
+    }
+    function closeShareModal() { document.getElementById('shareModal').classList.remove('active'); }
+    function handleModalOverlayClick(e) { if (e.target.id === 'shareModal') closeShareModal(); }
+
+    function copyPostLink() {
+      const url = window.location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(showCopied).catch(() => fallbackCopy(url));
+      } else { fallbackCopy(url); }
+    }
+    function fallbackCopy(url) {
+      const el = document.createElement('textarea');
+      el.value = url; document.body.appendChild(el); el.select();
+      document.execCommand('copy'); document.body.removeChild(el); showCopied();
+    }
+    function showCopied() {
+      document.getElementById('copyFeedback').innerHTML = '&#x2713; Link copied to clipboard!';
+    }
+    function shareToMessages() {
+      window.location.href = 'messages.html?sharedPost=' + encodeURIComponent(JSON.stringify({ postId }));
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────
+    if (postId) initPost();
+  </script>
+
+</body>
+
+</html>

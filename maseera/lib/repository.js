@@ -390,6 +390,122 @@ export async function markMessagesAsRead(senderId, receiverId) {
 // STATISTICS
 // =============================================================================
 
+<<<<<<< HEAD
+=======
+// Stat 1 — Average number of followers per user
+export async function getAvgFollowersPerUser() {
+  const result = await prisma.$queryRaw`
+    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_followers
+    FROM "Follow"
+  `;
+  return Number(result[0]?.avg_followers ?? 0);
+}
+
+// Stat 2 — Average number of posts per user
+export async function getAvgPostsPerUser() {
+  const result = await prisma.$queryRaw`
+    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_posts
+    FROM "Post"
+  `;
+  return Number(result[0]?.avg_posts ?? 0);
+}
+
+// Stat 3 — Average number of messages sent per user
+export async function getAvgMessagesPerUser() {
+  const result = await prisma.$queryRaw`
+    SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_messages
+    FROM "Message"
+  `;
+  return Number(result[0]?.avg_messages ?? 0);
+}
+
+// Stat 4 — Most active user in the last 3 months (by post count)
+export async function getMostActiveUser() {
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  const rows = await prisma.post.groupBy({
+    by: ['authorId'],
+    where: { createdAt: { gte: threeMonthsAgo } },
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } },
+    take: 1,
+  });
+
+  if (!rows.length) return null;
+  const user = await prisma.user.findUnique({
+    where: { id: rows[0].authorId },
+    select: { id: true, username: true, displayName: true, avatar: true, verified: true },
+  });
+  return { ...user, postCount: rows[0]._count.id };
+}
+
+// Stat 5 — Most liked post
+export async function getMostLikedPost() {
+  return prisma.post.findFirst({
+    orderBy: { likes: { _count: 'desc' } },
+    select: {
+      id: true,
+      caption: true,
+      createdAt: true,
+      author: { select: { username: true, displayName: true, avatar: true } },
+      _count: { select: { likes: true, comments: true, reposts: true } },
+    },
+  });
+}
+
+// Stat 6 — Most followed user
+export async function getMostFollowedUser() {
+  return prisma.user.findFirst({
+    orderBy: { followers: { _count: 'desc' } },
+    select: {
+      id: true,
+      username: true,
+      displayName: true,
+      avatar: true,
+      verified: true,
+      _count: { select: { followers: true, following: true } },
+    },
+  });
+}
+
+// Stat 7 — Most active commenter (user with most comments)
+export async function getMostActiveCommenter() {
+  const rows = await prisma.comment.groupBy({
+    by: ['authorId'],
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } },
+    take: 1,
+  });
+  if (!rows.length) return null;
+  const user = await prisma.user.findUnique({
+    where: { id: rows[0].authorId },
+    select: { id: true, username: true, displayName: true, avatar: true, verified: true },
+  });
+  return { ...user, commentCount: rows[0]._count.id };
+}
+
+// Stat 8 — Top 5 hashtags by usage across all posts
+// Hashtags are stored as comma-separated strings; we retrieve only that column
+// and tally in the application layer since SQLite lacks a native split function.
+export async function getTopHashtags() {
+  const posts = await prisma.post.findMany({
+    where: { hashtags: { not: '' } },
+    select: { hashtags: true },
+  });
+  const counts = {};
+  for (const { hashtags } of posts) {
+    for (const tag of hashtags.split(',').map(t => t.trim()).filter(Boolean)) {
+      counts[tag] = (counts[tag] ?? 0) + 1;
+    }
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([tag, count]) => ({ tag, count }));
+}
+
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
 export async function getPlatformStats() {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -400,16 +516,29 @@ export async function getPlatformStats() {
     totalComments,
     totalLikes,
     totalReposts,
+<<<<<<< HEAD
     mostLikedPost,
     topPostersRaw,
     verifiedCount,
     avgPostsPerUser,
+=======
+    verifiedCount,
+    topPostersRaw,
+    avgFollowers,
+    avgPostsPerUser,
+    avgMessagesPerUser,
+    mostLikedPost,
+    mostFollowedUser,
+    mostActiveCommenter,
+    topHashtags,
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
   ] = await Promise.all([
     prisma.user.count(),
     prisma.post.count(),
     prisma.comment.count(),
     prisma.like.count(),
     prisma.repost.count(),
+<<<<<<< HEAD
     prisma.post.findFirst({
       orderBy: { likes: { _count: 'desc' } },
       select: {
@@ -418,6 +547,9 @@ export async function getPlatformStats() {
         _count: { select: { likes: true } },
       },
     }),
+=======
+    prisma.user.count({ where: { verified: true } }),
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
     prisma.post.groupBy({
       by: ['authorId'],
       where: { createdAt: { gte: threeMonthsAgo } },
@@ -425,39 +557,69 @@ export async function getPlatformStats() {
       orderBy: { _count: { id: 'desc' } },
       take: 5,
     }),
+<<<<<<< HEAD
     prisma.user.count({ where: { verified: true } }),
     prisma.$queryRaw`
       SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_posts
       FROM "Post"
     `,
+=======
+    getAvgFollowersPerUser(),
+    getAvgPostsPerUser(),
+    getAvgMessagesPerUser(),
+    getMostLikedPost(),
+    getMostFollowedUser(),
+    getMostActiveCommenter(),
+    getTopHashtags(),
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
   ]);
 
   const leaderboard = await Promise.all(
     topPostersRaw.map(async row => {
       const user = await prisma.user.findUnique({
         where: { id: row.authorId },
+<<<<<<< HEAD
         select: { username: true, displayName: true, avatar: true },
+=======
+        select: { username: true, displayName: true, avatar: true, verified: true },
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
       });
       return { ...user, postCount: row._count.id };
     })
   );
 
+<<<<<<< HEAD
   const avgFollowersResult = await prisma.$queryRaw`
     SELECT ROUND(CAST(COUNT(*) AS REAL) / NULLIF((SELECT COUNT(*) FROM "User"), 0), 2) AS avg_followers
     FROM "Follow"
   `;
 
+=======
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
   return {
     totalUsers,
     totalPosts,
     totalComments,
     totalLikes,
     totalReposts,
+<<<<<<< HEAD
     mostLikedPost,
     leaderboard,
     verifiedCount,
     unverifiedCount: totalUsers - verifiedCount,
     avgPostsPerUser: Number(avgPostsPerUser[0]?.avg_posts ?? 0),
     avgFollowers:    Number(avgFollowersResult[0]?.avg_followers ?? 0),
+=======
+    verifiedCount,
+    unverifiedCount: totalUsers - verifiedCount,
+    leaderboard,
+    avgFollowers,
+    avgPostsPerUser,
+    avgMessagesPerUser,
+    mostLikedPost,
+    mostFollowedUser,
+    mostActiveCommenter,
+    topHashtags,
+>>>>>>> b8405eb27e29f708080b467f854e2c121b679ef0
   };
 }
