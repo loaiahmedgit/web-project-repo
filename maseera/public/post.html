@@ -46,9 +46,7 @@
       </div>
 
       <!-- Post Media (image or video) -->
-      <div class="post-image-container" id="postMediaContainer">
-        <img src="./media/images/Post_1.png" alt="Post" class="post-image" id="postImage">
-      </div>
+      <div class="post-image-container" id="postMediaContainer" style="display:none;"></div>
 
       <!-- Caption & Hashtags -->
       <div class="post-caption">
@@ -123,6 +121,23 @@
 
   <script>
     // ── Helpers ───────────────────────────────────────────────────────
+    function setAvatar(el, avatarPath, displayName) {
+      const letter = (displayName || 'U').charAt(0).toUpperCase();
+      if (avatarPath && (avatarPath.startsWith('/') || avatarPath.startsWith('http'))) {
+        el.innerHTML = '';
+        el.style.background = 'transparent';
+        const img = document.createElement('img');
+        img.src = avatarPath;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';
+        img.onerror = function() { el.removeChild(img); el.textContent = letter; el.style.background = ''; };
+        el.appendChild(img);
+      } else {
+        el.innerHTML = '';
+        el.textContent = letter;
+        el.style.background = '';
+      }
+    }
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(String(text || '')));
@@ -149,6 +164,7 @@
     // ── Media helper ──────────────────────────────────────────────────
     function setMedia(url, isVideo) {
       const c = document.getElementById('postMediaContainer');
+      c.style.display = '';
       c.innerHTML = isVideo
         ? `<video src="${url}" class="post-image" controls autoplay loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
         : `<img src="${url}" alt="Post" class="post-image">`;
@@ -164,11 +180,10 @@
 
       const a        = _post.author || {};
       const name     = a.displayName || a.username || 'User';
-      const initial  = (a.avatar || name.charAt(0) || 'U').toUpperCase();
       const authorEl = document.getElementById('postAuthorName');
       authorEl.textContent = '@' + (a.username || '');
       authorEl.href        = 'profile.html?userId=' + encodeURIComponent(a.id || '');
-      document.getElementById('postAuthorAvatar').textContent = initial;
+      setAvatar(document.getElementById('postAuthorAvatar'), a.avatar, name);
       document.getElementById('postCaption').textContent      = _post.caption || '';
 
       document.getElementById('likeCount').textContent    = fmtCount(_post._count?.likes ?? 0);
