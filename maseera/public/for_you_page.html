@@ -551,8 +551,9 @@
     }
 
     const _storedUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-    const myName   = _storedUser ? _storedUser.displayName : 'Guest';
-    const myHandle = '@' + (_storedUser ? _storedUser.username : 'guest');
+    const myName   = _storedUser ? (_storedUser.displayName || _storedUser.username || 'User') : 'Guest';
+    const myHandle = '@' + (_storedUser ? (_storedUser.username || 'guest') : 'guest');
+    const myInit   = myName.charAt(0).toUpperCase();
     if (_storedUser) {
       setSidebarAvatar(_storedUser.avatar, myName);
       document.getElementById('sidebarName').textContent       = myName;
