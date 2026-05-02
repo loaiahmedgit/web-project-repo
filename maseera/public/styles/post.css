@@ -423,3 +423,27 @@ body { min-height: 100vh; display: flex; flex-direction: column; }
   margin-top: 10px;
   min-height: 18px;
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  body { overflow: auto; }
+  .post-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+  .post-main {
+    padding: 20px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .post-comments-panel { height: 60vh; }
+  .nav-links { display: none; }
+  .top-nav { grid-template-columns: auto 1fr; }
+}
+
+@media (max-width: 480px) {
+  .post-main { padding: 14px 12px; }
+  .post-actions-bar { gap: 6px; }
+  .post-action-btn { padding: 8px 12px; font-size: 12px; }
+}

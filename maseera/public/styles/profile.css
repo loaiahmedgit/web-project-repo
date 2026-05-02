@@ -414,4 +414,15 @@ body { min-height: 100vh; display: flex; flex-direction: column; }
   .posts-grid { grid-template-columns: repeat(2, 1fr); }
   .profile-cover { height: 140px; }
   .profile-avatar { width: 70px; height: 70px; font-size: 26px; }
+  .profile-header { flex-wrap: wrap; gap: 12px; margin-top: -35px; }
+  .profile-info { padding-top: 36px; }
+  .profile-actions { padding-top: 0; width: 100%; justify-content: flex-start; }
+  .profile-stats { gap: 16px; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 400px) {
+  .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 2px; }
+  .profile-layout { padding: 0 12px 40px; }
+  .profile-name { font-size: 18px; }
 }
