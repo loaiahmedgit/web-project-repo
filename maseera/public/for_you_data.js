@@ -30,20 +30,23 @@ async function initializeApp() {
 
   const userId = _currentUser?.id;
 
-  const [usersRes, postsRes, followingRes] = await Promise.all([
-    fetch('/api/users'),
+  const [postsRes, followingRes] = await Promise.all([
     fetch('/api/posts'),
     userId
       ? fetch('/api/users/' + encodeURIComponent(userId) + '/following')
       : Promise.resolve({ ok: false }),
   ]);
 
-  const usersRaw     = usersRes.ok     ? await usersRes.json()     : [];
   const postsRaw     = postsRes.ok     ? await postsRes.json()     : [];
   const followingRaw = followingRes.ok ? await followingRes.json() : [];
 
-  _appData.users = usersRaw.map(transformUser);
   _appData.posts = postsRaw.map(transformPost);
+  // Build users list from embedded author data — no separate /api/users call needed
+  const seenIds = new Set();
+  _appData.users = postsRaw
+    .map(p => p.author)
+    .filter(a => a && !seenIds.has(a.id) && seenIds.add(a.id))
+    .map(transformUser);
   _followSet     = new Set(followingRaw.map(f => f.following?.id).filter(Boolean));
 }
 
@@ -70,10 +73,10 @@ function transformPost(p) {
 function transformUser(u) {
   return {
     id:          u.id,
-    username:    u.username,
-    displayName: u.displayName,
-    avatar:      u.avatar || u.displayName?.charAt(0) || '?',
-    verified:    u.verified || false,
+    username:    u.username    || '',
+    displayName: u.displayName || u.username || '',
+    avatar:      u.avatar      || '',
+    verified:    u.verified    || false,
     following:   [],
     followers:   u._count?.followers ?? 0,
   };
