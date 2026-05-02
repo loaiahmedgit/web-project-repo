@@ -6,18 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maseera - Post</title>
   <link rel="stylesheet" href="./styles/post.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="./media-store.js"></script>
   <script src="./for_you_data.js"></script>
 </head>
 
-<body>
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
 
   <!-- Top Navigation -->
   <nav class="top-nav">
     <button class="back-btn" onclick="window.history.back()">&#8592; Back</button>
     <div class="nav-brand">
-      <img src="./media/images/Orange Flash Logo.png" alt="Maseera" class="nav-logo">
-      <span class="nav-title">MASEERA</span>
+      <div class="brand-diamond"></div>
+      <span class="nav-title">Maseera</span>
     </div>
     <div class="nav-links">
       <a href="for_you_page.html" class="nav-link">For You</a>
@@ -218,7 +219,7 @@
 
       list.innerHTML = items.map(c => {
         const uname = c.author?.displayName || c.author?.username || 'User';
-        const init  = (c.author?.avatar || uname.charAt(0) || 'U').toUpperCase();
+        const init  = (uname.charAt(0) || 'U').toUpperCase();
         const when  = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '';
         return `
           <li class="comment-item">

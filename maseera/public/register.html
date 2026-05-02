@@ -4,68 +4,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
+    <title>Create Account — Maseera</title>
     <link rel="stylesheet" href="styles/signup.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
-<body>
+<body onload="if(typeof lucide!=='undefined') lucide.createIcons();">
 
-    <div class="form-box">
-        <h1>Create Account</h1>
+    <div class="auth-wrapper">
 
-        <form id="createForm">
-            <label>First Name</label>
-            <input type="text" id="firstName" required>
+        <div class="auth-brand">
+            <div class="auth-brand-mark">
+                <div class="auth-brand-diamond">M</div>
+                <span class="auth-brand-name">Maseera</span>
+            </div>
+            <span class="auth-brand-tagline">share your story</span>
+        </div>
 
-            <label>Last Name</label>
-            <input type="text" id="lastName" required>
+        <div class="auth-card">
+            <h2 class="auth-card-title">Create account</h2>
+            <p class="auth-card-subtitle">Join Maseera and share your story</p>
 
-            <label>Email</label>
-            <input type="email" id="email" required>
+            <div class="auth-error-banner" id="errorBanner"></div>
 
-            <label>Username</label>
-            <input type="text" id="newUsername" required>
+            <form class="auth-form" id="createForm">
+                <div class="form-group">
+                    <label class="form-label" for="firstName">First Name</label>
+                    <input class="form-input" type="text" id="firstName" placeholder="First name" required>
+                </div>
 
-            <label>Password</label>
-            <input type="password" id="newPassword" required>
+                <div class="form-group">
+                    <label class="form-label" for="lastName">Last Name</label>
+                    <input class="form-input" type="text" id="lastName" placeholder="Last name" required>
+                </div>
 
-            <p id="passwordHint" style="font-size:14px; margin-top:5px;"></p>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-input" type="email" id="email" placeholder="you@example.com" required>
+                </div>
 
-            <button type="submit">Create Account</button>
-        </form>
+                <div class="form-group">
+                    <label class="form-label" for="newUsername">Username</label>
+                    <input class="form-input" type="text" id="newUsername" placeholder="Choose a username" required>
+                </div>
 
-        <p id="createMessage"></p>
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">Password</label>
+                    <input class="form-input" type="password" id="newPassword" placeholder="Min 6 chars, A, a, 1" required>
+                    <p class="form-error" id="passwordHint"></p>
+                </div>
 
-        <p class="link-text">
-            Already have an account?
-            <a href="login.html">Login</a>
+                <button type="submit" class="auth-submit-btn" id="submitBtn">Create Account</button>
+            </form>
+        </div>
+
+        <p class="auth-footer">
+            Already have an account? <a href="login.html">Sign in</a>
         </p>
+
     </div>
 
     <script>
-        let passwordInput = document.getElementById("newPassword");
-        let hint = document.getElementById("passwordHint");
+        const passwordInput = document.getElementById("newPassword");
+        const hint          = document.getElementById("passwordHint");
 
         passwordInput.addEventListener("input", function () {
+            const value     = passwordInput.value;
+            const hasUpper  = /[A-Z]/.test(value);
+            const hasLower  = /[a-z]/.test(value);
+            const hasNumber = /\d/.test(value);
+            const isLong    = value.length >= 6;
 
-            let value = passwordInput.value;
-
-            let hasUpper = /[A-Z]/.test(value);
-            let hasLower = /[a-z]/.test(value);
-            let hasNumber = /\d/.test(value);
-            let isLong = value.length >= 6;
-
-            if (value.length === 0) {
-                hint.textContent = "";
-                return;
-            }
+            if (value.length === 0) { hint.textContent = ""; return; }
 
             if (hasUpper && hasLower && hasNumber && isLong) {
-                hint.textContent = "Strong password ✅";
-                hint.style.color = "lightgreen";
+                hint.textContent = "Strong password ✓";
+                hint.style.color = "#4ade80";
             } else {
-                hint.textContent = "Weak password ❌ (Use A, a, 1 and 6+ chars)";
-                hint.style.color = "red";
+                hint.textContent = "Use uppercase, lowercase, a number, and 6+ chars";
+                hint.style.color = "#FF5555";
             }
         });
 
@@ -77,21 +94,26 @@
             const email     = document.getElementById("email").value.trim();
             const username  = document.getElementById("newUsername").value.trim();
             const password  = passwordInput.value.trim();
-            const msgEl     = document.getElementById("createMessage");
+            const errorEl   = document.getElementById("errorBanner");
+            const submitBtn = document.getElementById("submitBtn");
 
             const strongPassword = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/;
 
             if (!strongPassword.test(password)) {
-                msgEl.textContent = "Password is not strong enough.";
+                errorEl.textContent = "Password is not strong enough.";
+                errorEl.classList.add("visible");
                 return;
             }
 
             if (!firstName || !lastName || !email || !username || !password) {
-                msgEl.textContent = "Please fill in all fields.";
+                errorEl.textContent = "Please fill in all fields.";
+                errorEl.classList.add("visible");
                 return;
             }
 
-            msgEl.textContent = "Creating account…";
+            errorEl.classList.remove("visible");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating account…";
 
             try {
                 const res = await fetch("/api/users", {
@@ -106,18 +128,23 @@
                 });
 
                 if (res.ok || res.status === 201) {
-                    msgEl.style.color = "lightgreen";
-                    msgEl.textContent = "Account created! Redirecting to login…";
+                    submitBtn.textContent = "Account created! Redirecting…";
+                    submitBtn.style.background = "#4ade80";
                     document.getElementById("createForm").reset();
+                    hint.textContent = "";
                     setTimeout(() => { window.location.href = "login.html"; }, 1500);
                 } else {
                     const err = await res.json();
-                    msgEl.style.color = "red";
-                    msgEl.textContent = err.error || "Registration failed.";
+                    errorEl.textContent = err.error || "Registration failed.";
+                    errorEl.classList.add("visible");
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Create Account";
                 }
             } catch {
-                msgEl.style.color = "red";
-                msgEl.textContent = "Connection error. Is the server running?";
+                errorEl.textContent = "Connection error. Is the server running?";
+                errorEl.classList.add("visible");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Create Account";
             }
         });
     </script>
