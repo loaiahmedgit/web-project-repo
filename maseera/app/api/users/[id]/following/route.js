@@ -20,7 +20,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getFollowing } from 'maseera/lib/repository/followRepository.js';
+import { getFollowing } from '../../../../../lib/repository/followRepository.js';
 
 export async function GET(request, { params }) {
   try {

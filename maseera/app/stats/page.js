@@ -6,6 +6,25 @@ import {
 import { getPlatformStats } from '@/lib/repository';
 import styles from './page.module.css';
 
+function UserAvatar({ avatar, size }) {
+  const isUrl = avatar && (avatar.startsWith('http') || avatar.startsWith('/'));
+  const style = size
+    ? { width: size, height: size, fontSize: Math.round(size * 0.35) }
+    : undefined;
+  if (isUrl) {
+    return (
+      <div className={styles.avatar} style={style}>
+        <img
+          src={avatar}
+          alt=""
+          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+        />
+      </div>
+    );
+  }
+  return <div className={styles.avatar} style={style}>{avatar ?? '?'}</div>;
+}
+
 export const metadata = {
   title: 'Platform Statistics — Maseera',
   description: 'Live analytics dashboard for the Maseera social media platform.',
@@ -142,7 +161,7 @@ export default async function StatsPage() {
                 </div>
               </div>
               <div className={styles.userRow}>
-                <div className={styles.avatar}>{stats.leaderboard[0].avatar ?? '?'}</div>
+                <UserAvatar avatar={stats.leaderboard[0].avatar} />
                 <div className={styles.userInfo}>
                   <h4>
                     {stats.leaderboard[0].displayName}
@@ -176,7 +195,7 @@ export default async function StatsPage() {
                 </div>
               </div>
               <div className={styles.userRow}>
-                <div className={styles.avatar}>{stats.mostFollowedUser.avatar ?? '?'}</div>
+                <UserAvatar avatar={stats.mostFollowedUser.avatar} />
                 <div className={styles.userInfo}>
                   <h4>
                     {stats.mostFollowedUser.displayName}
@@ -214,7 +233,7 @@ export default async function StatsPage() {
                 </div>
               </div>
               <div className={styles.userRow}>
-                <div className={styles.avatar}>{stats.mostActiveCommenter.avatar ?? '?'}</div>
+                <UserAvatar avatar={stats.mostActiveCommenter.avatar} />
                 <div className={styles.userInfo}>
                   <h4>
                     {stats.mostActiveCommenter.displayName}
@@ -317,9 +336,7 @@ export default async function StatsPage() {
                       }`}>
                         {i === 0 ? <Trophy size={12} /> : i + 1}
                       </div>
-                      <div className={styles.avatar} style={{ width: 36, height: 36, fontSize: 14 }}>
-                        {user.avatar ?? '?'}
-                      </div>
+                      <UserAvatar avatar={user.avatar} size={36} />
                       <div className={styles.leaderboardName}>
                         <strong>{user.displayName}</strong>
                         <span>@{user.username}</span>

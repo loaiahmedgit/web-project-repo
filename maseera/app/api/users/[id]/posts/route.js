@@ -19,7 +19,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getPostsByUser } from 'maseera/lib/repository/postRepository.js';
+import { getPostsByUser } from '../../../../../lib/repository/postRepository.js';
 
 export async function GET(request, { params }) {
   try {
