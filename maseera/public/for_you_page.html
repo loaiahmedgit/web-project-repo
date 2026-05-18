@@ -786,12 +786,13 @@
       if (!confirm('Delete this post?')) return;
       const cu = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
       try {
-        await fetch('/api/posts/' + encodeURIComponent(postId), {
+        const res = await fetch('/api/posts/' + encodeURIComponent(postId), {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: cu.id })
         });
-      } catch (_) {}
+        if (!res.ok) { alert('Failed to delete post. Please try again.'); return; }
+      } catch (_) { alert('Failed to delete post. Please try again.'); return; }
       const article = btn.closest('.video-post');
       if (article) article.remove();
 
