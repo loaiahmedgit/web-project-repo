@@ -359,12 +359,13 @@
                 if (!_pendingDeleteId) return;
                 const cu = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
                 try {
-                    await fetch('/api/posts/' + encodeURIComponent(_pendingDeleteId), {
+                    const res = await fetch('/api/posts/' + encodeURIComponent(_pendingDeleteId), {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: cu.id })
                     });
-                } catch (_) {}
+                    if (!res.ok) { alert('Failed to delete post. Please try again.'); closeDeleteModal(); return; }
+                } catch (_) { alert('Failed to delete post. Please try again.'); closeDeleteModal(); return; }
                 const el = document.querySelector('[data-post-id="' + _pendingDeleteId + '"]');
                 if (el) el.remove();
                 const remaining = document.querySelectorAll('#postsGrid .post-grid-item').length;
