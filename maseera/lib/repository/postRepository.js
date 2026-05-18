@@ -219,10 +219,20 @@ export async function createPost(authorId, caption, extras = {}) {
  * @returns {{ count: number }} How many rows were deleted (0 or 1)
  */
 export async function deletePost(postId, userId) {
-  return prisma.post.deleteMany({
-    where: {
-      id: postId,
-      authorId: userId  // authorization guard: only delete if user owns it
-    }
+  return prisma.$transaction(async (tx) => {
+    // Verify ownership before touching anything
+    const post = await tx.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+    if (!post || post.authorId !== userId) return { count: 0 };
+
+    // Delete replies before top-level comments to satisfy the self-referential
+    // ON DELETE NO ACTION constraint on Comment.parentId
+    await tx.comment.deleteMany({ where: { postId, parentId: { not: null } } });
+    await tx.comment.deleteMany({ where: { postId } });
+
+    // Likes and reposts cascade from the DB, but delete explicitly to be safe
+    await tx.like.deleteMany({ where: { postId } });
+    await tx.repost.deleteMany({ where: { postId } });
+
+    return tx.post.deleteMany({ where: { id: postId } });
   });
 }
