@@ -22,7 +22,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { likeComment } from 'maseera/lib/repository/commentRepository.js';
+import { likeComment } from '../../../../lib/repository/commentRepository.js';
 
 export async function POST(request, { params }) {
   try {

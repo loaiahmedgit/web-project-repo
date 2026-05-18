@@ -30,7 +30,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getPostById, deletePost } from 'maseera/lib/repository/postRepository.js';
+import { getPostById, deletePost } from '../../../lib/repository/postRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/posts/:id

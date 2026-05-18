@@ -25,7 +25,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { searchUsers } from 'maseera/lib/repository/userRepository.js';
+import { searchUsers } from '../../../lib/repository/userRepository.js';
 
 export async function GET(request) {
   try {

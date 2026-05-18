@@ -30,7 +30,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getAllUsers, createUser, getUserByUsername } from 'maseera/lib/repository/userRepository.js';
+import { getAllUsers, createUser, getUserByUsername } from '../../lib/repository/userRepository.js';
 import bcrypt from 'bcryptjs';
 
 // ---------------------------------------------------------------------------
