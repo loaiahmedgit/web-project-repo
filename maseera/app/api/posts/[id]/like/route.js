@@ -28,7 +28,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { toggleLike, getLike, getLikeCount } from '../../../../lib/repository/likeRepository.js';
+import { toggleLike, getLike, getLikeCount } from '../../../../../lib/repository/likeRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/posts/:id/like?userId=...

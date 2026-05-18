@@ -16,7 +16,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { deleteComment } from '../../../lib/repository/commentRepository.js';
+import { deleteComment } from '../../../../lib/repository/commentRepository.js';
 
 export async function DELETE(request, { params }) {
   try {

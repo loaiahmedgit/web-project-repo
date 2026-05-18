@@ -46,7 +46,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getFeedPosts, getPostsByHashtag, createPost } from '../../lib/repository/postRepository.js';
+import { getFeedPosts, getPostsByHashtag, createPost } from '../../../lib/repository/postRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/posts

@@ -32,7 +32,7 @@ import {
   toggleRepost,
   getRepost,
   getRepostCount
-} from '../../../../lib/repository/repostRepository.js';
+} from '../../../../../lib/repository/repostRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/posts/:id/repost?userId=...
