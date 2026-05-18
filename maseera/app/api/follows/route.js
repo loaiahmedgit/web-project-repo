@@ -35,7 +35,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { toggleFollow, getFollow } from '../../lib/repository/followRepository.js';
+import { toggleFollow, getFollow } from '../../../lib/repository/followRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/follows?followerId=...&followingId=...
