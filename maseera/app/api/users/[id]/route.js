@@ -30,7 +30,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getUserById, getUserByUsername, updateUser } from 'maseera/lib/repository/userRepository.js';
+import { getUserById, getUserByUsername, updateUser } from '../../../lib/repository/userRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/users/:id

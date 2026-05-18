@@ -48,7 +48,7 @@ import { NextResponse } from 'next/server';
 import {
   getCommentsByPost,
   createComment
-} from 'maseera/lib/repository/commentRepository.js';
+} from '../../../../lib/repository/commentRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/posts/:id/comments
