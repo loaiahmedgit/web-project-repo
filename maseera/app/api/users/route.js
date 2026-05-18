@@ -30,7 +30,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getAllUsers, createUser } from 'maseera/lib/repository/userRepository.js';
+import { getAllUsers, createUser, getUserByUsername } from 'maseera/lib/repository/userRepository.js';
 import bcrypt from 'bcryptjs';
 
 // ---------------------------------------------------------------------------
@@ -38,12 +38,17 @@ import bcrypt from 'bcryptjs';
 // ---------------------------------------------------------------------------
 export async function GET(request) {
   try {
-    // Read the ?page= query parameter from the URL.
-    // `?? 0` means: if the param is missing or null, use 0 as default.
-    const page = Number(request.nextUrl.searchParams.get('page') ?? 0);
+    const { searchParams } = request.nextUrl;
+    const username = searchParams.get('username');
 
+    if (username) {
+      const user = await getUserByUsername(username);
+      if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(user, { status: 200 });
+    }
+
+    const page = Number(searchParams.get('page') ?? 0);
     const users = await getAllUsers(page);
-
     return NextResponse.json(users, { status: 200 });
   } catch (error) {
     console.error('[GET /api/users]', error);

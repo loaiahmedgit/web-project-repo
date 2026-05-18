@@ -58,38 +58,18 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = 'maseera_conversations';
-    let currentChat = null;
+    const me = (() => { try { return JSON.parse(sessionStorage.getItem('currentUser')); } catch { return null; } })();
+    if (!me?.id) location.replace('login.html');
 
-    // ── Storage helpers ───────────────────────────────────────────────
-    function loadConvs() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-      catch { return []; }
-    }
+    const params        = new URLSearchParams(window.location.search);
+    const toParam       = params.get('to');        // username
+    const toIdParam     = params.get('toId');       // user ID (direct)
+    const toNameParam   = params.get('toName');
+    const sharedPostRaw = params.get('sharedPost');
 
-    function saveConvs(convs) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(convs));
-    }
-
-    function getOrCreateConv(username, displayName) {
-      const convs = loadConvs();
-      let conv = convs.find(c => c.username === username);
-      if (!conv) {
-        conv = { username, displayName: displayName || username, messages: [] };
-        convs.push(conv);
-        saveConvs(convs);
-      } else if (displayName && conv.displayName !== displayName) {
-        conv.displayName = displayName;
-        saveConvs(convs);
-      }
-      return conv;
-    }
-
-    function persistMessage(username, text, sent) {
-      const convs = loadConvs();
-      const conv  = convs.find(c => c.username === username);
-      if (conv) { conv.messages.push({ text, sent, time: Date.now() }); saveConvs(convs); }
-    }
+    let currentPartnerId = null;
+    let lastMessageCount = 0;
+    let pollTimer = null;
 
     function escapeHtml(s) {
       return String(s)
@@ -97,142 +77,161 @@
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Render sidebar + chat boxes from storage ──────────────────────
-    function renderAll() {
+    // ── Sidebar ──────────────────────────────────────────────────────────────
+    function renderSidebar(partners) {
       const panel = document.getElementById('conversationsPanel');
-      const area  = document.getElementById('messagesArea');
-      const convs = loadConvs();
-
       panel.innerHTML = '';
-      area.innerHTML  = '';
-
-      if (!convs.length) {
+      if (!partners.length) {
         panel.innerHTML = '<p style="padding:20px;color:var(--c-text-3);font-size:13px;text-align:center;">No conversations yet</p>';
         return;
       }
-
-      convs.forEach(conv => {
-        const initial = (conv.displayName || conv.username || '?').charAt(0).toUpperCase();
-
+      for (const p of partners) {
+        const initial = (p.displayName || p.username || '?').charAt(0).toUpperCase();
         const item = document.createElement('div');
-        item.className = 'conversation-item';
-        item.dataset.initial  = initial;
-        item.dataset.username = conv.username;
-        item.textContent = conv.displayName || conv.username;
-        item.onclick = function() { openChat(conv.username, this); };
+        item.className = 'conversation-item' + (p.id === currentPartnerId ? ' active' : '');
+        item.dataset.initial   = initial;
+        item.dataset.username  = p.username || '';
+        item.dataset.partnerId = p.id;
+        item.textContent = p.displayName || p.username;
+        item.onclick = () => openChat(p);
         panel.appendChild(item);
-
-        const box = document.createElement('div');
-        box.className = 'chat-box hidden';
-        box.id = 'chat-' + conv.username;
-        conv.messages.forEach(m => {
-          const div = document.createElement('div');
-          div.className = 'message ' + (m.sent ? 'sent' : 'received');
-          div.innerHTML = `<div class="msg-bubble">${escapeHtml(m.text)}</div>`;
-          box.appendChild(div);
-        });
-        area.appendChild(box);
-      });
+      }
     }
 
-    // ── Open a conversation ───────────────────────────────────────────
-    function openChat(username, el) {
-      currentChat = username;
-      const conv  = loadConvs().find(c => c.username === username);
-      document.getElementById('chatName').textContent = conv?.displayName || username;
-
-      document.querySelectorAll('.chat-box').forEach(b => b.classList.add('hidden'));
-      const box = document.getElementById('chat-' + username);
-      if (box) box.classList.remove('hidden');
-
-      document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
-      const activeEl = el || document.querySelector(`.conversation-item[data-username="${CSS.escape(username)}"]`);
-      if (activeEl) activeEl.classList.add('active');
-
-      document.getElementById('messagesLayout').classList.add('chat-active');
+    // ── Messages ─────────────────────────────────────────────────────────────
+    function renderMessages(messages) {
       const area = document.getElementById('messagesArea');
-      area.scrollTop = area.scrollHeight;
+      const atBottom = area.scrollHeight - area.clientHeight <= area.scrollTop + 60;
+      area.innerHTML = '';
+      for (const msg of messages) {
+        const isSent = msg.senderId === me.id;
+        const div = document.createElement('div');
+        div.className = 'message ' + (isSent ? 'sent' : 'received');
+        div.innerHTML = `<div class="msg-bubble">${escapeHtml(msg.content)}</div>`;
+        area.appendChild(div);
+      }
+      if (atBottom || lastMessageCount === 0) area.scrollTop = area.scrollHeight;
+      lastMessageCount = messages.length;
     }
 
-    // ── Send a message ────────────────────────────────────────────────
-    function sendMessage(e) {
+    async function fetchMessages() {
+      if (!currentPartnerId) return;
+      try {
+        const res = await fetch(`/api/messages?userIdA=${encodeURIComponent(me.id)}&userIdB=${encodeURIComponent(currentPartnerId)}`);
+        if (!res.ok) return;
+        const msgs = await res.json();
+        if (msgs.length !== lastMessageCount) renderMessages(msgs);
+      } catch {}
+    }
+
+    // ── Open conversation ─────────────────────────────────────────────────────
+    async function openChat(partner) {
+      currentPartnerId = partner.id;
+      lastMessageCount = 0;
+
+      document.getElementById('chatName').textContent = partner.displayName || partner.username;
+      document.querySelectorAll('.conversation-item').forEach(i => {
+        i.classList.toggle('active', i.dataset.partnerId === partner.id);
+      });
+      document.getElementById('messagesLayout').classList.add('chat-active');
+
+      await fetchMessages();
+
+      // Mark received messages from this partner as read
+      fetch('/api/messages/read', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: me.id, senderId: partner.id }),
+      }).catch(() => {});
+
+      clearInterval(pollTimer);
+      pollTimer = setInterval(fetchMessages, 4000);
+    }
+
+    // ── Load conversation list ────────────────────────────────────────────────
+    async function loadConversations() {
+      try {
+        const res = await fetch('/api/conversations?userId=' + encodeURIComponent(me.id));
+        if (!res.ok) return [];
+        return res.json();
+      } catch { return []; }
+    }
+
+    // ── Send message ──────────────────────────────────────────────────────────
+    async function sendMessage(e) {
       e.preventDefault();
       const input = document.getElementById('messageInput');
       const text  = input.value.trim();
-      if (!text || !currentChat) return;
+      if (!text || !currentPartnerId) return;
+      input.value = '';
 
-      persistMessage(currentChat, text, true);
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId: me.id, receiverId: currentPartnerId, content: text }),
+        });
+        if (res.ok) {
+          await fetchMessages();
+          // Refresh sidebar so new conversations appear
+          loadConversations().then(renderSidebar);
+        }
+      } catch {}
+    }
 
-      const box = document.getElementById('chat-' + currentChat);
-      if (box) {
-        const div = document.createElement('div');
-        div.className = 'message sent';
-        div.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div>`;
-        box.appendChild(div);
+    // ── Initialise ────────────────────────────────────────────────────────────
+    async function init() {
+      const partners = await loadConversations();
+      renderSidebar(partners);
+
+      let target = null;
+
+      if (toIdParam) {
+        // Direct user ID provided (future-proof)
+        target = partners.find(p => p.id === toIdParam)
+          || { id: toIdParam, username: toIdParam, displayName: toNameParam || toIdParam };
+      } else if (toParam) {
+        // Username provided — check partners first, then resolve via API
+        target = partners.find(p => p.username === toParam);
+        if (!target) {
+          try {
+            const res = await fetch('/api/users?username=' + encodeURIComponent(toParam));
+            if (res.ok) target = await res.json();
+          } catch {}
+        }
+        // Show them in sidebar even if no conversation history yet
+        if (target && !partners.find(p => p.id === target.id)) {
+          renderSidebar([target, ...partners]);
+        }
       }
 
-      input.value = '';
-      const area = document.getElementById('messagesArea');
-      area.scrollTop = area.scrollHeight;
-    }
+      if (target) {
+        await openChat(target);
 
-    // ── Init ──────────────────────────────────────────────────────────
-    const params        = new URLSearchParams(window.location.search);
-    const toParam       = params.get('to');
-    const toNameParam   = params.get('toName');
-    const sharedPostRaw = params.get('sharedPost');
-
-    if (toParam) getOrCreateConv(toParam, toNameParam || toParam);
-
-    renderAll();
-
-    if (toParam) {
-      openChat(toParam, null);
-    } else {
-      const first = loadConvs()[0];
-      if (first) openChat(first.username, null);
-    }
-
-    // Handle shared post link
-    if (sharedPostRaw && toParam) {
-      try {
-        const shared   = JSON.parse(decodeURIComponent(sharedPostRaw));
-        const caption  = shared.caption || 'Check out this post!';
-        const author   = shared.author  ? '@' + shared.author : '';
-        const postLink = 'post.html?post=' + encodeURIComponent(shared.postId || '')
-                       + '&author=' + encodeURIComponent(shared.author || '');
-        const plainText = `Shared a post${author ? ' by ' + author : ''}: ${caption}`;
-
-        persistMessage(toParam, plainText, true);
-
-        const box = document.getElementById('chat-' + toParam);
-        if (box) {
-          const msgEl = document.createElement('div');
-          msgEl.className = 'message sent';
-          if (shared.image) {
-            msgEl.innerHTML = `
-              <div class="msg-bubble" style="padding:0;overflow:hidden;max-width:260px;border-radius:12px;background:#222;">
-                <a href="${postLink}" style="display:block;text-decoration:none;">
-                  <img src="${shared.image}" style="width:100%;max-height:180px;object-fit:cover;display:block;" onerror="this.style.display='none'">
-                  <div style="padding:10px 12px;">
-                    <div style="font-size:11px;color:#F5A623;margin-bottom:4px;">&#x1F4E4; Shared a post${author ? ' by ' + escapeHtml(author) : ''}</div>
-                    <div style="color:#fff;font-size:13px;">${escapeHtml(caption)}</div>
-                    <div style="font-size:11px;color:#888;margin-top:4px;">Tap to view &#x2192;</div>
-                  </div>
-                </a>
-              </div>`;
-          } else {
-            msgEl.innerHTML = `
-              <div class="msg-bubble">
-                &#x1F4E4; <strong>Shared a post</strong>${author ? ' by ' + escapeHtml(author) : ''}:<br>
-                <a href="${postLink}" style="color:#F5A623;">${escapeHtml(caption)}</a>
-              </div>`;
-          }
-          box.appendChild(msgEl);
-          document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+        // Send shared post as a plain-text message
+        if (sharedPostRaw) {
+          try {
+            const shared  = JSON.parse(decodeURIComponent(sharedPostRaw));
+            const caption = shared.caption || 'Check out this post!';
+            const author  = shared.author ? ' by @' + shared.author : '';
+            await fetch('/api/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                senderId:   me.id,
+                receiverId: target.id,
+                content:    `Shared a post${author}: ${caption}`,
+              }),
+            });
+            await fetchMessages();
+          } catch {}
         }
-      } catch(_) {}
+      } else if (partners.length > 0) {
+        await openChat(partners[0]);
+      }
     }
+
+    init();
   </script>
 
 </body>

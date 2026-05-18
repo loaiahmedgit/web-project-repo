@@ -36,7 +36,7 @@ import { NextResponse } from 'next/server';
 import {
   markMessagesAsRead,
   getUnreadCount
-} from 'maseera/lib/repository/messageRepository.js';
+} from '../../../../lib/repository/messageRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/messages/read?userId=...

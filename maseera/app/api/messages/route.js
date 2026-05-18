@@ -41,7 +41,7 @@ import { NextResponse } from 'next/server';
 import {
   getConversation,
   sendMessage
-} from 'maseera/lib/repository/messageRepository.js';
+} from '../../../lib/repository/messageRepository.js';
 
 // ---------------------------------------------------------------------------
 // GET /api/messages?userIdA=...&userIdB=...

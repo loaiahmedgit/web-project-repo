@@ -6,6 +6,8 @@ import {
 import { getPlatformStats } from '@/lib/repository';
 import styles from './page.module.css';
 
+export const dynamic = 'force-dynamic';
+
 function UserAvatar({ avatar, size }) {
   const isUrl = avatar && (avatar.startsWith('http') || avatar.startsWith('/'));
   const style = size
