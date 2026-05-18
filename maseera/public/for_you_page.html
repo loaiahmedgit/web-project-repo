@@ -494,31 +494,8 @@
         </div>
         <button class="share-back-btn" onclick="backToShareOptions()">&#x2190; Back</button>
         <p class="share-step-label">Choose who you want to share this post with:</p>
-        <div class="contact-pick-list">
-          <div class="contact-pick-item" onclick="sendToContact('ahmed')">
-            <div class="contact-pick-avatar">A</div>
-            <div class="contact-pick-info">
-              <span class="contact-pick-name">Ahmed Yasser</span>
-              <span class="contact-pick-handle">@ahmed</span>
-            </div>
-            <span class="contact-pick-arrow">&#x2192;</span>
-          </div>
-          <div class="contact-pick-item" onclick="sendToContact('lina')">
-            <div class="contact-pick-avatar">L</div>
-            <div class="contact-pick-info">
-              <span class="contact-pick-name">Lina Omar</span>
-              <span class="contact-pick-handle">@lina</span>
-            </div>
-            <span class="contact-pick-arrow">&#x2192;</span>
-          </div>
-          <div class="contact-pick-item" onclick="sendToContact('youssef')">
-            <div class="contact-pick-avatar">Y</div>
-            <div class="contact-pick-info">
-              <span class="contact-pick-name">Youssef</span>
-              <span class="contact-pick-handle">@youssef</span>
-            </div>
-            <span class="contact-pick-arrow">&#x2192;</span>
-          </div>
+        <div class="contact-pick-list" id="contactPickList">
+          <p style="padding:16px;color:var(--c-text-3);font-size:13px;text-align:center;">Loading…</p>
         </div>
       </div>
 
@@ -761,9 +738,39 @@
       write();
     }
 
-    function showContactPicker() {
+    async function showContactPicker() {
       document.getElementById('shareStep1').style.display = 'none';
       document.getElementById('shareStep2').style.display = '';
+      const list = document.getElementById('contactPickList');
+      list.innerHTML = '<p style="padding:16px;color:var(--c-text-3);font-size:13px;text-align:center;">Loading…</p>';
+      try {
+        const res = await fetch('/api/users');
+        if (!res.ok) throw new Error();
+        const users = await res.json();
+        const me = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+        const others = users.filter(u => u.id !== me.id);
+        if (!others.length) {
+          list.innerHTML = '<p style="padding:16px;color:var(--c-text-3);font-size:13px;text-align:center;">No users found</p>';
+          return;
+        }
+        list.innerHTML = '';
+        for (const u of others) {
+          const initial = (u.displayName || u.username || '?').charAt(0).toUpperCase();
+          const item = document.createElement('div');
+          item.className = 'contact-pick-item';
+          item.onclick = () => sendToContact(u.username);
+          item.innerHTML = `
+            <div class="contact-pick-avatar">${initial}</div>
+            <div class="contact-pick-info">
+              <span class="contact-pick-name">${u.displayName || u.username}</span>
+              <span class="contact-pick-handle">@${u.username}</span>
+            </div>
+            <span class="contact-pick-arrow">&#x2192;</span>`;
+          list.appendChild(item);
+        }
+      } catch {
+        list.innerHTML = '<p style="padding:16px;color:var(--c-text-3);font-size:13px;text-align:center;">Failed to load users</p>';
+      }
     }
 
     function backToShareOptions() {
